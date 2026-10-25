@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#17130f">
+<meta name="theme-color" content="#100b09">
 <meta name="description" content="A fantasy-inspired real-life quest tracker for habits, adventures, relationships, reading, and skills.">
 <link rel="manifest" href="manifest.json">
 <title>Wayfarer — Real-Life RPG</title>
@@ -39,6 +39,103 @@ h1,h2,h3,p{margin-top:0} h1{font:700 24px Georgia,serif;letter-spacing:.5px;marg
 footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#f1d18b;color:#21170c;padding:11px 17px;border-radius:999px;font-weight:700;box-shadow:var(--shadow);display:none;z-index:20}
 @media(max-width:650px){.app{padding:12px 12px 90px}.grid{grid-template-columns:1fr}.skillChoices{grid-template-columns:1fr}.stats{gap:7px}.stat{padding:10px}.stat b{font-size:17px}.hero{padding:17px}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.sectionHead h2{font-size:21px}.tabs{margin:0 -12px;padding:12px;background:#15120ff5;padding-left:12px}}
+
+/* WAYFARER DUNGEON REDESIGN — applied to the uploaded index.html */
+:root{
+ --bg:#100b09;--panel:#1b1411;--panel2:#261a15;--line:#6c4b34;
+ --gold:#edc27b;--gold2:#bd7b3d;--cream:#f4e6cf;--muted:#c0aa90;
+ --green:#8fb58b;--red:#d45c43;--shadow:0 14px 34px #000b
+}
+html{background:#100b09!important}
+body{
+ background:
+  radial-gradient(ellipse at 4% 22%,rgba(236,94,28,.22),transparent 24%),
+  radial-gradient(ellipse at 96% 34%,rgba(239,121,36,.17),transparent 22%),
+  radial-gradient(ellipse at 50% 0%,#3b2920 0%,#1b1310 36%,#090807 100%)!important;
+ color:var(--cream)!important
+}
+.app{isolation:isolate}
+header{
+ position:relative;padding:12px 10px 15px;margin-bottom:16px;
+ border-bottom:1px solid #7e5938;
+ background:linear-gradient(180deg,rgba(33,23,18,.97),rgba(16,11,9,.9));
+ box-shadow:0 8px 24px #0008
+}
+header:after{
+ content:"";position:absolute;left:8%;right:8%;bottom:-3px;height:4px;
+ background:linear-gradient(90deg,transparent,#a66d3b,#f0bf72,#a66d3b,transparent);
+ opacity:.8
+}
+.crest{
+ border:2px solid #b5814c!important;border-radius:10px!important;
+ background:linear-gradient(145deg,#5b3b28,#17100d)!important;
+ box-shadow:inset 0 0 0 3px #0b0807,inset 0 0 22px #ff9b3526,0 0 18px #f47b2520!important
+}
+h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33;letter-spacing:1.5px!important}
+.eyebrow{color:#e4ad65!important;letter-spacing:2.4px!important}
+.pill{background:linear-gradient(145deg,#302119,#100c0b)!important;border-color:#79563b!important}
+.hero{
+ background:linear-gradient(130deg,rgba(61,40,28,.98),rgba(26,17,14,.98) 58%,rgba(46,25,17,.98))!important;
+ border:2px solid #75533a!important;border-radius:10px!important;
+ box-shadow:inset 0 0 0 3px #1a1310,inset 0 0 0 4px #4a3325,0 12px 28px #0009!important
+}
+.hero:after{content:"⚔"!important;color:#f0bb6322!important;text-shadow:0 0 24px #ff8d2520}
+.level,.xp,.skillCategory h3{color:#edc27b!important}
+.stat{
+ background:linear-gradient(145deg,#2c211b,#100c0a)!important;
+ border:1px solid #6d4e35!important;border-radius:6px!important;
+ box-shadow:inset 0 0 0 2px #19110e,0 4px 10px #0005
+}
+.tabs{
+ background:linear-gradient(180deg,rgba(34,23,18,.98),rgba(13,9,8,.98))!important;
+ border-bottom:1px solid #714d34;box-shadow:0 8px 16px #0008
+}
+.tab{
+ background:linear-gradient(180deg,#35241b,#17100e)!important;
+ border:1px solid #705039!important;border-radius:5px!important;color:#d0b99a!important
+}
+.tab.active{
+ background:linear-gradient(180deg,#a9472b,#5c2118)!important;
+ border-color:#edbd75!important;color:#fff0d3!important;
+ box-shadow:inset 0 0 0 1px #f6d09244,0 0 15px #cf542633!important
+}
+.card{
+ background:linear-gradient(145deg,#30231c,#17110f 72%,#291810)!important;
+ border:1px solid #76543b!important;border-radius:7px!important;
+ box-shadow:inset 0 0 0 2px #19110e,0 8px 18px #0007!important
+}
+.card h3,.sectionHead h2{color:#f0dfc2;text-shadow:0 1px #090605}
+.btn{
+ background:linear-gradient(180deg,#ad512f,#612417)!important;
+ border:1px solid #dca45f!important;border-radius:5px!important;
+ color:#fff0d2!important;
+ box-shadow:inset 0 1px #ffffff2b,0 3px 0 #100907,0 5px 12px #0006!important
+}
+.btn:disabled{opacity:.45}
+.btn.secondary{background:linear-gradient(180deg,#493329,#211512)!important;border-color:#a0784f!important;color:#f2e3cb!important}
+.btn.ghost{background:#110d0bf0!important;border-color:#6a503c!important;color:#d0b998!important}
+.tag{background:#241710!important;border-color:#986940!important;border-radius:3px!important;color:#f0c783!important}
+.progress,.miniBar{background:#090706!important;border-color:#795538!important}
+.progress>div,.miniBar div{background:linear-gradient(90deg,#80301d,#c56a32,#f2c77c)!important}
+.field input,.field select,.field textarea,
+#difficulty,#questDialog input,#questDialog select,#questDialog textarea{
+ background:#100c0b!important;border-color:#76543b!important;border-radius:5px!important;
+ box-shadow:inset 0 2px 7px #000a!important;color:#f4e6cf!important
+}
+.skillChoice{background:linear-gradient(145deg,#30221b,#130e0c)!important;border-color:#705039!important;border-radius:5px!important}
+.notice{background:linear-gradient(120deg,#38231a,#17100e)!important;border-color:#875b39!important;border-radius:6px!important}
+.empty{background:linear-gradient(145deg,#281c16e8,#100c0bea)!important;border-color:#916a45!important;border-radius:7px!important}
+.logItem{border-color:#604632!important}
+#toast{background:#edc27b!important;color:#21120b!important;border:1px solid #ffe0a4!important;border-radius:5px!important}
+footer{color:#a0876d!important}
+#questDialog{background:#1c1410!important;border-color:#bd874e!important}
+@media(max-width:650px){
+ .app{padding-top:12px}
+ header{margin-top:0}
+ .hero{border-radius:8px!important}
+ .tabs{border-radius:0}
+}
+
 </style>
 </head>
 <body>
