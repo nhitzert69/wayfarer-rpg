@@ -137,6 +137,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 <nav class="tabs" aria-label="Main navigation">
   <button class="tab active" data-tab="quests">⚜ Quest Board</button>
   <button class="tab" data-tab="todo" type="button">☑ To Do</button>
+  <button class="tab" data-tab="groceries" type="button">🛒 Groceries</button>
   <button class="tab" data-tab="skills">✧ Skills</button>
   
   <button class="tab" data-tab="journal">📜 Journal</button>
@@ -186,6 +187,21 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 <div class="wide row" style="flex-wrap:wrap;gap:8px"><button class="btn primary" id="todoSubmitBtn" type="button">Save task</button><button class="btn" id="cancelTodoEditBtn" type="button" style="display:none">Cancel edit</button></div>
 </form></div>
 <div class="card" style="margin-top:14px"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">Your tasks</h3><span class="tag" id="todoCount">0 open</span></div><div id="todoList" style="margin-top:10px"><div class="empty">No tasks yet. Add something you want to remember.</div></div></div>
+</section>
+<section class="section" id="section-groceries">
+  <div class="sectionHead"><div><h2>Grocery List</h2><p>Keep your shopping list handy and check items off as you shop.</p></div></div>
+  <div class="card">
+    <form id="groceryForm" class="row" style="gap:8px;align-items:stretch;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px"><label for="groceryItem">Item</label><input id="groceryItem" maxlength="120" placeholder="e.g. Milk, apples, rice…" required /></div>
+      <div style="width:105px"><label for="groceryQty">Quantity</label><input id="groceryQty" maxlength="40" placeholder="e.g. 2" /></div>
+      <button class="btn primary" type="submit" style="align-self:flex-end">+ Add item</button>
+    </form>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="row" style="align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><h3 style="margin:0">Shopping list</h3><span class="tag" id="groceryCount">0 items</span></div>
+    <div id="groceryList" style="margin-top:10px"><div class="empty">Your list is empty. Add what you need to buy.</div></div>
+    <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap"><button class="btn small" id="clearBoughtGroceries" type="button">Remove checked items</button><button class="btn small" id="clearGroceries" type="button">Clear list</button></div>
+  </div>
 </section>
 <section class="section" id="section-skills">
   <div class="sectionHead"><div><h2>Choose Your Skills</h2><p>Select what you want to develop. Your choices appear on the Quest Board and guide quest generation.</p></div></div>
@@ -319,6 +335,7 @@ delete state.settings.difficulty;
 if(Array.isArray(state.quests)) state.quests.forEach(q=>{if(!q.done)q.xp=15;});
 if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
 if(!Array.isArray(state.todo))state.todo=[];
+if(!Array.isArray(state.groceries))state.groceries=[];
 if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
 if(!state.skillXp)state.skillXp={};
 if(state.activeDate!==today()){state.activeDate=today();state.quests=[]}
@@ -326,7 +343,7 @@ function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
-function categoryIcon(c){return ({Adventure:"🧭",Social:"🗣️",Skill:"🎹",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
+function categoryIcon(c,skill){if(skill==="Fitness")return "💪";if(skill==="Cardio")return "🏃";if(skill==="Piano")return "🎹";return ({Adventure:"🧭",Social:"🗣️",Skill:"✨",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
 function render(){
  // The old global-character-level widgets were removed from the main page.
  // Update them only if a future version puts those elements back.
@@ -346,7 +363,7 @@ function render(){
  const grid=document.getElementById("questGrid");
  grid.innerHTML=state.quests.length?state.quests.map(q=>`<article class="card ${q.done?"questDone":""}">
   <div class="questTop"><input class="check" type="checkbox" aria-label="Complete ${esc(q.title)}" data-complete="${q.id}" ${q.done?"checked":""}>
-   <div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP</span></div>
+   <div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP</span></div>
    <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span>${q.done?'<span class="tag">Completed ✓</span>':`<button class="btn small" data-complete-btn="${q.id}">Complete</button>`}</div></div></div>
  </article>`).join(""):'<div class="empty">Your quest board is clear. Generate starter quests or add a mission.</div>';
  grid.querySelectorAll("[data-complete],[data-complete-btn]").forEach(el=>el.addEventListener(el.type==="checkbox"?"change":"click",()=>completeQuest(el.dataset.complete||el.dataset.completeBtn,el.type==="checkbox"?el.checked:true)));
@@ -363,6 +380,16 @@ function render(){
  todoListEl.querySelectorAll("[data-todo-complete]").forEach(el=>el.addEventListener("change",()=>{const t=state.todo.find(x=>String(x.id)===String(el.dataset.todoComplete));if(t){t.completed=el.checked;save();}}));
  todoListEl.querySelectorAll("[data-edit-todo]").forEach(el=>el.addEventListener("click",()=>editTodo(el.dataset.editTodo)));
  todoListEl.querySelectorAll("[data-delete-todo]").forEach(el=>el.addEventListener("click",()=>deleteTodo(el.dataset.deleteTodo)));
+ }
+
+ const groceryListEl=document.getElementById("groceryList");
+ const groceryCountEl=document.getElementById("groceryCount");
+ const openGroceries=state.groceries.filter(g=>!g.checked).length;
+ if(groceryCountEl)groceryCountEl.textContent=`${openGroceries} to buy · ${state.groceries.length} total`;
+ if(groceryListEl)groceryListEl.innerHTML=state.groceries.length?[...state.groceries].sort((a,b)=>Number(a.checked)-Number(b.checked)||(a.createdAt||"").localeCompare(b.createdAt||"")).map(g=>`<div class="logItem" style="margin-top:8px;padding:11px;border:1px solid var(--line);border-radius:12px"><div class="row" style="align-items:center;gap:8px"><label style="display:flex;align-items:center;gap:10px;flex:1;min-width:0"><input type="checkbox" data-grocery-check="${esc(g.id)}" ${g.checked?"checked":""} style="width:auto;flex-shrink:0"/><span style="${g.checked?"text-decoration:line-through;opacity:.6":""}"><strong>${esc(g.name)}</strong>${g.quantity?` <span class="sub">· ${esc(g.quantity)}</span>`:""}</span></label><button class="btn small" type="button" data-grocery-delete="${esc(g.id)}">Remove</button></div></div>`).join(""):'<div class="empty">Your list is empty. Add what you need to buy.</div>';
+ if(groceryListEl){
+  groceryListEl.querySelectorAll("[data-grocery-check]").forEach(el=>el.addEventListener("change",()=>{const item=state.groceries.find(g=>String(g.id)===String(el.dataset.groceryCheck));if(item){item.checked=el.checked;save();}}));
+  groceryListEl.querySelectorAll("[data-grocery-delete]").forEach(el=>el.addEventListener("click",()=>{state.groceries=state.groceries.filter(g=>String(g.id)!==String(el.dataset.groceryDelete));save();}));
  }
 
  const journalListEl=document.getElementById("journalList");
@@ -569,6 +596,23 @@ document.addEventListener("click", function(event) {
 });
 
 
+
+// Grocery list: saved alongside the user's existing local Wayfarer data.
+const groceryForm=document.getElementById("groceryForm");
+if(groceryForm)groceryForm.addEventListener("submit",function(event){
+ event.preventDefault();
+ const name=document.getElementById("groceryItem").value.trim();
+ const quantity=document.getElementById("groceryQty").value.trim();
+ if(!name)return;
+ state.groceries.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name,quantity,checked:false,createdAt:new Date().toISOString()});
+ groceryForm.reset();
+ save();
+ document.getElementById("groceryItem").focus();
+});
+const clearBoughtGroceries=document.getElementById("clearBoughtGroceries");
+if(clearBoughtGroceries)clearBoughtGroceries.addEventListener("click",()=>{state.groceries=state.groceries.filter(g=>!g.checked);save();toast("Checked items removed.");});
+const clearGroceries=document.getElementById("clearGroceries");
+if(clearGroceries)clearGroceries.addEventListener("click",()=>{if(!state.groceries.length)return;if(!confirm("Clear your entire grocery list?"))return;state.groceries=[];save();toast("Grocery list cleared.");});
 
 // Adventure chooser: generate a location-independent mission and add it to the quest board.
 const adventureToggle=document.getElementById("generateAdventureBtn");
