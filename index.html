@@ -121,6 +121,31 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 #debugTabButton{display:none}.debugMetric{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line,#39342b)}.debugTools{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px}.debugTools button,.debugTools select,.debugTools input{width:100%;box-sizing:border-box}.debugLog{max-height:240px;overflow:auto;white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;background:rgba(0,0,0,.2);padding:10px;border-radius:8px}.debugSandboxBanner{border:1px solid #b68b36;background:rgba(182,139,54,.12);padding:10px;border-radius:8px;margin:10px 0}
 </style>
 
+
+<style id="wayfarer-character-layout-v54">
+.tabs{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px!important;align-items:stretch}
+.tabs .tab{width:100%;min-width:0;justify-content:center;text-align:center;white-space:normal;min-height:44px;padding:10px 6px;font-size:13px}
+.characterLayout{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr);gap:12px}
+.characterPortraitCard{display:flex;flex-direction:column;align-items:stretch}
+.characterPortrait{height:260px;max-width:230px;width:100%;margin:0 auto;position:relative;overflow:hidden;border-radius:14px;background:radial-gradient(ellipse at 50% 35%,#494039,#211e1c 68%,#141617);border:1px solid #776044;display:flex;align-items:center;justify-content:center}
+.characterHead{position:absolute;top:28px;width:52px;height:60px;border-radius:45% 45% 42% 42%;background:linear-gradient(120deg,#d0a17a,#8d6248);border:3px solid #34271f;z-index:3}
+.characterHead:before{content:"";position:absolute;left:-5px;right:-5px;top:-8px;height:22px;border-radius:50% 50% 15% 15%;background:#66503b;border:2px solid #34271f}
+.characterBody{position:absolute;top:88px;width:92px;height:92px;border-radius:18px 18px 8px 8px;background:linear-gradient(90deg,#58412e,#806344 50%,#4c3828);border:3px solid #30251c;z-index:2}
+.characterBody:after{content:"";position:absolute;left:37px;top:0;width:12px;height:80px;background:#b69a6d;border-left:1px solid #30251c;border-right:1px solid #30251c}
+.characterArm{position:absolute;top:98px;width:27px;height:85px;border-radius:13px;background:linear-gradient(90deg,#5c422d,#9c7953);border:3px solid #30251c;z-index:1}
+.characterArmLeft{left:calc(50% - 61px);transform:rotate(8deg)}.characterArmRight{right:calc(50% - 61px);transform:rotate(-8deg)}
+.characterLeg{position:absolute;top:170px;width:34px;height:66px;border-radius:6px 6px 4px 4px;background:linear-gradient(90deg,#343b40,#62605a);border:3px solid #242526;z-index:1}
+.characterLegLeft{left:calc(50% - 38px)}.characterLegRight{right:calc(50% - 38px)}
+.characterLevelLine{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);margin-top:10px;padding-top:10px;font-size:13px}
+.equipmentGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.equipmentSlot{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:11px;border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.16)}
+.equipmentSlot>span{font-size:22px}.equipmentSlot strong{font-size:13px}.equipmentSlot small{color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.inventoryEmpty{border:1px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--muted)}
+.storeBalance{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.storeCategory{text-align:center}.storeCategoryIcon{font-size:32px;margin:4px 0 8px}.storeCategory h3{margin:0 0 6px}
+.genderChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.genderChoice{cursor:pointer}.genderChoice input{position:absolute;opacity:0;pointer-events:none}.genderChoice span{display:block;padding:13px;border:1px solid var(--line);border-radius:10px;text-align:center;background:var(--panel2);font-weight:700}.genderChoice input:checked+span{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);color:var(--gold)}
+@media(max-width:650px){.tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.tabs .tab{font-size:12px;padding:9px 3px}.characterLayout{grid-template-columns:1fr}.characterPortrait{height:240px}.equipmentGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -155,10 +180,11 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 
 <nav class="tabs" aria-label="Main navigation">
   <button class="tab active" data-tab="quests">⚜ Quest Board</button>
+  <button class="tab" data-tab="character" type="button">🧙 Character</button>
+  <button class="tab" data-tab="store" type="button">🏪 Store</button>
+  <button class="tab" data-tab="skills">✧ Skills</button>
   <button class="tab" data-tab="todo" type="button">☑ To Do</button>
   <button class="tab" data-tab="groceries" type="button">🛒 Groceries</button>
-  <button class="tab" data-tab="skills">✧ Skills</button>
-  
   <button class="tab" data-tab="journal">📜 Journal</button>
   <button class="tab" data-tab="settings">⚙ Settings</button>
   <button class="tab" id="debugTabButton" data-tab="debug" type="button">🛠 Debug</button>
@@ -203,11 +229,47 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 </section>
 
 <section class="section" id="section-character">
-  <div class="sectionHead"><div><h2>Character Attributes</h2><p>Build a life with more adventure, connection, and curiosity.</p></div></div>
-  <div class="card"><p class="sub">Each quest builds a specific skill. Skill XP is tracked separately from your overall character XP.</p><div class="statList" id="attributeList"></div></div>
+  <div class="sectionHead"><div><h2>Your Character</h2><p>Your adventurer, equipment and collected items will live here.</p></div></div>
+  <div class="characterLayout">
+    <div class="card characterPortraitCard">
+      <div class="characterPortrait" aria-label="Generic starting adventurer illustration">
+        <div class="characterHead"></div><div class="characterBody"></div><div class="characterArm characterArmLeft"></div><div class="characterArm characterArmRight"></div><div class="characterLeg characterLegLeft"></div><div class="characterLeg characterLegRight"></div>
+      </div>
+      <h3 id="characterNameLabel" style="text-align:center;margin:8px 0 3px">Wayfarer</h3>
+      <p class="sub" id="characterGenderLabel" style="text-align:center;margin:0">Starting adventurer</p>
+      <div class="characterLevelLine"><span>Character XP</span><strong id="characterXpLabel">0 XP</strong></div>
+    </div>
+    <div class="card">
+      <h3>Equipment</h3><p class="sub">Equip items you own to change your character's look.</p>
+      <div class="equipmentGrid">
+        <div class="equipmentSlot"><span>🧢</span><strong>Head</strong><small id="equipHead">Basic headwear</small></div>
+        <div class="equipmentSlot"><span>👕</span><strong>Chest</strong><small id="equipChest">Plain tunic</small></div>
+        <div class="equipmentSlot"><span>👖</span><strong>Legs</strong><small id="equipLegs">Simple trousers</small></div>
+        <div class="equipmentSlot"><span>🥾</span><strong>Footwear</strong><small id="equipFeet">Travel boots</small></div>
+        <div class="equipmentSlot"><span>⚔️</span><strong>Main hand</strong><small id="equipMainHand">Empty</small></div>
+        <div class="equipmentSlot"><span>🛡️</span><strong>Off hand</strong><small id="equipOffHand">Empty</small></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px"><div class="sectionHead" style="margin:0 0 8px"><div><h3 style="margin:0">Inventory</h3><p class="sub">Items you own will appear here.</p></div><span class="tag" id="inventoryCount">0 items</span></div><div id="characterInventory" class="inventoryEmpty">Your inventory is empty. Visit the Store when you're ready to gear up.</div></div>
+  <div class="card" style="margin-top:12px"><h3>Character Attributes</h3><p class="sub">Each quest builds a specific skill. Skill XP is tracked separately from your overall character XP.</p><div class="statList" id="attributeList"></div></div>
   <div class="grid" style="margin-top:12px">
     <div class="card"><h3>Leveling rules</h3><p>Every 100 XP earns one level. XP is awarded when a quest is completed, and never removed for a missed day.</p><div class="tag">No penalties · Keep going</div></div>
     <div class="card"><h3>Campaign principles</h3><p>Leave the house before you decide whether the outing is worth it. Social courage counts even when an interaction feels awkward. Rest is part of the campaign.</p><div class="tag">Action over perfection</div></div>
+  </div>
+</section>
+
+<section class="section" id="section-store">
+  <div class="sectionHead"><div><h2>Adventurer's Store</h2><p>Spend Gold on equipment, clothing, weapons and collectibles.</p></div></div>
+  <div class="storeBalance card"><div><span class="sub">Your balance</span><h2 style="margin:4px 0">🪙 <span id="storeGoldBalance">0</span> Gold</h2></div><span class="tag">No real-money purchases</span></div>
+  <div class="notice" style="margin-top:12px">The Store shelves are being prepared. The next update will add purchasable items, Gold rewards and equipment that can be added to your inventory.</div>
+  <div class="storeCategories grid" style="margin-top:12px">
+    <div class="card storeCategory"><div class="storeCategoryIcon">🧢</div><h3>Headwear</h3><p class="sub">Hoods, hats, helmets and crowns</p><span class="tag">Coming soon</span></div>
+    <div class="card storeCategory"><div class="storeCategoryIcon">👕</div><h3>Shirts & Armor</h3><p class="sub">Tunic, robes, shirts and armor</p><span class="tag">Coming soon</span></div>
+    <div class="card storeCategory"><div class="storeCategoryIcon">👖</div><h3>Pants & Boots</h3><p class="sub">Trousers, greaves and footwear</p><span class="tag">Coming soon</span></div>
+    <div class="card storeCategory"><div class="storeCategoryIcon">⚔️</div><h3>Weapons</h3><p class="sub">Swords, daggers, staffs and shields</p><span class="tag">Coming soon</span></div>
+    <div class="card storeCategory"><div class="storeCategoryIcon">💎</div><h3>Items & Relics</h3><p class="sub">Potions, treasures and collectibles</p><span class="tag">Coming soon</span></div>
+    <div class="card storeCategory"><div class="storeCategoryIcon">🏆</div><h3>Special Rewards</h3><p class="sub">Titles, trophies and rare unlocks</p><span class="tag">Coming soon</span></div>
   </div>
 </section>
 
@@ -276,6 +338,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
     <form id="accountForm" class="formgrid" autocomplete="on">
       <div class="field wide"><label for="accountUsername">Username</label><input id="accountUsername" name="username" autocomplete="username" minlength="3" maxlength="20" pattern="[A-Za-z0-9_-]{3,20}" placeholder="e.g. wayfarer_01" required></div>
       <div class="field wide"><label for="accountPin">8-digit PIN</label><input id="accountPin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" minlength="8" maxlength="32" pattern="[0-9]{8,32}" placeholder="At least 8 digits" required></div>
+      <div class="field wide" id="accountGenderField" style="display:none"><label>Choose your character</label><p class="sub" style="margin:0 0 8px">This choice is saved to your character. You won't be asked again when signing in.</p><div class="genderChoices"><label class="genderChoice"><input type="radio" name="characterGender" value="male"><span>♂ Male</span></label><label class="genderChoice"><input type="radio" name="characterGender" value="female"><span>♀ Female</span></label></div></div>
       <div class="wide" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="createAccountBtn" type="button">Create account</button><button class="btn secondary" id="signInBtn" type="submit">Sign in / sync</button><button class="btn secondary" id="signOutBtn" type="button" style="display:none">Sign out</button></div>
     </form>
     <p class="sub" style="margin-top:12px">Use a unique PIN, not your phone unlock or banking PIN. Username + PIN has no recovery option if forgotten.</p>
@@ -390,8 +453,12 @@ function questForSkill(skill){
 }
 
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
-function freshState(){return {xp:0,completedTotal:0,quests:[],journal:[],todo:[],groceries:[],selectedSkills:[],skillPriorities:{},skillXp:{},questHistory:{},questDays:[],settings:{...defaultSettings},activeDate:today(),lastDay:today()};}
+function freshState(){return {xp:0,completedTotal:0,quests:[],journal:[],todo:[],groceries:[],selectedSkills:[],skillPriorities:{},skillXp:{},questHistory:{},questDays:[],profile:{gender:null},inventory:[],equipment:{},gold:0,settings:{...defaultSettings},activeDate:today(),lastDay:today()};}
 let state=load()||freshState();
+if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};
+if(!Array.isArray(state.inventory))state.inventory=[];
+if(!state.equipment||typeof state.equipment!=="object")state.equipment={};
+if(!Number.isFinite(Number(state.gold)))state.gold=0;
 if(!state.settings)state.settings={...defaultSettings};
 delete state.settings.difficulty;
 if(Array.isArray(state.quests)) state.quests.forEach(q=>{if(!q.done)q.xp=15;});
@@ -436,12 +503,13 @@ async function syncCurrentState(){
  else setCloudStatus("Cloud sync active for @"+(document.getElementById("accountUsername").value.trim()||"your account")+". Your progress is saved online.");
 }
 let wayfarerSignedInUsername="";
-async function finishSignIn(username,pin,create){
+hideGenderChoice();
+async function finishSignIn(username,pin,create,gender=null){
  if(!cloudConfigured){setCloudStatus("Cloud accounts need setup first. Follow the Supabase instructions in README.txt and add your project URL and anon key to index.html.");toast("Cloud accounts are not configured yet.");return;}
  const email=usernameEmail(username);
  setCloudStatus(create?"Creating your account…":"Signing in…");
  const authResult=create
-   ? await cloudClient.auth.signUp({email,password:pin,options:{data:{wayfarer_username:username}}})
+   ? await cloudClient.auth.signUp({email,password:pin,options:{data:{wayfarer_username:username,wayfarer_gender:gender}}})
    : await cloudClient.auth.signInWithPassword({email,password:pin});
  if(authResult.error){setCloudStatus(authResult.error.message+" If creating an account, check that email confirmations are disabled in Supabase.");return;}
  if(create && !authResult.data.session){setCloudStatus("Account request received, but Supabase returned no session. Turn off email confirmations in Supabase Auth, then try again.");return;}
@@ -454,6 +522,7 @@ async function finishSignIn(username,pin,create){
  if(saveRow && saveRow.app_state && typeof saveRow.app_state==="object"){
    state=saveRow.app_state;
    if(!state.settings)state.settings={...defaultSettings};
+   if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;
    if(!Array.isArray(state.quests))state.quests=[];
    if(!Array.isArray(state.journal))state.journal=[];
    if(!Array.isArray(state.todo))state.todo=[];
@@ -466,6 +535,7 @@ async function finishSignIn(username,pin,create){
    // Never transfer the previous signed-out device state into a different account.
    // An account without a cloud save starts with a clean, independent profile.
    state=freshState();
+   if(create && (gender==="male"||gender==="female"))state.profile.gender=gender;
    localStorage.setItem(KEY,JSON.stringify(state));
    cloudHydrating=false;
    await syncCurrentState();
@@ -481,8 +551,9 @@ async function finishSignIn(username,pin,create){
  render();
  if(typeof renderDebugPanel === "function") renderDebugPanel();
 }
-document.getElementById("accountForm")?.addEventListener("submit",async e=>{e.preventDefault();const credentials=validAccountForm();if(credentials)await finishSignIn(credentials.username,credentials.pin,false);});
-document.getElementById("createAccountBtn")?.addEventListener("click",async()=>{const credentials=validAccountForm();if(credentials)await finishSignIn(credentials.username,credentials.pin,true);});
+function hideGenderChoice(){const field=document.getElementById("accountGenderField");if(field)field.style.display="none";document.querySelectorAll('input[name="characterGender"]').forEach(r=>r.checked=false);const btn=document.getElementById("createAccountBtn");if(btn)btn.textContent="Create account";}
+document.getElementById("accountForm")?.addEventListener("submit",async e=>{e.preventDefault();hideGenderChoice();const credentials=validAccountForm();if(credentials)await finishSignIn(credentials.username,credentials.pin,false);});
+document.getElementById("createAccountBtn")?.addEventListener("click",async()=>{const credentials=validAccountForm();if(!credentials)return;const field=document.getElementById("accountGenderField");const selected=document.querySelector('input[name="characterGender"]:checked');if(field.style.display==="none"){field.style.display="block";document.getElementById("createAccountBtn").textContent="Create account with selected character";field.scrollIntoView({behavior:"smooth",block:"center"});return;}if(!selected){toast("Choose male or female for your character to create an account.");return;}await finishSignIn(credentials.username,credentials.pin,true,selected.value);});
 document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  if(cloudClient)await cloudClient.auth.signOut();
  // Clear account-bound data from the visible page and local cache on sign-out.
@@ -495,18 +566,20 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  const pinEl=document.getElementById("accountPin");if(pinEl){pinEl.value="";pinEl.placeholder="At least 8 digits";}
  document.getElementById("signOutBtn").style.display="none";
  document.getElementById("createAccountBtn").style.display="inline-flex";
+ hideGenderChoice();
  render();
  if(typeof renderDebugPanel === "function") renderDebugPanel();
  cloudHydrating=false;
  wayfarerSignedInUsername="";
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
-if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=String(data.session.user.user_metadata?.wayfarer_username||"");cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("createAccountBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();}});}
+if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=String(data.session.user.user_metadata?.wayfarer_username||"");cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("createAccountBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();}});}
 function save(skipRender=false){localStorage.setItem(KEY,JSON.stringify(state));if(!skipRender)render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
 function categoryIcon(c,skill){if(skill==="Fitness")return "💪";if(skill==="Cardio")return "🏃";if(skill==="Piano")return "🎹";return ({Adventure:"🧭",Social:"🗣️",Skill:"✨",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
+function renderCharacterOverview(){const profile=state.profile||{};const gender=profile.gender;const genderLabel=gender==="male"?"Male adventurer":gender==="female"?"Female adventurer":"Starting adventurer";const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));const items=Array.isArray(state.inventory)?state.inventory:[];const countEl=document.getElementById("inventoryCount");if(countEl)countEl.textContent=items.length+" item"+(items.length===1?"":"s");const inv=document.getElementById("characterInventory");if(inv){if(!items.length){inv.className="inventoryEmpty";inv.textContent="Your inventory is empty. Visit the Store when you're ready to gear up.";}else{inv.className="inventoryList";inv.innerHTML=items.map(item=>"<div class=\"equipmentSlot\"><strong>"+esc(item.name||"Unknown item")+"</strong><small>"+esc(item.category||"Item")+"</small></div>").join("");}}const equipment=state.equipment||{};[["head","equipHead","Basic headwear"],["chest","equipChest","Plain tunic"],["legs","equipLegs","Simple trousers"],["feet","equipFeet","Travel boots"],["mainHand","equipMainHand","Empty"],["offHand","equipOffHand","Empty"]].forEach(([key,id,fallback])=>{const el=document.getElementById(id);if(el)el.textContent=equipment[key]||fallback;});}
 function render(){
  // The old global-character-level widgets were removed from the main page.
  // Update them only if a future version puts those elements back.
@@ -569,7 +642,7 @@ function render(){
    journalListEl.querySelectorAll("[data-delete-journal]").forEach(button=>button.addEventListener("click",()=>deleteJournalEntry(button.dataset.deleteJournal)));
  }
  for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el)el.value=val}
-}
+renderCharacterOverview();}
 function completeQuest(id,done=true){
  const q=state.quests.find(q=>String(q.id)===String(id));
  if(!q||q.done===done)return;
