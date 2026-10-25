@@ -236,6 +236,17 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 <section class="section" id="section-settings">
   <div class="sectionHead"><div><h2>Campaign Settings</h2><p>Simple rules, steady progress.</p></div></div>
   <div class="card">
+    <h3>Account & cloud saves</h3>
+    <p class="sub">Create an account with a username and PIN to sync your Wayfarer progress across devices.</p>
+    <div id="cloudStatus" class="sub" role="status" style="margin:10px 0">Cloud saves are not configured yet.</div>
+    <form id="accountForm" class="formgrid" autocomplete="on">
+      <div class="field wide"><label for="accountUsername">Username</label><input id="accountUsername" name="username" autocomplete="username" minlength="3" maxlength="20" pattern="[A-Za-z0-9_-]{3,20}" placeholder="e.g. wayfarer_01" required></div>
+      <div class="field wide"><label for="accountPin">8-digit PIN</label><input id="accountPin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" minlength="8" maxlength="32" pattern="[0-9]{8,32}" placeholder="At least 8 digits" required></div>
+      <div class="wide" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="createAccountBtn" type="button">Create account</button><button class="btn secondary" id="signInBtn" type="submit">Sign in / sync</button><button class="btn secondary" id="signOutBtn" type="button" style="display:none">Sign out</button></div>
+    </form>
+    <p class="sub" style="margin-top:12px">Use a unique PIN, not your phone unlock or banking PIN. Username + PIN has no recovery option if forgotten.</p>
+  </div>
+  <div class="card" style="margin-top:12px">
     <h3>Quest rewards</h3>
     <p>Every quest awards <strong>15 XP</strong>. Reading quests ask for 10 pages, and piano quests ask for 10 minutes of practice.</p>
     <p class="sub">Choose your skills and generate quests whenever you're ready. There are no difficulty settings or difficulty-based rewards.</p>
@@ -258,6 +269,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 </form>
 </dialog>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // Register navigation immediately so a later optional feature cannot disable the tabs.
 document.querySelectorAll(".tab").forEach(function(button){
@@ -339,7 +351,79 @@ if(!Array.isArray(state.groceries))state.groceries=[];
 if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
 if(!state.skillXp)state.skillXp={};
 if(state.activeDate!==today()){state.activeDate=today();state.quests=[]}
-function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+
+// WAYFARER CLOUD CONFIG: replace these two placeholders with your Supabase project URL and publishable/anon key.
+// Never put a Supabase service_role key in this public website.
+const WAYFARER_SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const WAYFARER_SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+let cloudClient = null;
+let cloudUser = null;
+let cloudHydrating = false;
+let cloudConfigured = false;
+if (window.supabase && WAYFARER_SUPABASE_URL.startsWith("https://") && WAYFARER_SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
+  cloudClient = window.supabase.createClient(WAYFARER_SUPABASE_URL, WAYFARER_SUPABASE_ANON_KEY);
+  cloudConfigured = true;
+}
+function setCloudStatus(message){const el=document.getElementById("cloudStatus");if(el)el.textContent=message;}
+function usernameEmail(username){return username.trim().toLowerCase()+"@wayfarer.example";}
+function validAccountForm(){
+ const username=document.getElementById("accountUsername").value.trim();
+ const pin=document.getElementById("accountPin").value.trim();
+ if(!/^[A-Za-z0-9_-]{3,20}$/.test(username)){toast("Username must be 3–20 letters, numbers, underscores or hyphens.");return null;}
+ if(!/^[0-9]{8,32}$/.test(pin)){toast("Use a numeric PIN of at least 8 digits.");return null;}
+ return {username,pin};
+}
+async function syncCurrentState(){
+ if(!cloudClient||!cloudUser||cloudHydrating)return;
+ const payload=JSON.parse(JSON.stringify(state));
+ const {error}=await cloudClient.from("wayfarer_saves").upsert({user_id:cloudUser.id,app_state:payload,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+ if(error){console.error("Wayfarer cloud save failed",error);setCloudStatus("Signed in, but cloud save failed. Check your connection and Supabase setup.");}
+ else setCloudStatus("Cloud sync active for @"+(document.getElementById("accountUsername").value.trim()||"your account")+". Your progress is saved online.");
+}
+async function finishSignIn(username,pin,create){
+ if(!cloudConfigured){setCloudStatus("Cloud accounts need setup first. Follow the Supabase instructions in README.txt and add your project URL and anon key to index.html.");toast("Cloud accounts are not configured yet.");return;}
+ const email=usernameEmail(username);
+ setCloudStatus(create?"Creating your account…":"Signing in…");
+ const authResult=create
+   ? await cloudClient.auth.signUp({email,password:pin,options:{data:{wayfarer_username:username.toLowerCase()}}})
+   : await cloudClient.auth.signInWithPassword({email,password:pin});
+ if(authResult.error){setCloudStatus(authResult.error.message+" If creating an account, check that email confirmations are disabled in Supabase.");return;}
+ if(create && !authResult.data.session){setCloudStatus("Account request received, but Supabase returned no session. Turn off email confirmations in Supabase Auth, then try again.");return;}
+ cloudUser=authResult.data.user;
+ if(!cloudUser){setCloudStatus("Could not establish a session. Please try again.");return;}
+ const {data:saveRow,error:readError}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();
+ if(readError){setCloudStatus("Signed in, but could not load cloud data. Check that supabase-schema.sql was run.");return;}
+ cloudHydrating=true;
+ if(saveRow && saveRow.app_state && typeof saveRow.app_state==="object"){
+   state=saveRow.app_state;
+   if(!state.settings)state.settings={...defaultSettings};
+   if(!Array.isArray(state.quests))state.quests=[];
+   if(!Array.isArray(state.journal))state.journal=[];
+   if(!Array.isArray(state.todo))state.todo=[];
+   if(!Array.isArray(state.groceries))state.groceries=[];
+   if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
+   if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
+   localStorage.setItem(KEY,JSON.stringify(state));
+   setCloudStatus("Signed in. Loaded your cloud save from "+new Date(saveRow.updated_at).toLocaleString()+".");
+ } else {
+   cloudHydrating=false;
+   await syncCurrentState();
+   cloudHydrating=true;
+   setCloudStatus("Account created and this device's current progress was uploaded.");
+ }
+ cloudHydrating=false;
+ document.getElementById("accountUsername").value=username;
+ document.getElementById("accountPin").value="";
+ document.getElementById("accountPin").placeholder="PIN saved by secure sign-in";
+ document.getElementById("signOutBtn").style.display="inline-flex";
+ document.getElementById("createAccountBtn").style.display="none";
+ render();
+}
+document.getElementById("accountForm")?.addEventListener("submit",async e=>{e.preventDefault();const credentials=validAccountForm();if(credentials)await finishSignIn(credentials.username,credentials.pin,false);});
+document.getElementById("createAccountBtn")?.addEventListener("click",async()=>{const credentials=validAccountForm();if(credentials)await finishSignIn(credentials.username,credentials.pin,true);});
+document.getElementById("signOutBtn")?.addEventListener("click",async()=>{if(cloudClient)await cloudClient.auth.signOut();cloudUser=null;document.getElementById("signOutBtn").style.display="none";document.getElementById("createAccountBtn").style.display="inline-flex";document.getElementById("accountPin").value="";setCloudStatus("Signed out. This device's local copy remains available.");});
+if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{setCloudStatus("Signed in. No cloud save exists yet; your next change will be uploaded.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("createAccountBtn").style.display="none";}});}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
@@ -803,7 +887,90 @@ function buildQuestPool(skill){
       ["Take a brisk walk","Walk at a pace that feels purposeful but sustainable."],["Try an easy walk-run","Alternate gentle jogging and walking if appropriate for you."],["Go for a relaxed bike ride","Choose a safe route and comfortable pace."],["Swim at an easy pace","Swim comfortably if you have access to a suitable pool."],["Explore a walking route","Find a safe route you might enjoy using regularly."],["Do a gentle cardio warm-up","Use easy walking, cycling, or marching to warm up."],["Take the stairs if suitable","Choose stairs only if they feel safe and comfortable."],["Try a dance session","Put on music and move for a few songs."],["Walk during a break","Use a free pocket of time for a short walk."],["Cycle for an errand","Use a bike for a practical trip if the route is safe."],["Try an indoor cardio session","Choose a suitable low-impact follow-along session."],["Build a simple cardio routine","Choose an activity and a realistic time to repeat it."],["Explore a park on foot","Walk a loop or a section of a local park."],["Do a steady-paced session","Choose a pace at which you can still speak in sentences."],["Practise gentle intervals","Alternate slightly brisker movement with easy recovery periods."],["Try a rowing machine","Learn the setup and start at a comfortable effort if available."],["Use an exercise bike","Ride at a sustainable pace and focus on consistency."],["Walk with a destination","Walk to a shop, café, or other nearby place."],["Take a longer weekend walk","Choose a route that matches your current ability."],["Try a beginner fitness class","Find a suitable class with an intensity you can adapt."],["Walk without scrolling","Keep your phone away and pay attention to the route."],["Track a comfortable session","Record activity and duration without judging your pace."],["Try a new cardio activity","Sample a safe activity you have not done recently."],["Do a recovery cardio session","Choose gentle movement on a day when you need an easier effort."],["Plan a scenic route","Find a pleasant, safe route for a future walk or ride."],["Walk with a friend","Invite someone for a comfortable walk together."],["Use music for movement","Choose a playlist and move at a sustainable pace."],["Practise pacing","Start easy and avoid going too hard too soon."],["Try a short after-work session","Fit in a manageable amount of movement if your energy allows."],["Explore a nature path","Walk a suitable trail and enjoy the surroundings."],["Build toward a regular habit","Choose two realistic times for cardio this week."],["Try low-impact cardio","Choose an activity that is gentle on your joints."],["Notice your breathing","During a comfortable session, notice how effort changes your breathing."],["Finish with an easy cooldown","Slow down gradually after a cardio session."],["Review your cardio progress","Note what you did and how your stamina felt."],["Prepare for a cardio outing","Set out comfortable shoes or other needed gear."],["Try a short hill walk","Choose a gentle hill only if it suits your current ability."],["Make an active errand","Walk or cycle for part of a practical journey if safe."],["Enjoy movement outdoors","Choose an outdoor activity simply because it feels good."],["Schedule your next session","Put a realistic cardio session into your upcoming week."]
     ]
   };
-  const items=pools[skill]||[];
+  // Quests evolve with skill level: foundational quests stop appearing from level 5,
+  // while more involved challenges unlock as the player progresses.
+  const beginnerOnly={
+    "Adventure":["Take a different route","Find one small discovery","Explore a park","Take a town-centre wander","Discover a new shop","Explore a neighbourhood","Go somewhere before going home"],
+    "Reading":["Read 10 pages","Read 10 pages without distractions","Read somewhere different","Read before screens","Read during a spare moment","Set up your next reading session"],
+    "Social Interactions":["Make the first move","Practise saying hello first","Talk to a service worker warmly","Make small talk while waiting","Practise comfortable eye contact","Share one thought"],
+    "Relationships":["Send a simple check-in","Ask how someone's day went","Thank someone warmly","Remember an important detail"],
+    "Piano":["Do a focused warm-up","Practise at a slower tempo","Play a favourite piece","Practise a simple scale"],
+    "Fitness":["Practise push-up technique","Practise a squat pattern","Practise a hip hinge","Set up your training space","Warm up before training"],
+    "Cardio":["Take a brisk walk","Walk during a break","Take the stairs if suitable","Do a gentle cardio warm-up"]
+  };
+  const advancedPools={
+    "Adventure":[
+      ["Build a full-day route from scratch","Choose an unfamiliar area, plan three worthwhile stops, and complete the outing."],
+      ["Follow a local history trail","Find several historical clues or sites in one area and connect what you learn."],
+      ["Make a spontaneous detour","During a planned outing, safely add an unplanned stop and explore it."],
+      ["Create a personal field guide","Visit an unfamiliar area and record five discoveries worth remembering."],
+      ["Explore without a fixed itinerary","Choose a broad area, set a return time, and let curiosity guide the stops. "]
+    ],
+    "Reading":[
+      ["Compare two authors on one question","Read 10 pages, then note where the authors agree or differ."],
+      ["Turn a chapter into an action","Read 10 pages and identify one idea you can apply this week."],
+      ["Trace a recurring theme","Read 10 pages and record how a theme develops in the book."],
+      ["Write a thoughtful book reflection","Read 10 pages and write a short reflection with one question and one takeaway."],
+      ["Explore a challenging passage","Read 10 pages carefully and explain the hardest idea in your own words."]
+    ],
+    "Social Interactions":[
+      ["Lead a group conversation","Help a group conversation flow by inviting another person to share their view."],
+      ["Invite someone to a planned outing","Suggest a specific activity and time, and follow through on the invitation."],
+      ["Introduce two people","When appropriate, introduce people who may enjoy meeting each other."],
+      ["Share a more personal story","Share a meaningful but comfortable story and give the other person room to respond."],
+      ["Attend something alone and participate","Go to a group activity independently and make at least two natural interactions."],
+      ["Handle an awkward pause calmly","Stay present in a conversation and ask a relevant question rather than rushing to fill silence."],
+      ["Reconnect and make a plan","Contact an acquaintance and try to turn the exchange into a concrete plan to meet."]
+    ],
+    "Relationships":[
+      ["Arrange quality time with someone","Suggest and organise a shared activity that suits both of you."],
+      ["Have a meaningful catch-up","Ask thoughtful questions and share updates beyond everyday small talk."],
+      ["Follow through on a promise","Complete a commitment you made to someone or communicate clearly if plans need to change."],
+      ["Show appreciation in a specific way","Tell someone what you value about them and give a concrete example."],
+      ["Repair a small misunderstanding","If appropriate, calmly clarify a misunderstanding and listen to the other person's perspective."],
+      ["Create a new shared memory","Invite someone to try an activity neither of you usually does."]
+    ],
+    "Piano":[
+      ["Shape a phrase musically","Practise piano for 10 minutes and deliberately shape a phrase with dynamics and phrasing."],
+      ["Practise a difficult passage in sections","Practise piano for 10 minutes, isolate a difficult section, and gradually put it back together."],
+      ["Record and review a performance","Practise piano for 10 minutes, record a short piece, and identify one improvement."],
+      ["Learn a passage from memory","Practise piano for 10 minutes and work toward playing a short section without looking at the score."],
+      ["Coordinate hands on a new section","Practise piano for 10 minutes, hands separately first if needed, then together."],
+      ["Perform a complete piece","Practise piano for 10 minutes and play a complete piece without stopping, then reflect on it."]
+    ],
+    "Fitness":[
+      ["Review a month of strength training","Look over your workout log and choose one realistic progression for the next month."],
+      ["Build a balanced strength session","Plan a session covering push, pull, legs, and core with suitable exercises."],
+      ["Improve one exercise with controlled progression","Choose a familiar lift and make a small, safe progression while maintaining good form."],
+      ["Practise a unilateral strength movement","Choose a suitable single-arm or single-leg exercise and focus on control and balance."],
+      ["Compare technique across two sets","Film or observe a familiar exercise if safe and appropriate, then identify one form cue."],
+      ["Plan a sustainable training week","Schedule strength sessions with rest and recovery days that fit your real routine."],
+      ["Identify and address a weak point","Choose one movement pattern that needs work and plan a sensible practice approach."]
+    ],
+    "Cardio":[
+      ["Plan a longer route with a fallback","Choose a route that suits your ability, check the return options, and complete a comfortable session."],
+      ["Try structured easy intervals","Alternate comfortable brisk intervals with recovery, keeping the effort controlled."],
+      ["Explore a new activity route","Plan and complete a safe route for walking, cycling, or another cardio activity."],
+      ["Review your endurance routine","Look at recent sessions and set one realistic consistency goal for the coming week."],
+      ["Complete a steady session without distractions","Choose a sustainable pace and focus on the experience instead of checking your phone."],
+      ["Plan a cardio outing with someone","Invite someone for a walk, ride, swim, or other suitable endurance activity."]
+    ]
+  };
+  const beginnerTitles=beginnerOnly[skill]||[];
+  let items=(pools[skill]||[]).filter(([title])=>level<5||!beginnerTitles.includes(title));
+  if(level>=5) items=items.concat(advancedPools[skill]||[]);
+  if(level>=8){
+    const expertPools={
+      "Adventure":[["Plan an expedition with a theme","Choose a theme such as architecture, nature, or local history and build an outing around several discoveries."],["Make a two-part adventure","Combine an unfamiliar destination with a second stop chosen spontaneously along the way."]],
+      "Reading":[["Synthesize a chapter into a short note","Read 10 pages and write a concise explanation linking the main idea to something you already know."],["Build a reading trail","Read 10 pages and identify a related book, author, or subject to explore next."]],
+      "Social Interactions":[["Host a small get-together","Invite a few people to a simple activity and help everyone feel included."],["Start a recurring social activity","Suggest a regular walk, game, practice, or meetup with someone or a group."]],
+      "Relationships":[["Create a thoughtful tradition","Plan a small recurring activity that helps you stay connected with someone."],["Have a considerate difficult conversation","If something needs addressing, prepare your thoughts and have a calm, respectful conversation."]],
+      "Piano":[["Polish a performance end to end","Practise piano for 10 minutes, focusing on transitions, dynamics, and a confident ending."],["Learn and connect a full section","Practise piano for 10 minutes and work on connecting sections smoothly without stopping."]],
+      "Fitness":[["Review progress and set a new training block","Use your training notes to set a realistic multi-week strength goal and plan recovery."],["Refine a main lift or movement","Choose a familiar strength movement and focus on repeatable technique across working sets."]],
+      "Cardio":[["Build a repeatable endurance plan","Create a realistic weekly plan with varied sessions, easy effort, and recovery."],["Complete a planned scenic outing","Choose a safe route, prepare what you need, and complete an enjoyable longer walk or ride."]]
+    };
+    items=items.concat(expertPools[skill]||[]);
+  }
   return items.map(([title,description])=>{
     let finalDescription=description;
     if(skill==="Reading") finalDescription=`Read 10 pages. ${description}`;
