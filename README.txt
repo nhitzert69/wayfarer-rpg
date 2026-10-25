@@ -1,4 +1,4 @@
-WAYFARER v44 — CLOUD ACCOUNTS
+WAYFARER v47 — PROGRESSIVE SKILL LEVELS
 
 The app is still a static GitHub Pages website. Cross-device cloud saves require a Supabase project that you own. This ZIP includes the account UI, Supabase client integration, and SQL schema, but it is NOT connected to a live database until you configure your project below.
 
@@ -25,3 +25,11 @@ SECURITY NOTES
 - Username + PIN has no recovery channel. If forgotten, you may lose access to that cloud account. Consider a recovery method later if needed.
 - Cloud save sync is last-write-wins; avoid editing the same account simultaneously on multiple devices.
 - Existing local data is not deleted by signing in or signing out. Keep a backup of the current app data before major changes.
+
+
+V47 CHANGES
+- Skill levels now use a progressive XP curve: 60 XP for levels 1-2, 90 for levels 3-4, 120 for levels 5-6, 150 for levels 7-9, 180 for levels 10-14, 225 for levels 15-19, 270 for levels 20-29, and 300 for level 30+. Existing skill XP totals are preserved; levels and progress bars are recalculated from those totals.
+- Quest templates are filtered by level band: Foundations at levels 1-4, Growth at levels 5-7, Advanced at levels 8+, and new Master quests at level 11+. Reading stays at 10 pages per quest, piano stays at 10 minutes, and every generated quest awards 15 XP.
+- Added five Master quest templates for each of the seven skills (35 new templates).
+- The username + PIN authentication code and Supabase schema are unchanged.
+- IMPORTANT: this distributable ZIP uses placeholders for the Supabase project URL and public key. Before replacing your live repository files, copy the two WAYFARER_SUPABASE_URL and WAYFARER_SUPABASE_ANON_KEY values from your currently working GitHub index.html into this version. Do not change any other authentication code, and never use a service_role key.

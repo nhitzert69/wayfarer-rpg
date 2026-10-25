@@ -263,7 +263,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
   <div class="field wide"><label for="qTitle">Quest name</label><input id="qTitle" required placeholder="Explore a new place"></div>
   <div class="field wide"><label for="qDesc">Description</label><textarea id="qDesc" placeholder="What counts as completing it?"></textarea></div>
   <div class="field"><label for="qCategory">Category</label><select id="qCategory"><option>Adventure</option><option>Social</option><option>Skill</option><option>Knowledge</option><option>Relationships</option><option>Daily</option><option>Side quest</option><option>Boss quest</option></select></div>
-  <div class="field"><label for="qSkill">Skill improved</label><select id="qSkill"><option>Social Confidence</option><option>Adventure</option><option>Discipline</option><option>Relationships</option><option>Knowledge</option><option>Creativity</option></select></div>
+  <div class="field"><label for="qSkill">Skill improved</label><select id="qSkill"><option>Social Interactions</option><option>Adventure</option><option>Discipline</option><option>Relationships</option><option>Knowledge</option><option>Creativity</option></select></div>
   <div class="field"><label for="qXp">XP reward</label><select id="qXp"><option value="10">10 XP · Easy</option><option value="25" selected>25 XP · Normal</option><option value="50">50 XP · Hard</option><option value="100">100 XP · Boss</option></select></div>
   <div class="wide" style="display:flex;gap:8px"><button class="btn" type="submit">Add to board</button><button class="btn secondary" type="button" id="cancelQuest">Cancel</button></div>
 </form>
@@ -336,12 +336,13 @@ function questForSkill(skill){
   "Singing":["Practise your voice","Spend 10 minutes on warm-ups or a song."]
  };
  const pair=map[skill]||[`Practise ${skill.toLowerCase()}`,`Spend 10 focused minutes practising ${skill.toLowerCase()} or learning one small thing about it.`];
- const xp=/Adventure|Social Confidence|Relationships|Conversation|Networking|Public Speaking|Community|Hosting/.test(skill)?25:10;
+ const xp=/Adventure|Social Interactions|Relationships|Conversation|Networking|Public Speaking|Community|Hosting/.test(skill)?25:10;
  return {title:pair[0],description:pair[1],category:/Adventure|Walking|Hiking|Explore/.test(skill)?"Adventure":/Social|Relationships|Conversation|Networking|Speaking|Hosting|Community|Teamwork/.test(skill)?"Social":/Reading|Learning|History|Science|Philosophy|Psychology|Geography|Language|Research|Knowledge/.test(skill)?"Knowledge":/Piano|Guitar|Music|Instrument|Singing|Drawing|Painting|Photography|Writing|Creative|Pottery|Woodworking|Sewing|Knitting|Coding|Design/.test(skill)?"Skill":"Daily",skill,xp};
 }
 
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
-let state=load()||{xp:0,completedTotal:0,quests:[],journal:[],todo:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};
+function freshState(){return {xp:0,completedTotal:0,quests:[],journal:[],todo:[],groceries:[],selectedSkills:[],skillXp:{},questHistory:{},questDays:[],settings:{...defaultSettings},activeDate:today(),lastDay:today()};}
+let state=load()||freshState();
 if(!state.settings)state.settings={...defaultSettings};
 delete state.settings.difficulty;
 if(Array.isArray(state.quests)) state.quests.forEach(q=>{if(!q.done)q.xp=15;});
@@ -349,13 +350,18 @@ if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
 if(!Array.isArray(state.todo))state.todo=[];
 if(!Array.isArray(state.groceries))state.groceries=[];
 if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
-if(!state.skillXp)state.skillXp={};
+// Migrate the retired skill label to Social Interactions without losing saved XP or quests.
+if(Array.isArray(state.quests))state.quests.forEach(q=>{if(q&&q.skill==="Social Confidence")q.skill="Social Interactions";});
+if(Object.prototype.hasOwnProperty.call(state.skillXp,"Social Confidence")){
+  state.skillXp["Social Interactions"]=(Number(state.skillXp["Social Interactions"])||0)+(Number(state.skillXp["Social Confidence"])||0);
+  delete state.skillXp["Social Confidence"];
+}
 if(state.activeDate!==today()){state.activeDate=today();state.quests=[]}
 
 // WAYFARER CLOUD CONFIG: replace these two placeholders with your Supabase project URL and publishable/anon key.
 // Never put a Supabase service_role key in this public website.
-const WAYFARER_SUPABASE_URL = "https://zpyspmmbcopmsjmsqyhx.supabase.co";
-const WAYFARER_SUPABASE_ANON_KEY = "sb_publishable_k0wIbWAz6lWzXiRvbFZPwg_lXK0m-u5";
+const WAYFARER_SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const WAYFARER_SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 let cloudClient = null;
 let cloudUser = null;
 let cloudHydrating = false;
@@ -406,10 +412,14 @@ async function finishSignIn(username,pin,create){
    localStorage.setItem(KEY,JSON.stringify(state));
    setCloudStatus("Signed in. Loaded your cloud save from "+new Date(saveRow.updated_at).toLocaleString()+".");
  } else {
+   // Never transfer the previous signed-out device state into a different account.
+   // An account without a cloud save starts with a clean, independent profile.
+   state=freshState();
+   localStorage.setItem(KEY,JSON.stringify(state));
    cloudHydrating=false;
    await syncCurrentState();
    cloudHydrating=true;
-   setCloudStatus("Account created and this device's current progress was uploaded.");
+   setCloudStatus("Signed in. This account had no saved progress, so a fresh profile was created.");
  }
  cloudHydrating=false;
  document.getElementById("accountUsername").value=username;
@@ -421,8 +431,23 @@ async function finishSignIn(username,pin,create){
 }
 document.getElementById("accountForm")?.addEventListener("submit",async e=>{e.preventDefault();const credentials=validAccountForm();if(credentials)await finishSignIn(credentials.username,credentials.pin,false);});
 document.getElementById("createAccountBtn")?.addEventListener("click",async()=>{const credentials=validAccountForm();if(credentials)await finishSignIn(credentials.username,credentials.pin,true);});
-document.getElementById("signOutBtn")?.addEventListener("click",async()=>{if(cloudClient)await cloudClient.auth.signOut();cloudUser=null;document.getElementById("signOutBtn").style.display="none";document.getElementById("createAccountBtn").style.display="inline-flex";document.getElementById("accountPin").value="";setCloudStatus("Signed out. This device's local copy remains available.");});
-if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{setCloudStatus("Signed in. No cloud save exists yet; your next change will be uploaded.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("createAccountBtn").style.display="none";}});}
+document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
+ if(cloudClient)await cloudClient.auth.signOut();
+ // Clear account-bound data from the visible page and local cache on sign-out.
+ // The account's saved data remains safely in its cloud row.
+ cloudUser=null;
+ cloudHydrating=true;
+ state=freshState();
+ localStorage.setItem(KEY,JSON.stringify(state));
+ const usernameEl=document.getElementById("accountUsername");if(usernameEl)usernameEl.value="";
+ const pinEl=document.getElementById("accountPin");if(pinEl){pinEl.value="";pinEl.placeholder="At least 8 digits";}
+ document.getElementById("signOutBtn").style.display="none";
+ document.getElementById("createAccountBtn").style.display="inline-flex";
+ render();
+ cloudHydrating=false;
+ setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
+});
+if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("createAccountBtn").style.display="none";}});}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
@@ -492,9 +517,9 @@ function renderSkillProgress(){
  const root=document.getElementById("mainSkillCards");
  const other=document.getElementById("attributeList");
  const skillMarkup=attrs.length?attrs.map(a=>{
-   const xp=Number(state.skillXp[a]||0), level=Math.floor(xp/50)+1, rem=xp%50, progress=rem/50*100;
+   const xp=Number(state.skillXp[a]||0), track=getSkillProgress(xp), level=track.level, rem=track.intoLevel, needed=track.needed, progress=track.progress;
    return `<div class="skillProgressCard" style="display:block;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(16,12,9,.32)">
-     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:nowrap;font-size:14px;line-height:1.2"><strong style="min-width:0;overflow-wrap:anywhere">${esc(a)}</strong><span style="color:var(--gold);white-space:nowrap;font-size:12px">${rem}/50 XP · Lv ${level}</span></div>
+     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:nowrap;font-size:14px;line-height:1.2"><strong style="min-width:0;overflow-wrap:anywhere">${esc(a)}</strong><span style="color:var(--gold);white-space:nowrap;font-size:12px">${rem}/${needed} XP · Lv ${level}</span></div>
      <div class="miniBar" style="margin-top:6px;height:5px"><div style="width:${progress}%"></div></div>
    </div>`;
  }).join(""):'<div class="empty">No skills selected yet. Open Skills, choose what you want to improve, then tap Save selected skills.</div>';
@@ -851,8 +876,28 @@ function getSkillGroup(skill){
   }
   return "Lifestyle & personal growth";
 }
+// Progressive per-skill XP curve. skillXp remains lifetime total XP, so existing progress is preserved.
+function xpNeededForNextLevel(level){
+  if(level<=2) return 60;
+  if(level<=4) return 90;
+  if(level<=6) return 120;
+  if(level<=9) return 150;
+  if(level<=14) return 180;
+  if(level<=19) return 225;
+  if(level<=29) return 270;
+  return 300;
+}
+function getSkillProgress(totalXp){
+  let xp=Math.max(0,Number(totalXp)||0), level=1;
+  while(level<1000){
+    const needed=xpNeededForNextLevel(level);
+    if(xp<needed) return {level,intoLevel:xp,needed,progress:xp/needed*100};
+    xp-=needed; level++;
+  }
+  return {level,intoLevel:0,needed:xpNeededForNextLevel(level),progress:0};
+}
 function getSkillLevel(skill){
-  return Math.floor((Number(state.skillXp&&state.skillXp[skill])||0)/50)+1;
+  return getSkillProgress(state.skillXp&&state.skillXp[skill]).level;
 }
 function getLevelBand(level){
   if(level<=3) return 1;
@@ -956,9 +1001,13 @@ function buildQuestPool(skill){
       ["Plan a cardio outing with someone","Invite someone for a walk, ride, swim, or other suitable endurance activity."]
     ]
   };
-  const beginnerTitles=beginnerOnly[skill]||[];
-  let items=(pools[skill]||[]).filter(([title])=>level<5||!beginnerTitles.includes(title));
-  if(level>=5) items=items.concat(advancedPools[skill]||[]);
+  // Rank every quest by the level band where it belongs. Base-pool entries are split
+  // into foundations (Lv 1-4), growth (Lv 5-7), and advanced (Lv 8-10).
+  const baseItems=pools[skill]||[];
+  const lowEnd=Math.ceil(baseItems.length*0.34);
+  const midEnd=Math.ceil(baseItems.length*0.68);
+  let items=baseItems.map((item,index)=>({item,minLevel:index<lowEnd?1:index<midEnd?5:8,maxLevel:index<lowEnd?4:index<midEnd?7:999,tier:index<lowEnd?"Foundations":index<midEnd?"Growth":"Advanced"}));
+  if(level>=5) items=items.concat((advancedPools[skill]||[]).map(item=>({item,minLevel:5,maxLevel:7,tier:"Growth"})));
   if(level>=8){
     const expertPools={
       "Adventure":[["Plan an expedition with a theme","Choose a theme such as architecture, nature, or local history and build an outing around several discoveries."],["Make a two-part adventure","Combine an unfamiliar destination with a second stop chosen spontaneously along the way."]],
@@ -969,13 +1018,26 @@ function buildQuestPool(skill){
       "Fitness":[["Review progress and set a new training block","Use your training notes to set a realistic multi-week strength goal and plan recovery."],["Refine a main lift or movement","Choose a familiar strength movement and focus on repeatable technique across working sets."]],
       "Cardio":[["Build a repeatable endurance plan","Create a realistic weekly plan with varied sessions, easy effort, and recovery."],["Complete a planned scenic outing","Choose a safe route, prepare what you need, and complete an enjoyable longer walk or ride."]]
     };
-    items=items.concat(expertPools[skill]||[]);
+    items=items.concat((expertPools[skill]||[]).map(item=>({item,minLevel:8,maxLevel:999,tier:"Advanced"})));
   }
-  return items.map(([title,description])=>{
+  if(level>=11){
+    const masterPools={
+      "Adventure":[["Design a full-day expedition with contingencies","Plan several stops around a theme, check transport and opening constraints, set a budget, and include a fallback if one stop fails."],["Complete a self-guided discovery challenge","Explore an unfamiliar area and document six discoveries across history, nature, local culture, and an unexpected find."],["Build a two-area itinerary","Connect two unfamiliar areas into one safe, realistic day trip with a deliberate unplanned stop."],["Lead yourself through an unfamiliar activity","Choose a suitable activity you have never tried, research the basics, and complete a beginner session."],["Create an adventure worth repeating","Plan and complete an outing, then write a reusable route and notes for a future visit."]],
+      "Reading":[["Compare three sources on one question","Read 10 pages and compare the book's argument with two credible sources, noting agreement and tension."],["Build a structured reading brief","Read 10 pages and write a short brief with the central claim, supporting evidence, and two questions."],["Apply an idea and evaluate the result","Read 10 pages, test one suitable idea in real life, and record what did and did not work."],["Trace an author's argument","Read 10 pages and map the main claim, evidence, assumptions, and one counterargument."],["Connect ideas across books","Read 10 pages and link the material to a concept from another book or subject you know."]],
+      "Social Interactions":[["Organise a small group outing from start to finish","Invite several people, settle on a practical plan, communicate details, and help the group feel included."],["Build a new connection into a second meeting","Have a conversation with someone new and, if the interaction feels mutual, suggest a specific follow-up activity."],["Contribute meaningfully in a group setting","Attend a suitable group activity and contribute more than once, including asking others for their views."],["Navigate a difference of opinion constructively","Express your view clearly, ask about the other perspective, and seek common ground without pretending to agree."],["Initiate a social plan without overplanning","Choose a simple activity, invite someone, and follow through without waiting for a perfect plan."]],
+      "Relationships":[["Create a regular connection ritual","Agree on a realistic recurring catch-up or shared activity with someone important to you."],["Have a thoughtful relationship check-in","Ask what has been going well, what each of you needs, and one small thing to improve."],["Repair a strained connection where appropriate","Reach out respectfully, acknowledge your part if relevant, listen, and accept the other person's boundaries."],["Coordinate a meaningful shared experience","Plan an activity around another person's interests and handle the practical details together."],["Strengthen a wider circle of connections","Reconnect with two people and make a concrete, low-pressure plan with at least one of them."]],
+      "Piano":[["Refine a complete piece in focused sections","Practise piano for 10 minutes, isolate the weakest transitions, and reconnect them with deliberate phrasing."],["Perform and self-assess a complete piece","Practise piano for 10 minutes, play a complete piece, and note one musical strength and one specific next improvement."],["Develop expressive control","Practise piano for 10 minutes, deliberately vary dynamics, articulation, and tempo control in a familiar passage."],["Strengthen a difficult passage steadily","Practise piano for 10 minutes, use slow accurate repetitions, and finish by testing the passage at a comfortable tempo."],["Prepare a piece for sharing","Practise piano for 10 minutes and work toward a confident, uninterrupted performance for another person or a recording."]],
+      "Fitness":[["Run a structured strength-training block","Plan several weeks of consistent strength sessions with sensible progression, rest, and a way to track performance."],["Audit technique across your main movements","Review your push, pull, squat, hinge, and core patterns, choosing one specific technique improvement to practise."],["Build a balanced programme around recovery","Create a realistic weekly strength plan that balances movement patterns, workload, and recovery days."],["Track and evaluate a training progression","Compare recent training notes, identify a meaningful trend, and choose a small evidence-based next step."],["Address a persistent training weak point","Select a movement that needs work and plan a gradual, safe practice progression rather than rushing load increases."]],
+      "Cardio":[["Complete a planned endurance outing","Choose a safe route and sustainable pace, prepare supplies and return options, and review how the effort felt afterward."],["Build a four-week cardio routine","Plan a realistic month of varied endurance sessions with gradual progression and recovery."],["Evaluate your endurance consistency","Review recent activity, identify what disrupts consistency, and adjust your plan to make it sustainable."],["Explore a longer route with a backup","Plan a route with a shorter alternative, check conditions, and complete the option that suits your energy and safety."],["Combine cardio with a social plan","Arrange a walk, ride, or other suitable endurance activity with someone and agree on a manageable route."]]
+    };
+    items=items.concat((masterPools[skill]||[]).map(item=>({item,minLevel:11,maxLevel:999,tier:"Master"})));
+  }
+  items=items.filter(entry=>level>=entry.minLevel&&level<=entry.maxLevel);
+  return items.map(({item:[title,description],minLevel,maxLevel,tier})=>{
     let finalDescription=description;
     if(skill==="Reading") finalDescription=`Read 10 pages. ${description}`;
     if(skill==="Piano") finalDescription=`Practise piano for 10 minutes. ${description}`;
-    return {title,description:finalDescription,category:skill==="Adventure"?"Adventure":skill==="Reading"?"Knowledge":skill==="Social Interactions"?"Social":skill==="Relationships"?"Relationships":skill==="Piano"?"Skill":skill==="Cardio"?"Adventure":"Skill",skill,xp:15};
+    return {title,description:finalDescription,minLevel,maxLevel,tier,category:skill==="Adventure"?"Adventure":skill==="Reading"?"Knowledge":skill==="Social Interactions"?"Social":skill==="Relationships"?"Relationships":skill==="Piano"?"Skill":skill==="Cardio"?"Adventure":"Skill",skill,xp:15};
   });
 }
 function generateQuests(){
