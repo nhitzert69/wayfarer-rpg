@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-v69";
+const CACHE = "wayfarer-v69-lowpoly";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./assets/male-dungeon.png", "./assets/female-dungeon.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
