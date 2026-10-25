@@ -206,15 +206,11 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 </section>
 
 <section class="section" id="section-settings">
-  <div class="sectionHead"><div><h2>Campaign Settings</h2><p>Choose how challenging today's quests should be.</p></div></div>
+  <div class="sectionHead"><div><h2>Campaign Settings</h2><p>Simple rules, steady progress.</p></div></div>
   <div class="card">
-    <label for="difficulty">Quest difficulty</label>
-    <select id="difficulty">
-      <option value="lazy">Lazy</option>
-      <option value="normal" selected>Normal</option>
-      <option value="dedicated">Dedicated</option>
-    </select>
-    <button class="btn primary" id="saveSettingsBtn" style="margin-top:14px;width:100%">Save difficulty</button>
+    <h3>Quest rewards</h3>
+    <p>Every quest awards <strong>15 XP</strong>. Reading quests ask for 10 pages, and piano quests ask for 10 minutes of practice.</p>
+    <p class="sub">Choose your skills and generate quests whenever you're ready. There are no difficulty settings or difficulty-based rewards.</p>
   </div>
 </section>
 </main>
@@ -246,13 +242,13 @@ document.querySelectorAll(".tab").forEach(function(button){
 
 const KEY="wayfarer-rpg-v1";
 const today=()=>new Date().toLocaleDateString("en-CA");
-const defaultSettings={shift:"normal",difficulty:"balanced",social:"gradual",gaming:"moderate",workPattern:"Rotating 8-hour shifts",readTarget:10};
+const defaultSettings={shift:"normal",social:"gradual",gaming:"moderate",workPattern:"Rotating 8-hour shifts",readTarget:10};
 const starters=[
- {title:"Read a little",description:"Read your daily target. Educational or entertaining books both count.",category:"Knowledge",skill:"Knowledge",xp:10},
- {title:"Practise piano",description:"Spend at least 10 focused minutes practising.",category:"Skill",skill:"Creativity",xp:10},
- {title:"Get outside",description:"Take a walk somewhere different or spend a little time outdoors.",category:"Adventure",skill:"Adventure",xp:25},
- {title:"Make a connection",description:"Send a thoughtful message, greet someone first, or initiate a conversation.",category:"Social",skill:"Social Interactions",xp:25},
- {title:"Choose life before the screen",description:"Complete one meaningful real-life activity before gaming or television.",category:"Daily",skill:"Discipline",xp:10}
+ {title:"Read 10 pages",description:"Read 10 pages of any book you enjoy.",category:"Knowledge",skill:"Reading",xp:15},
+ {title:"Practise piano for 10 minutes",description:"Spend 10 focused minutes practising piano.",category:"Skill",skill:"Piano",xp:15},
+ {title:"Get outside",description:"Take a walk somewhere different or spend a little time outdoors.",category:"Adventure",skill:"Adventure",xp:15},
+ {title:"Make a connection",description:"Send a thoughtful message, greet someone first, or initiate a conversation.",category:"Social",skill:"Social Interactions",xp:15},
+ {title:"Choose life before the screen",description:"Complete one meaningful real-life activity before gaming or television.",category:"Daily",skill:"Discipline",xp:15}
 ];
 
 const skillCatalog = [
@@ -266,7 +262,7 @@ const skillCatalog = [
   ["Piano","Practise piano technique and songs."]
  ]},
  {category:"Fitness & movement", icon:"🏅", skills:[
-  ["Fitness","Build general fitness through regular, manageable exercise."],
+  ["Fitness","Build strength through resistance training, bodyweight exercises, and consistent technique practice."],
   ["Cardio","Improve cardiovascular endurance through activities such as walking, running, cycling, or swimming."]
  ]}
 ];
@@ -280,15 +276,15 @@ function ensureSelectedSkills(){
 function skillDescription(name){for(const c of skillCatalog){const found=c.skills.find(s=>s[0]===name);if(found)return found[1]}return ""}
 function questForSkill(skill){
  const map={
-  "Reading":["Read 10 pages","Read for 15 focused minutes."],
-  "Piano":["Practise piano","Practise one technique or work on a song for 10 minutes."],
+  "Reading":["Read 10 pages","Read 10 pages of a book you enjoy."],
+  "Piano":["Practise piano for 10 minutes","Practise one technique or work on a song for 10 minutes."],
   "Adventure":["Explore somewhere new","Visit a nearby place you don't usually go, even briefly."],
   "Social Interactions":["Initiate one interaction","Start a conversation, ask a question or greet someone first."],
   "Relationships":["Reconnect with someone","Send a thoughtful message or make plans with someone you care about."],
   "Discipline":["Do one thing before screens","Complete one meaningful real-life task before gaming or TV."],
   "Learning":["Learn something new","Spend 10 minutes learning a topic and note one thing you discovered."],
   "Digital Balance":["Choose an offline activity","Put your phone away and spend 15 minutes doing something offline."],
-  "Fitness":["Move your body","Take a walk or do a short movement session suited to your energy."],
+  "Fitness":["Complete a strength session","Do a manageable resistance or bodyweight workout using familiar exercises."],
   "Cooking":["Make something simple","Prepare a meal or learn one new cooking technique."],
   "Conversation":["Ask a good question","Ask someone an open-ended question and listen to their answer."],
   "Photography":["Take three thoughtful photos","Look for interesting light, shapes or details around you."],
@@ -307,16 +303,14 @@ function questForSkill(skill){
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
 let state=load()||{xp:0,completedTotal:0,quests:[],journal:[],todo:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};
 if(!state.settings)state.settings={...defaultSettings};
+delete state.settings.difficulty;
+if(Array.isArray(state.quests)) state.quests.forEach(q=>{if(!q.done)q.xp=15;});
 if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
 if(!Array.isArray(state.todo))state.todo=[];
 if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
 if(!state.skillXp)state.skillXp={};
 if(state.activeDate!==today()){state.activeDate=today();state.quests=[]}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
-function difficultyScale(){
- const d=(state.settings&&state.settings.difficulty)||"normal";
- return d==="lazy"?0.7:(d==="dedicated"?1.3:1);
-}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
@@ -564,20 +558,6 @@ document.addEventListener("click", function(event) {
 
 
 
-// Persist the simplified difficulty setting.
-const difficultySelect=document.getElementById("difficulty");
-if(difficultySelect){
-  difficultySelect.value=state.settings.difficulty||"normal";
-  const saveDifficultyButton=document.getElementById("saveSettingsBtn");
-  if(saveDifficultyButton)saveDifficultyButton.addEventListener("click",function(event){
-    event.preventDefault();
-    state.settings.difficulty=difficultySelect.value;
-    save();
-    toast("Difficulty saved: "+difficultySelect.options[difficultySelect.selectedIndex].text);
-     });
-}
-
-
 // Toggle the adventure chooser on the Quest Board. Adventure choices are visual placeholders for now.
 const adventureToggle=document.getElementById("generateAdventureBtn");
 const adventureChooser=document.getElementById("adventureChooser");
@@ -606,7 +586,7 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 
 
 // Curated quest generation: one random quest per selected skill.
-// The generator uses the user's skill XP level and saved difficulty.
+// All quests award a flat 15 XP; difficulty settings have been removed.
 function getSkillGroup(skill){
   for(const group of skillCatalog){
     if(group.skills.some(item=>item[0]===skill)) return group.category;
@@ -622,261 +602,40 @@ function getLevelBand(level){
   if(level<=9) return 3;
   return 3 + Math.floor((level-7)/3);
 }
-function getDifficultyIndex(){
-  const d=(state.settings&&state.settings.difficulty)||"normal";
-  return d==="lazy"?0:(d==="dedicated"?2:1);
-}
-function questXpFor(level,difficultyIndex){
-  const band=Math.min(3,getLevelBand(level));
-  return 10+(band-1)*5+difficultyIndex*5;
-}
 function buildQuestPool(skill){
   const level=getSkillLevel(skill);
   const band=Math.min(3,getLevelBand(level));
-  const difficulty=getDifficultyIndex();
-  const extra=difficulty*3; // Normal adds 3; Dedicated adds 6 over easy.
-  const xp=questXpFor(level,difficulty);
-  const group=getSkillGroup(skill);
-  const levelNote=band===1?"Build the habit with a manageable first step.":band===2?"Build on your foundations with a focused challenge.":"Challenge yourself while keeping the task realistic and safe.";
-  const pool=[];
-  const add=(title,description,category)=>{
-    pool.push({title,description:`${description} ${levelNote}`,category:category||"Skill",skill,xp});
-  };
-
-  // Reading and piano use simple, predictable level/difficulty targets.
-  if(skill==="Reading"){
-    const base=band===1?5:band===2?10:15;
-    const pages=base+extra;
-    add(`Read ${pages} pages`,`Read ${pages} pages from any book you enjoy.`, "Knowledge");
-    add(`Read ${pages} pages and save one idea`,`Read ${pages} pages, then write down one interesting idea or sentence.`, "Knowledge");
-    add(`A ${pages}-page reading session`,`Settle in and read ${pages} pages without multitasking.`, "Knowledge");
-    return pool;
-  }
-  if(skill==="Piano"){
-    const base=band===1?5:band===2?10:15;
-    const minutes=base+extra;
-    add(`Practise piano for ${minutes} minutes`,`Spend ${minutes} focused minutes at the piano on a piece, scales, or technique.`, "Skill");
-    add(`${minutes}-minute piano technique session`,`Practise a scale, chord change, or difficult passage for ${minutes} minutes.`, "Skill");
-    add(`Play piano for ${minutes} minutes without stopping`,`Choose something suitable for your level and keep playing for ${minutes} minutes.`, "Skill");
-    return pool;
-  }
-
-  const custom={
-    "Adventure":[
-      ["Take a different route","Go for a short outing using a street, path, or route you rarely take.","Adventure"],
-      ["Explore a nearby place","Visit a local place you've never properly explored; stay as long as feels comfortable.","Adventure"],
-      ["Find one small discovery","Go outside and find a shop, view, park, building, or detail you hadn't noticed before.","Adventure"],
-      ["Plan a mini expedition","Choose a nearby destination, check the route, and go there today if practical.","Adventure"],
-      ["Try a solo outing","Spend some time out on your own doing something you genuinely enjoy.","Adventure"],
-      ["Make an ordinary errand an adventure","Choose a different location or add one interesting stop to an errand.","Adventure"]
+  const xp=15;
+  const pools={
+    "Adventure": [
+      ["Take a different route","Use a street or path you rarely take."],["Explore a nearby place","Visit a local place you have never properly explored."],["Find one small discovery","Look for a shop, view, park, building, or detail you had not noticed."],["Plan a mini expedition","Choose a destination, check the route, and go if practical."],["Try a solo outing","Spend time out on your own doing something you enjoy."],["Make an errand an adventure","Add an interesting stop or choose a different location."],["Visit a new café","Try a café or bakery you have not visited before."],["Explore a park","Visit a nearby green space and walk a new path."],["Take a town-centre wander","Explore a few streets without rushing to get anywhere."],["Visit a local landmark","Find a landmark nearby and see it in person."],["Discover a new shop","Browse an independent or unfamiliar shop."],["Choose a destination at random","Pick a nearby town or place and plan a practical visit."],["Try a new food spot","Find somewhere local to eat or drink that is new to you."],["Watch the sunset somewhere new","Choose a safe spot with a good view."],["Take a scenic route","Choose a pleasant route rather than the quickest one."],["Visit a nearby village","Explore a village or neighbourhood you rarely visit."],["Find a viewpoint","Look for a public place with an interesting view."],["Explore by public transport","Take a short, planned trip to a place you can easily return from."],["Make a three-stop outing","Choose three small places to visit on one trip."],["Visit a market","Explore a local market or community event if one is available."],["Go on a photo walk","Take pictures of details you might usually overlook."],["Find a quiet place outdoors","Spend a little time somewhere peaceful outside."],["Try an unfamiliar activity","Give a beginner-friendly activity a go."],["Plan a half-day adventure","Make a simple plan for an outing on a future free day."],["Explore after work","Take a short detour somewhere pleasant if your energy allows."],["Visit a museum or gallery","Explore a local cultural place if one is accessible."],["Take the long way home","Choose a safe, interesting detour when practical."],["Look for local events","Find an event, exhibition, or activity you might attend."],["Explore a waterfront","Visit a river, canal, lake, or coast nearby."],["Have a destination-free walk","Start with a safe area and follow your curiosity."],["Try a new route by bike","Explore a safe route if you have a bicycle."],["Find a place to read outside","Bring a book to a park, bench, or other comfortable spot."],["Explore a neighbourhood","Walk through an area you do not know well."],["Plan a day trip","Choose a reachable destination and list what you would need."],["Go somewhere before going home","Add a small enjoyable stop to your day."],["Visit a place at a different time","See a familiar place in the morning, evening, or another light."],["Ask for a local recommendation","Ask someone or look up a local place worth visiting."],["Make a mini travel budget","Plan an outing with transport, food, and a small activity."],["Try a nature trail","Find a suitable local trail and walk part of it."],["Record your discovery","Write a short note about a place you enjoyed and why."]
     ],
-    "Social Interactions":[
-      ["Make the first move","Initiate one small interaction: greet someone, ask a question, or send the first message.","Social"],
-      ["Ask an open question","Ask someone a question that invites more than a yes-or-no answer, then listen.","Social"],
-      ["Share one thought","In a conversation, share an opinion, story, or detail instead of staying quiet.","Social"],
-      ["Reconnect with someone","Send a genuine message to someone you haven't spoken to in a while.","Social"],
-      ["Stay present in a conversation","Put your phone away and focus on the person you're talking with.","Social"],
-      ["Practise a tiny act of courage","Do one social thing you've been hesitating to do; keep it low-pressure.","Social"]
+    "Reading": [
+      ["Read 10 pages","Read 10 pages of any book you enjoy."],["Read 10 pages without distractions","Put distractions away and read."],["Read 10 pages and save an idea","Write down an idea worth remembering."],["Read somewhere different","Take your book to a comfortable new spot."],["Read before screens","Read before opening games or social media."],["Read a chapter","Finish a chapter or a natural section of your book."],["Try a new genre","Read a sample from a genre you rarely choose."],["Read nonfiction","Learn something from a nonfiction book."],["Read fiction","Spend time immersed in a story."],["Revisit a favourite passage","Read a passage you remember enjoying."],["Write a one-sentence summary","Summarise what you read in one sentence."],["Look up an unfamiliar word","Find its meaning and note how it is used."],["Read a biography","Read about a person's life or experiences."],["Read outside","Take your book to a park or another pleasant outdoor spot."],["Read without checking your phone","Keep your phone out of reach for the session."],["Read a short story","Finish a short story or a portion of one."],["Explore a library catalogue","Find a book you might want to borrow."],["Choose your next book","Pick a book based on genuine curiosity."],["Read a review and a sample","See whether a book interests you before committing."],["Discuss something you read","Tell someone about an interesting idea or story."],["Make a reading note","Record the title, page, and one takeaway."],["Read a poem","Read a poem and consider what stands out."],["Read about a new subject","Choose a topic you know little about."],["Read in a different format","Try an ebook, audiobook sample, or print book."],["Return to a paused book","Read a little more instead of abandoning it."],["Read during a spare moment","Use a small pocket of free time for a book."],["Compare two viewpoints","Read how two authors approach a similar topic."],["Read a book excerpt","Try the opening pages of a book you are curious about."],["Reflect on a character or idea","Write down what you found interesting and why."],["Set up your next reading session","Leave your book ready and choose when to continue."]
     ],
-    "Relationships":[
-      ["Check in with someone","Send a thoughtful message asking how someone is doing.","Relationships"],
-      ["Show appreciation","Tell someone specifically what you appreciate about them.","Relationships"],
-      ["Make a plan","Suggest a coffee, walk, meal, call, or activity with someone you care about.","Relationships"],
-      ["Give someone your attention","Have a conversation without checking your phone.","Relationships"],
-      ["Remember a detail","Ask about something important someone mentioned before.","Relationships"],
-      ["Strengthen an old connection","Reach out to a friend, family member, or acquaintance you miss talking to.","Relationships"]
+    "Social Interactions": [
+      ["Make the first move","Greet someone or start a small interaction."],["Ask an open question","Ask something that invites more than yes or no."],["Share one thought","Share an opinion, story, or detail in conversation."],["Start a conversation with a colleague","Ask how their day or shift is going."],["Give a genuine compliment","Notice something specific and say it sincerely."],["Practise saying hello first","Greet someone instead of waiting for them to greet you."],["Ask a follow-up question","Show interest by asking about something they mentioned."],["Talk to someone new","Have a brief, low-pressure exchange with someone unfamiliar."],["Join a group conversation","Add one comment or question when it feels appropriate."],["Share a small story","Tell someone something amusing or interesting from your day."],["Express a preference","Say what you would like to do, eat, or watch."],["Ask for a recommendation","Ask someone about a place, meal, film, or activity they like."],["Make a casual invitation","Invite someone for coffee, a walk, or another simple activity."],["Keep a conversation going","Ask one follow-up instead of ending the exchange quickly."],["Practise comfortable eye contact","Use natural eye contact while listening, without forcing it."],["Put your phone away","Give someone your attention during a conversation."],["Speak up once","Contribute one thought in a situation where you might stay quiet."],["Introduce yourself","Introduce yourself in a suitable social setting."],["Ask someone about their interests","Give them room to talk about something they enjoy."],["Share a recommendation","Tell someone about a book, place, game, or song you like."],["Thank someone warmly","Give a specific, genuine thank-you."],["Make small talk while waiting","Try a brief friendly exchange when the situation suits it."],["Reconnect with an acquaintance","Send a simple message to someone you know but rarely contact."],["Ask someone how they are really doing","Listen to the answer rather than treating it as a formality."],["Offer help","Offer a small, appropriate bit of help to someone."],["Attend a social setting","Spend some time at a club, class, event, or gathering."],["Ask someone to join you","Invite a person along for an activity you already plan to do."],["Share a harmless disagreement","Respectfully express a different opinion when it feels appropriate."],["Tell someone what you enjoyed","Give positive feedback after an activity or conversation."],["Practise an assertive no","Politely decline something you do not want to do."],["Ask for help or advice","Make a reasonable request instead of struggling silently."],["Talk to a service worker warmly","Be friendly and present during a normal interaction."],["Join a hobby community","Look for a local or online group related to a real interest."],["Stay a little longer","If comfortable, remain at a social setting for a few extra minutes."],["Start a conversation about your surroundings","Comment on something relevant to the shared situation."],["Ask about someone's plans","Show interest in what they have coming up."],["Share a personal goal","Tell someone about a hobby or goal you are working on."],["Practise listening without planning your reply","Focus on understanding what the other person says."],["Make a second interaction","Speak to someone you already greeted earlier."],["Reach out first","Send a message without waiting for the other person to initiate."],["Join a conversation with one question","Ask a relevant question to enter a group discussion."],["Talk about a shared interest","Find one point of common interest and explore it."],["Introduce two people","If appropriate, help two people you know connect."],["Give yourself credit for trying","Record one social action you initiated today."],["Ask someone about a local favourite","Find out where they like to go nearby."],["Suggest doing something together","Offer a specific activity and a simple time window."],["Practise a confident introduction","Say your name and one natural detail about yourself."],["Handle a quiet moment comfortably","Allow a pause without feeling you must fill it immediately."],["Ask one more question","When interested, go one question deeper in a conversation."],["Take a small social risk","Do one safe, respectful interaction you have been hesitating over."]
     ],
-    "Discipline":[
-      ["Do one task before screens","Finish one useful real-life task before gaming, streaming, or scrolling.","Daily"],
-      ["Use a 10-minute start","Work on something you've delayed for just 10 minutes.","Daily"],
-      ["Prepare tomorrow","Set out one thing that will make tomorrow easier.","Daily"],
-      ["Finish a small loose end","Complete a task you've been putting off that takes less than 15 minutes.","Daily"],
-      ["Keep one promise to yourself","Choose one realistic task and complete it today.","Daily"],
-      ["Clear one small space","Tidy a desk, shelf, bag, or other small area for a few minutes.","Daily"]
+    "Relationships": [
+      ["Check in with someone","Send a thoughtful message asking how they are doing."],["Show appreciation","Tell someone specifically what you appreciate about them."],["Make a plan","Suggest coffee, a walk, a meal, a call, or an activity."],["Give someone your attention","Have a conversation without checking your phone."],["Remember a detail","Ask about something important they mentioned before."],["Strengthen an old connection","Reach out to someone you miss talking to."],["Call a family member","Have a short call and ask about their life."],["Send a voice message","Send a personal voice note rather than a generic reaction."],["Share a good memory","Remind someone of a positive experience you shared."],["Ask about a challenge","Check in about something difficult they told you about."],["Celebrate someone's win","Congratulate someone on something that matters to them."],["Offer practical help","Offer help with a suitable task or errand."],["Make time for a friend","Set aside time to talk without multitasking."],["Follow through on a promise","Complete a small commitment you made to someone."],["Plan a regular catch-up","Suggest a simple recurring way to stay in touch."],["Send a thoughtful link","Share an article, song, or memory they might appreciate."],["Ask for their opinion","Invite someone's thoughts on a decision or idea."],["Learn something new about family","Ask a relative about a story or experience from their life."],["Thank someone for their support","Name something they did that helped you."],["Apologise where appropriate","Take responsibility for a small mistake if one needs addressing."],["Clear up a misunderstanding","Have a calm, respectful conversation if needed."],["Remember an important date","Add a birthday or meaningful date to your calendar."],["Suggest a shared hobby","Invite someone to try an activity together."],["Make a low-key visit","Arrange a short visit with someone you value."],["Ask what someone needs","Offer support without assuming what would help."],["Share an update about your life","Tell someone what you have been doing lately."],["Reconnect with an acquaintance","Turn a familiar face into a more active connection."],["Plan a small group activity","Suggest a meal, game, walk, or outing with a few people."],["Be fully present at a meal","Put distractions away while spending time with someone."],["Check in after an event","Ask someone how something they attended went."],["Send encouragement","Support someone working toward a goal."],["Invite someone on an adventure","Suggest exploring a place together."],["Ask about an old interest","Revisit a hobby or dream they once talked about."],["Create a shared tradition","Suggest a simple activity you could repeat together."],["Make a relationship note","Write down one way to invest in a connection this week."],["Reach out without a reason","Send a friendly message simply because you thought of them."],["Listen to someone's story","Give them time to explain without interrupting."],["Offer a sincere compliment","Recognise a quality you value in someone close to you."],["Arrange a phone-free catch-up","Spend time together with phones put away."],["Follow up on a conversation","Return to a topic someone previously shared."]
     ],
-    "Learning":[
-      ["Learn one new thing","Spend 10 minutes learning a topic and write down one thing you discovered.","Knowledge"],
-      ["Explain it from memory","Learn a small concept, then explain it aloud or in writing without looking.","Knowledge"],
-      ["Follow your curiosity","Look up a question you've genuinely wondered about and find a reliable answer.","Knowledge"],
-      ["Make three notes","Study something for a short session and record three useful points.","Knowledge"],
-      ["Compare two explanations","Read or watch two explanations of the same topic and note what differs.","Knowledge"],
-      ["Teach a tiny lesson","Explain something you know to another person or write a simple explanation.","Knowledge"]
+    "Piano": [
+      ["Practise a scale","Play a familiar scale slowly and evenly."],["Practise chord changes","Move between two chords with relaxed, controlled hands."],["Work on a difficult bar","Repeat a small passage slowly before increasing tempo."],["Practise with a metronome","Use a comfortable tempo and focus on steady timing."],["Play a piece from memory","Try a section you know without looking at the score."],["Read a short section of sheet music","Work through a few measures carefully."],["Practise hands separately","Work on each hand before combining them."],["Improve your posture","Check bench height, relaxed shoulders, and comfortable hand position."],["Practise a new fingering","Choose a short phrase and use consistent fingering."],["Play slowly and accurately","Choose a piece and prioritise clean notes over speed."],["Review an old piece","Return to something you learned earlier."],["Learn a new musical phrase","Work on a short new section of a song."],["Practise dynamics","Play a phrase softly, loudly, and with a clear contrast."],["Practise evenness","Play a scale or pattern and listen for uneven notes."],["Play without stopping","Play through a familiar piece and recover calmly from mistakes."],["Listen to a piano performance","Notice phrasing, dynamics, and tone."],["Copy a short rhythm","Listen to a simple rhythm and tap or play it back."],["Practise a cadence","Play a simple chord progression and listen to how it resolves."],["Name notes on the keyboard","Identify a set of notes without rushing."],["Practise pedal control","If you use a pedal, practise clear changes without muddying the sound."],["Record a short performance","Record a small section and listen for one thing to improve."],["Play for enjoyment","Choose a familiar piece and enjoy playing it without a strict target."],["Practise a transition","Focus on moving smoothly between two sections."],["Learn a new chord","Learn the notes of a chord and play it in a few positions if suitable."],["Practise rhythm hands separately","Clap or tap the rhythm before playing it."],["Play a phrase musically","Shape one phrase with a clear beginning and ending."],["Set a piano goal","Choose one small skill or passage to improve next session."],["Review your practice notes","Look at what you worked on and choose the next step."],["Practise a weak spot","Find one recurring mistake and work on it slowly."],["Play a piece for someone","Share a short piece with a friend or family member if comfortable."],["Try sight-reading","Read a very easy new passage at a steady pace."],["Practise left-hand control","Work on a bass pattern or accompaniment."],["Practise right-hand melody","Focus on clear phrasing and even tone."],["Play a simple accompaniment","Practise supporting a melody with a steady pattern."],["Learn a song section by ear","Try to find a short melody by listening and experimenting."],["Do a focused warm-up","Start with gentle finger patterns and relaxed movement."],["Practise at a slower tempo","Reduce speed enough to play a passage accurately."],["Polish the ending of a piece","Work on the final few measures and finish confidently."],["Compare two takes","Play a phrase twice and notice what improved."],["Finish with a favourite piece","End practice by playing something you enjoy."]
     ],
-    "Mindfulness":[
-      ["Take a quiet pause","Spend five minutes breathing slowly without looking at a screen.","Daily"],
-      ["Notice your surroundings","Take a short walk and deliberately notice five things you can see or hear.","Adventure"],
-      ["Write a quick reflection","Write down how you feel, what matters today, and one next step.","Knowledge"],
-      ["Do one thing slowly","Choose an everyday task and give it your full attention.","Daily"],
-      ["Take a mindful walk","Walk for a few minutes without audio, noticing your surroundings.","Adventure"],
-      ["Name one good moment","Write down one thing that went well or that you appreciated today.","Knowledge"]
+    "Fitness": [
+      ["Complete a short strength session","Do a manageable strength workout using familiar exercises."],["Practise push-up technique","Use a suitable variation and focus on controlled form."],["Practise a squat pattern","Perform bodyweight squats or another suitable squat variation."],["Practise a hip hinge","Rehearse a comfortable hinge pattern without forcing range."],["Train your back","Do a suitable row or pulling movement with controlled form."],["Train your chest","Do a suitable push movement at a manageable effort."],["Train your legs","Choose a safe leg-strength exercise you know."],["Train your core","Practise a controlled core exercise suited to your ability."],["Train your shoulders","Choose a comfortable shoulder-strength movement."],["Practise a lunge variation","Use support or a smaller range if needed."],["Do a full-body session","Choose one push, one pull, one leg, and one core movement."],["Review your workout plan","Check that your plan covers the main movement patterns."],["Log your workout","Record exercises, sets, reps, and how the session felt."],["Warm up before training","Do a gradual warm-up before your strength session."],["Practise controlled repetitions","Slow down a familiar movement and keep it controlled."],["Focus on range of motion","Use a comfortable range without forcing joints."],["Learn one exercise variation","Research or practise a safe variation of a familiar movement."],["Train with resistance bands","Use a band for a suitable pulling, pushing, or leg exercise."],["Try a dumbbell movement","Practise a familiar dumbbell exercise with a manageable load."],["Practise bodyweight strength","Choose a suitable bodyweight movement and focus on technique."],["Train your glutes","Choose a comfortable glute bridge or other suitable movement."],["Strengthen your upper back","Practise a controlled row, band pull-apart, or similar movement."],["Work on grip strength","Use a safe, simple grip exercise without overdoing it."],["Practise single-leg balance and strength","Use support and a suitable movement if needed."],["Review your technique","Check one exercise against reliable form guidance."],["Plan your next strength session","Choose exercises and prepare what you need."],["Respect your recovery","Assess soreness and energy before choosing training or rest."],["Take a rest-day walk and recover","Use gentle movement if it feels good, rather than forcing a workout."],["Repeat a familiar workout consistently","Complete your planned session without chasing a personal record."],["Try a new machine safely","Learn the setup and use a manageable load if at a gym."],["Practise a deadlift pattern","Use a very manageable load or bodyweight hinge to focus on technique."],["Practise an overhead press variation","Choose a comfortable, controlled press suited to your ability."],["Work on hamstrings","Choose a suitable hamstring exercise and focus on control."],["Work on calves","Perform a comfortable calf-raise variation."],["Build a simple progression plan","Choose one exercise to improve gradually over several sessions."],["Check your training consistency","Review how many strength sessions you completed recently."],["Do a short accessory session","Choose one or two manageable exercises for an area you want to develop."],["Practise breathing while lifting","Keep breathing naturally and avoid straining or holding your breath unnecessarily."],["Set up your training space","Prepare equipment and remove trip hazards before exercising."],["Celebrate consistency, not maximums","Record a win based on showing up and using good form."]
     ],
-    "Confidence":[
-      ["Do one slightly uncomfortable thing","Take a small, safe action you've been avoiding because it feels unfamiliar.","Daily"],
-      ["Make a decision without overthinking","Choose one low-stakes option and move forward without repeatedly reconsidering it.","Daily"],
-      ["Speak up once","Share an idea, preference, or question when you normally might stay quiet.","Social"],
-      ["Try before you feel ready","Spend 10 minutes beginning something you've been waiting to feel confident about.","Daily"],
-      ["Recognise a small win","Record one thing you handled well and why it mattered.","Knowledge"]
-    ],
-    "Independence":[
-      ["Plan and complete a solo outing","Choose a destination, check what you need, and go independently if practical.","Adventure"],
-      ["Learn a practical task","Find instructions for one useful task and practise it safely.","Knowledge"],
-      ["Make your own plan","Choose an activity for yourself and take the first concrete step.","Daily"],
-      ["Solve a small problem yourself","Try a reasonable solution to a low-stakes problem before asking for help.","Daily"],
-      ["Visit somewhere alone","Spend time at a café, shop, park, museum, or other place on your own.","Adventure"]
-    ],
-    "Cooking":[
-      ["Prepare a simple meal","Make a meal yourself, focusing on one technique you want to improve.","Skill"],
-      ["Try a new ingredient","Use one ingredient you don't often cook with.","Skill"],
-      ["Learn one kitchen skill","Practise a safe basic skill such as chopping, seasoning, or timing.","Skill"],
-      ["Cook without rushing","Prepare something simple and pay attention to the process.","Skill"],
-      ["Save a recipe","Find a recipe you'd like to try and make a short ingredient list.","Knowledge"]
-    ],
-    "Digital Balance":[
-      ["Take a 15-minute screen break","Put your phone out of reach and do something offline for 15 minutes.","Daily"],
-      ["Start the day intentionally","Before opening social apps, do one small real-world activity.","Daily"],
-      ["Remove one digital distraction","Mute a nonessential notification or move a distracting app out of sight.","Daily"],
-      ["Go for a walk without scrolling","Take a short walk and keep your phone tucked away unless needed.","Adventure"],
-      ["Choose a real-world reward","Replace one planned scroll session with a hobby, reading, or a short outing.","Daily"]
-    ],
-    "Fitness":[
-      ["Move for 10 minutes","Choose a safe movement activity that suits your energy today.","Daily"],
-      ["Prepare for your next workout","Lay out your clothes or plan a simple session.","Daily"],
-      ["Add movement to an errand","Walk part of the route or take the stairs if safe and practical.","Daily"],
-      ["Do a mobility break","Spend a few minutes gently moving and stretching within a comfortable range.","Daily"],
-      ["Record your progress","Note what movement you did and how it felt, without judging yourself.","Daily"]
-    ],
-    "Strength Training":[
-      ["Complete a short strength session","Do a safe, manageable full-body session using exercises you know.","Skill"],
-      ["Practise exercise technique","Choose one familiar movement and focus on controlled, comfortable form.","Skill"],
-      ["Build a simple workout plan","Write a short plan with a warm-up and a few suitable exercises.","Knowledge"],
-      ["Train one movement pattern","Practise a manageable push, pull, squat, hinge, or core movement.","Skill"],
-      ["Review your recovery","Check how you feel and choose an appropriate training or recovery session.","Daily"]
-    ],
-    "Walking & Hiking":[
-      ["Walk a different route","Take a safe route you don't usually use and notice something new.","Adventure"],
-      ["Take a purposeful walk","Walk for 10 minutes or a distance that suits your current fitness.","Adventure"],
-      ["Explore a green space","Visit a park, trail, waterfront, or other outdoor area nearby.","Adventure"],
-      ["Plan a future walk","Find a trail or route and check its distance and conditions.","Knowledge"],
-      ["Walk without distractions","Take a short walk without scrolling, paying attention to your surroundings.","Adventure"]
-    ],
-    "Running":[
-      ["Do an easy run or walk-run","Choose a comfortable pace and adapt the session to your current fitness.","Skill"],
-      ["Practise a gentle warm-up","Prepare for movement with a few minutes of easy walking and dynamic mobility.","Skill"],
-      ["Build consistency","Complete a short run/walk session, prioritising comfort over speed.","Skill"],
-      ["Explore a running route","Find a safe nearby route you might enjoy using again.","Adventure"],
-      ["Record how it felt","After moving, note your effort and how you recovered.","Knowledge"]
-    ],
-    "Conversation":[
-      ["Ask an open-ended question","Ask someone about their interests, plans, or experience and listen to the answer.","Social"],
-      ["Share a small story","Tell someone a short story or detail from your day.","Social"],
-      ["Practise follow-up questions","Ask one natural follow-up instead of ending a conversation immediately.","Social"],
-      ["Start with a simple greeting","Say hello or make a friendly comment in a suitable situation.","Social"],
-      ["Listen without planning your reply","Give someone your full attention and respond to what they actually say.","Social"]
-    ],
-    "Photography":[
-      ["Take three thoughtful photos","Photograph three different details, paying attention to light and composition.","Skill"],
-      ["Try a new angle","Photograph an ordinary object or place from an unusual but intentional angle.","Skill"],
-      ["Make a mini photo theme","Take five photos around a theme such as texture, colour, or reflections.","Skill"],
-      ["Review your best shot","Choose one photo and identify what works and what you'd change next time.","Knowledge"],
-      ["Go on a photo walk","Take a short walk and capture details you might normally overlook.","Adventure"]
-    ],
-    "Writing":[
-      ["Write for 10 minutes","Write a journal entry, paragraph, scene, or short reflection without editing as you go.","Skill"],
-      ["Describe a place","Write a short description using details from sight, sound, smell, or texture.","Skill"],
-      ["Capture an idea","Write down an idea and expand it with three supporting details.","Skill"],
-      ["Edit one paragraph","Take something you've written and improve clarity or flow.","Skill"],
-      ["Write a tiny story","Write a beginning, a problem, and an ending in a few paragraphs.","Skill"]
-    ],
-    "Coding":[
-      ["Build one tiny feature","Make a small improvement to a project or complete one beginner coding exercise.","Skill"],
-      ["Understand one concept","Study a programming concept and explain it in your own words.","Knowledge"],
-      ["Fix one small bug","Choose a small issue, reproduce it, and investigate a solution.","Skill"],
-      ["Read code carefully","Study a short code example and identify what each part does.","Knowledge"],
-      ["Save a working checkpoint","Test your current project and save a backup or commit if applicable.","Skill"]
-    ],
-    "Chess":[
-      ["Solve three tactics","Try three chess puzzles and review why each move works.","Skill"],
-      ["Review one game","Look back at a game and identify one decision you'd improve.","Knowledge"],
-      ["Practise a basic endgame","Study one simple endgame position and play it out.","Skill"],
-      ["Play a focused game","Play one game and concentrate on checking threats before each move.","Skill"],
-      ["Learn one opening idea","Study one opening principle rather than memorising a long line.","Knowledge"]
-    ],
-    "Foreign Languages":[
-      ["Learn five useful words","Learn five words or phrases and make a sentence with each.","Knowledge"],
-      ["Listen for 10 minutes","Listen to beginner-friendly audio in your target language.","Knowledge"],
-      ["Practise speaking aloud","Say a few sentences about your day, even if you're practising alone.","Skill"],
-      ["Review old vocabulary","Recall words you've already learned before checking the answers.","Knowledge"],
-      ["Read a short passage","Read a short, level-appropriate passage and note unfamiliar words.","Knowledge"]
-    ],
-    "First Aid":[
-      ["Study one first-aid topic","Use a reputable first-aid source to review one topic; don't practise risky procedures on a person.","Knowledge"],
-      ["Check your first-aid kit","Check supplies and expiry dates, replacing items when appropriate.","Daily"],
-      ["Learn the local emergency number","Review how to contact emergency services and what information to provide.","Knowledge"],
-      ["Review a response checklist","Study a reputable first-aid checklist for one common emergency.","Knowledge"]
+    "Cardio": [
+      ["Take a brisk walk","Walk at a pace that feels purposeful but sustainable."],["Try an easy walk-run","Alternate gentle jogging and walking if appropriate for you."],["Go for a relaxed bike ride","Choose a safe route and comfortable pace."],["Swim at an easy pace","Swim comfortably if you have access to a suitable pool."],["Explore a walking route","Find a safe route you might enjoy using regularly."],["Do a gentle cardio warm-up","Use easy walking, cycling, or marching to warm up."],["Take the stairs if suitable","Choose stairs only if they feel safe and comfortable."],["Try a dance session","Put on music and move for a few songs."],["Walk during a break","Use a free pocket of time for a short walk."],["Cycle for an errand","Use a bike for a practical trip if the route is safe."],["Try an indoor cardio session","Choose a suitable low-impact follow-along session."],["Build a simple cardio routine","Choose an activity and a realistic time to repeat it."],["Explore a park on foot","Walk a loop or a section of a local park."],["Do a steady-paced session","Choose a pace at which you can still speak in sentences."],["Practise gentle intervals","Alternate slightly brisker movement with easy recovery periods."],["Try a rowing machine","Learn the setup and start at a comfortable effort if available."],["Use an exercise bike","Ride at a sustainable pace and focus on consistency."],["Walk with a destination","Walk to a shop, café, or other nearby place."],["Take a longer weekend walk","Choose a route that matches your current ability."],["Try a beginner fitness class","Find a suitable class with an intensity you can adapt."],["Walk without scrolling","Keep your phone away and pay attention to the route."],["Track a comfortable session","Record activity and duration without judging your pace."],["Try a new cardio activity","Sample a safe activity you have not done recently."],["Do a recovery cardio session","Choose gentle movement on a day when you need an easier effort."],["Plan a scenic route","Find a pleasant, safe route for a future walk or ride."],["Walk with a friend","Invite someone for a comfortable walk together."],["Use music for movement","Choose a playlist and move at a sustainable pace."],["Practise pacing","Start easy and avoid going too hard too soon."],["Try a short after-work session","Fit in a manageable amount of movement if your energy allows."],["Explore a nature path","Walk a suitable trail and enjoy the surroundings."],["Build toward a regular habit","Choose two realistic times for cardio this week."],["Try low-impact cardio","Choose an activity that is gentle on your joints."],["Notice your breathing","During a comfortable session, notice how effort changes your breathing."],["Finish with an easy cooldown","Slow down gradually after a cardio session."],["Review your cardio progress","Note what you did and how your stamina felt."],["Prepare for a cardio outing","Set out comfortable shoes or other needed gear."],["Try a short hill walk","Choose a gentle hill only if it suits your current ability."],["Make an active errand","Walk or cycle for part of a practical journey if safe."],["Enjoy movement outdoors","Choose an outdoor activity simply because it feels good."],["Schedule your next session","Put a realistic cardio session into your upcoming week."]
     ]
   };
-  if(custom[skill]){
-    custom[skill].forEach(item=>add(item[0],item[1],item[2]));
-    return pool;
-  }
-
-  // Broad but skill-relevant quest families cover every other skill in the catalogue.
-  const groupTemplates={
-    "Instruments & music":[
-      [`Practise ${skill} for {minutes} minutes`,`Spend {minutes} focused minutes practising ${skill.toLowerCase()}; choose one technique or piece.`,"Skill"],
-      [`Work on one tricky part of ${skill}`,`Choose a small section of ${skill.toLowerCase()} practice and repeat it slowly, then at a comfortable pace.`,"Skill"],
-      [`Learn something new in ${skill}`,`Learn one chord, pattern, technique, note, or concept related to ${skill.toLowerCase()}.`,"Skill"],
-      [`Play or perform a short piece`,`Use ${skill.toLowerCase()} to play a short passage or piece from start to finish.`,"Skill"],
-      [`Review your ${skill} progress`,`Practise ${skill.toLowerCase()} briefly, then note one improvement and one next step.`,"Skill"],
-      [`Practise ${skill} with a focus`,`Choose one clear goal for this session and work on it without multitasking.`,"Skill"]
-    ],
-    "Sports & movement":[
-      [`Practise ${skill} for {minutes} minutes`,`Do a safe, suitable ${skill.toLowerCase()} session for about {minutes} minutes, adjusting to your fitness and conditions.`,"Skill"],
-      [`Work on one ${skill} technique`,`Choose one technique or movement in ${skill.toLowerCase()} and practise it with control.`,"Skill"],
-      [`Build your ${skill} fundamentals`,`Practise a basic skill, drill, or movement pattern from ${skill.toLowerCase()}.`,"Skill"],
-      [`Plan your next ${skill} session`,`Choose a realistic goal and prepare what you need for a future ${skill.toLowerCase()} session.`,"Daily"],
-      [`Review your ${skill} progress`,`Record what you practised and one thing you want to improve next time.`,"Knowledge"],
-      [`Try a short ${skill} challenge`,`Choose a small challenge in ${skill.toLowerCase()} that is safe for your current ability.`,"Skill"]
-    ],
-    "Creativity & making":[
-      [`Create something small with ${skill}`,`Spend {minutes} focused minutes making something using ${skill.toLowerCase()}; aim to finish a small piece.`,"Skill"],
-      [`Practise one ${skill} technique`,`Choose one technique used in ${skill.toLowerCase()} and practise it deliberately.`,"Skill"],
-      [`Study an example of ${skill}`,`Find an example of ${skill.toLowerCase()} you admire and identify one technique you could try.`,"Knowledge"],
-      [`Make a first draft`,`Create a rough first version of something using ${skill.toLowerCase()}, without aiming for perfection.`,"Skill"],
-      [`Improve an earlier creation`,`Return to something you made with ${skill.toLowerCase()} and make one specific improvement.`,"Skill"],
-      [`Try a new approach to ${skill}`,`Experiment with a tool, material, style, or method related to ${skill.toLowerCase()}.`,"Skill"]
-    ],
-    "Social & community":[
-      [`Practise ${skill} in a small way`,`Take one manageable action related to ${skill.toLowerCase()}, in person or through a suitable message.`,"Social"],
-      [`Learn one ${skill} technique`,`Study one practical idea that could help you improve ${skill.toLowerCase()}.`,"Knowledge"],
-      [`Take a social initiative`,`Make one low-pressure first move connected to ${skill.toLowerCase()}.`,"Social"],
-      [`Reflect on a social interaction`,`Think about one interaction and identify something that went well and one thing to try next time.`,"Relationships"],
-      [`Find an opportunity to practise`,`Look for a suitable event, group, or everyday situation where you can practise ${skill.toLowerCase()}.`,"Adventure"],
-      [`Build a small ${skill} habit`,`Choose one repeatable action that helps you develop ${skill.toLowerCase()} and do it today.`,"Social"]
-    ],
-    "Knowledge & practical skills":[
-      [`Study ${skill} for {minutes} minutes`,`Spend {minutes} focused minutes learning about ${skill.toLowerCase()} from a reliable source.`,"Knowledge"],
-      [`Learn one useful ${skill} concept`,`Choose one concept related to ${skill.toLowerCase()} and explain it in your own words.`,"Knowledge"],
-      [`Practise ${skill} from memory`,`Try a small exercise related to ${skill.toLowerCase()} before checking your notes.`,"Skill"],
-      [`Make three notes about ${skill}`,`Study ${skill.toLowerCase()} and write down three facts, steps, or ideas worth remembering.`,"Knowledge"],
-      [`Apply ${skill} to a small task`,`Use something you've learned about ${skill.toLowerCase()} in a safe, practical exercise.`,"Skill"],
-      [`Review your ${skill} knowledge`,`Recall what you know about ${skill.toLowerCase()}, then check one gap in your understanding.`,"Knowledge"]
-    ],
-    "Lifestyle & personal growth":[
-      [`Take a small step in ${skill}`,`Spend {minutes} focused minutes on a realistic action that develops ${skill.toLowerCase()}.`,"Daily"],
-      [`Practise ${skill} today`,`Choose one manageable action connected to ${skill.toLowerCase()} and complete it today.`,"Daily"],
-      [`Build a repeatable ${skill} habit`,`Do one small action you could realistically repeat to improve ${skill.toLowerCase()}.`,"Daily"],
-      [`Learn one way to improve ${skill}`,`Find one useful idea about ${skill.toLowerCase()} and put it into practice.`,"Knowledge"],
-      [`Reflect on your ${skill} progress`,`Write down one thing you did toward ${skill.toLowerCase()} and one next step.`,"Knowledge"],
-      [`Make a mini-plan for ${skill}`,`Choose one specific, achievable next action to develop ${skill.toLowerCase()} and start it.`,"Daily"]
-    ]
-  };
-  const templates=groupTemplates[group]||groupTemplates["Lifestyle & personal growth"];
-  const minutes=5+band*5+difficulty*3;
-  templates.forEach(([title,description,category])=>{
-    add(title.replaceAll("{minutes}",String(minutes)),description.replaceAll("{minutes}",String(minutes)),category);
+  const items=pools[skill]||[];
+  return items.map(([title,description])=>{
+    let finalDescription=description;
+    if(skill==="Reading") finalDescription=`Read 10 pages. ${description}`;
+    if(skill==="Piano") finalDescription=`Practise piano for 10 minutes. ${description}`;
+    return {title,description:finalDescription,category:skill==="Adventure"?"Adventure":skill==="Reading"?"Knowledge":skill==="Social Interactions"?"Social":skill==="Relationships"?"Relationships":skill==="Piano"?"Skill":skill==="Cardio"?"Adventure":"Skill",skill,xp:15};
   });
-  return pool;
 }
 function generateQuests(){
   ensureSelectedSkills();
@@ -901,8 +660,7 @@ function generateQuests(){
       id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2),
       done:false,
       source:"generated",
-      generatedForLevel:getSkillLevel(skill),
-      generatedDifficulty:(state.settings&&state.settings.difficulty)||"normal"
+      generatedForLevel:getSkillLevel(skill)
     });
   }
   state.quests=newQuests;
