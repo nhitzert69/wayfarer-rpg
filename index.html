@@ -520,6 +520,21 @@ if (window.supabase && WAYFARER_SUPABASE_URL.startsWith("https://") && WAYFARER_
 }
 function setCloudStatus(message){const el=document.getElementById("cloudStatus");if(el)el.textContent=message;}
 function usernameEmail(username){return username.trim().toLowerCase()+"@wayfarer.example";}
+// Resolve gender from the authenticated account first. The auth metadata records
+// the original account-creation choice and repairs older cloud saves that lack it
+// or were accidentally defaulted to male during a previous app update.
+function resolveSavedGender(user,savedGender){
+ const accountGender=user&&user.user_metadata?String(user.user_metadata.wayfarer_gender||"").toLowerCase():"";
+ if(accountGender==="male"||accountGender==="female")return accountGender;
+ if(savedGender==="male"||savedGender==="female")return savedGender;
+ return null;
+}
+function repairProfileGender(user){
+ if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};
+ const resolved=resolveSavedGender(user,state.profile.gender);
+ if(resolved)state.profile.gender=resolved;
+ return resolved;
+}
 function validAccountForm(){
  const username=document.getElementById("accountUsername").value.trim();
  const pin=document.getElementById("accountPin").value.trim();
@@ -561,13 +576,14 @@ async function finishSignIn(username,pin,create,gender=null){
    if(!Array.isArray(state.groceries))state.groceries=[];
    if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
    if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
+   repairProfileGender(cloudUser);
    localStorage.setItem(KEY,JSON.stringify(state));
    setCloudStatus("Signed in. Loaded your cloud save from "+new Date(saveRow.updated_at).toLocaleString()+".");
  } else {
    // Never transfer the previous signed-out device state into a different account.
    // An account without a cloud save starts with a clean, independent profile.
    state=freshState();
-   if(create && (gender==="male"||gender==="female"))state.profile.gender=gender;
+   state.profile.gender=(create && (gender==="male"||gender==="female"))?gender:resolveSavedGender(cloudUser,null);
    localStorage.setItem(KEY,JSON.stringify(state));
    cloudHydrating=false;
    await syncCurrentState();
@@ -575,6 +591,8 @@ async function finishSignIn(username,pin,create,gender=null){
    setCloudStatus("Signed in. This account had no saved progress, so a fresh profile was created.");
  }
  cloudHydrating=false;
+ // Persist any repaired gender/profile migration to the existing account's save.
+ await syncCurrentState();
  document.getElementById("accountUsername").value=username;
  document.getElementById("accountPin").value="";
  document.getElementById("accountPin").placeholder="PIN saved by secure sign-in";
@@ -621,7 +639,7 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  wayfarerSignedInUsername="";
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
-if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=String(data.session.user.user_metadata?.wayfarer_username||"");cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();}else{enforceAccountGate();}});}
+if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=String(data.session.user.user_metadata?.wayfarer_username||"");cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};repairProfileGender(cloudUser);localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;await syncCurrentState();document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();}else{enforceAccountGate();}});}
 function save(skipRender=false){localStorage.setItem(KEY,JSON.stringify(state));if(!skipRender)render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
