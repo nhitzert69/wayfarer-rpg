@@ -116,6 +116,11 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 }
 @media(prefers-reduced-motion:reduce){#questGrid .questLeaving,#mainQuestGrid .questLeaving,#sideQuestGrid .questLeaving{animation-duration:1ms}}
 </style>
+
+<style id="admin-debug-styles">
+#debugTabButton{display:none}.debugMetric{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line,#39342b)}.debugTools{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px}.debugTools button,.debugTools select,.debugTools input{width:100%;box-sizing:border-box}.debugLog{max-height:240px;overflow:auto;white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;background:rgba(0,0,0,.2);padding:10px;border-radius:8px}.debugSandboxBanner{border:1px solid #b68b36;background:rgba(182,139,54,.12);padding:10px;border-radius:8px;margin:10px 0}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -156,6 +161,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
   
   <button class="tab" data-tab="journal">📜 Journal</button>
   <button class="tab" data-tab="settings">⚙ Settings</button>
+  <button class="tab" id="debugTabButton" data-tab="debug" type="button">🛠 Debug</button>
 </nav>
 
 <main>
@@ -280,6 +286,15 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
     <p class="sub">Choose your skills and generate quests whenever you're ready. There are no difficulty settings or difficulty-based rewards.</p>
   </div>
 </section>
+<section class="section" id="section-debug">
+  <div class="sectionHead"><div><h2>Debug Workshop</h2><p>Admin-only testing tools. Sandbox changes never write to your real character.</p></div></div>
+  <div class="debugSandboxBanner"><strong id="debugSandboxStatus">Sandbox inactive</strong><p class="sub">Start a sandbox to test XP, quests, dates, and planner behavior against a temporary copy. Exiting discards sandbox changes.</p><div class="debugTools"><button class="btn" id="debugStartSandbox">Start isolated sandbox</button><button class="btn secondary" id="debugExitSandbox">Exit sandbox</button></div></div>
+  <div class="card"><h3>Time Machine</h3><p class="sub">Shift the active campaign date in the sandbox only.</p><div class="debugTools"><button class="btn secondary" data-debug-days="1">+1 day</button><button class="btn secondary" data-debug-days="7">+7 days</button><button class="btn secondary" data-debug-days="30">+30 days</button><button class="btn secondary" data-debug-days="365">+365 days</button></div><div class="debugMetric"><span>Active date</span><strong id="debugActiveDate">—</strong></div></div>
+  <div class="card"><h3>XP & Level Lab</h3><p class="sub">Set overall XP or a skill's XP while sandbox mode is active.</p><div class="debugTools"><input id="debugOverallXp" type="number" min="0" placeholder="Overall XP"><button class="btn secondary" id="debugSetOverallXp">Set overall XP</button><select id="debugSkillSelect"><option value="">Choose skill…</option></select><input id="debugSkillXp" type="number" min="0" placeholder="Skill XP"><button class="btn secondary" id="debugSetSkillXp">Set skill XP</button></div><div class="debugMetric"><span>Calculated overall level</span><strong id="debugLevel">—</strong></div><div class="debugMetric"><span>Skill progression thresholds</span><strong>60 / 90 / 120 / 150 / 180 / 225 / 270 / 300 XP per level band</strong></div></div>
+  <div class="card"><h3>Quest Lab</h3><p class="sub">Inspect current quests, inject a disposable test quest, or test the completion animation in the sandbox.</p><div class="debugTools"><button class="btn secondary" id="debugAddQuest">Add test quest</button><button class="btn secondary" id="debugRefreshQuests">Refresh inspection</button></div><div id="debugQuestList" class="debugLog">Start sandbox to inspect quests.</div></div>
+  <div class="card"><h3>Campaign Planner Test Bench</h3><p class="sub">Run the planner with preset combinations; results are isolated in the sandbox.</p><div class="debugTools"><select id="debugPlannerTime"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60" selected>1 hour</option><option value="120">2 hours</option><option value="240">4+ hours</option></select><select id="debugPlannerEnergy"><option value="low">Low energy</option><option value="normal" selected>Normal energy</option><option value="high">High energy</option></select><select id="debugPlannerFocus"><option value="balanced">Balanced</option><option value="adventure">Adventure</option><option value="social">Social</option><option value="productive">Productive</option></select><select id="debugPlannerLocation"><option value="either">Either location</option><option value="home">Home</option><option value="outside">Outside</option></select><button class="btn" id="debugRunPlanner">Run planner preset</button></div><div id="debugPlannerResult" class="debugLog">No planner test run yet.</div></div>
+  <div class="card"><h3>Save Inspector & Event Log</h3><p class="sub">Read-only state summary. No raw PINs or authentication secrets are displayed.</p><div class="debugTools"><button class="btn secondary" id="debugInspectSave">Inspect sandbox save</button><button class="btn secondary" id="debugClearLog">Clear event log</button></div><div id="debugSaveInspector" class="debugLog">Start sandbox to inspect state.</div><div id="debugEventLog" class="debugLog">Debug workshop ready. Authentication and cloud configuration are unchanged.</div></div>
+</section>
 </main>
 <footer>WAYFARER · Your real life is the campaign. · Progress is saved on this device.</footer>
 </div>
@@ -305,6 +320,7 @@ document.querySelectorAll(".tab").forEach(function(button){
     document.querySelectorAll(".tab").forEach(function(tab){tab.classList.toggle("active", tab===button);});
     document.querySelectorAll(".section").forEach(function(section){section.classList.toggle("active", section.id === "section-" + button.dataset.tab);});
     if(button.dataset.tab === "skills" && typeof renderSkillCatalog === "function") renderSkillCatalog();
+    if(button.dataset.tab === "debug" && typeof renderDebugPanel === "function") renderDebugPanel();
   });
 });
 
@@ -419,16 +435,18 @@ async function syncCurrentState(){
  if(error){console.error("Wayfarer cloud save failed",error);setCloudStatus("Signed in, but cloud save failed. Check your connection and Supabase setup.");}
  else setCloudStatus("Cloud sync active for @"+(document.getElementById("accountUsername").value.trim()||"your account")+". Your progress is saved online.");
 }
+let wayfarerSignedInUsername="";
 async function finishSignIn(username,pin,create){
  if(!cloudConfigured){setCloudStatus("Cloud accounts need setup first. Follow the Supabase instructions in README.txt and add your project URL and anon key to index.html.");toast("Cloud accounts are not configured yet.");return;}
  const email=usernameEmail(username);
  setCloudStatus(create?"Creating your account…":"Signing in…");
  const authResult=create
-   ? await cloudClient.auth.signUp({email,password:pin,options:{data:{wayfarer_username:username.toLowerCase()}}})
+   ? await cloudClient.auth.signUp({email,password:pin,options:{data:{wayfarer_username:username}}})
    : await cloudClient.auth.signInWithPassword({email,password:pin});
  if(authResult.error){setCloudStatus(authResult.error.message+" If creating an account, check that email confirmations are disabled in Supabase.");return;}
  if(create && !authResult.data.session){setCloudStatus("Account request received, but Supabase returned no session. Turn off email confirmations in Supabase Auth, then try again.");return;}
  cloudUser=authResult.data.user;
+ wayfarerSignedInUsername=username;
  if(!cloudUser){setCloudStatus("Could not establish a session. Please try again.");return;}
  const {data:saveRow,error:readError}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();
  if(readError){setCloudStatus("Signed in, but could not load cloud data. Check that supabase-schema.sql was run.");return;}
@@ -480,7 +498,7 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  cloudHydrating=false;
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
-if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("createAccountBtn").style.display="none";}});}
+if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=String(data.session.user.user_metadata?.wayfarer_username||"");cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("createAccountBtn").style.display="none";}});}
 function save(skipRender=false){localStorage.setItem(KEY,JSON.stringify(state));if(!skipRender)render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
@@ -1235,6 +1253,30 @@ updateCampaignPreview();
 // Initialize the interface from saved local data on every page load.
 // This restores selected skill cards immediately after refresh, without requiring another action.
 ensureSelectedSkills();
+
+// Admin Debug Workshop (front-end convenience gate; not security for privileged backend operations).
+let debugSandboxActive=false, debugLiveStateBackup=null, debugSandboxState=null, debugLogEntries=[];
+function debugLog(message){debugLogEntries.unshift(new Date().toLocaleTimeString()+" · "+message);debugLogEntries=debugLogEntries.slice(0,80);const el=document.getElementById("debugEventLog");if(el)el.textContent=debugLogEntries.join("\n");}
+function debugIsAdmin(){return wayfarerSignedInUsername==="Admin";}
+function debugRequireSandbox(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated sandbox first.");return false;}return true;}
+function renderDebugPanel(){const btn=document.getElementById("debugTabButton");if(!btn)return;btn.style.display=debugIsAdmin()?"inline-flex":"none";if(!debugIsAdmin()&&document.getElementById("section-debug")?.classList.contains("active")){document.querySelector('[data-tab="quests"]')?.click();return;}const status=document.getElementById("debugSandboxStatus");if(status)status.textContent=debugSandboxActive?"Sandbox active · changes are temporary":"Sandbox inactive";const data=debugSandboxActive?state:(debugLiveStateBackup||state);const date=document.getElementById("debugActiveDate");if(date)date.textContent=data.activeDate||"—";const level=document.getElementById("debugLevel");if(level)level.textContent=String(Math.floor((Number(data.xp)||0)/100)+1);const skillSel=document.getElementById("debugSkillSelect");if(skillSel){const previous=skillSel.value;const names=[...new Set([...(data.selectedSkills||[]),...skillCatalog.flatMap(c=>c.skills.map(x=>x[0]))])];skillSel.innerHTML='<option value="">Choose skill…</option>'+names.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join("");if(names.includes(previous))skillSel.value=previous;}if(debugSandboxActive)debugRenderQuests();}
+function debugRenderQuests(){const el=document.getElementById("debugQuestList");if(!el)return;const qs=Array.isArray(state.quests)?state.quests:[];el.textContent=qs.length?qs.map((q,i)=>`${i+1}. ${q.done?'[DONE]':'[OPEN]'} ${q.title||'(untitled)'} · skill=${q.skill||'—'} · xp=${q.xp??'—'} · source=${q.source||'—'} · id=${q.id||'—'}`).join("\n"):"No quests in sandbox.";}
+function debugInspect(){const el=document.getElementById("debugSaveInspector");if(!el)return;const d=debugSandboxActive?state:(debugLiveStateBackup||state);el.textContent=JSON.stringify({mode:debugSandboxActive?"sandbox":"read-only live snapshot",xp:d.xp,calculatedLevel:Math.floor((Number(d.xp)||0)/100)+1,completedTotal:d.completedTotal,questCount:(d.quests||[]).length,openQuests:(d.quests||[]).filter(q=>!q.done).length,completedQuests:(d.quests||[]).filter(q=>q.done).length,selectedSkills:d.selectedSkills,skillXp:d.skillXp,activeDate:d.activeDate,lastDay:d.lastDay,journalEntries:(d.journal||[]).length,todoItems:(d.todo||[]).length,questHistoryKeys:Object.keys(d.questHistory||{}).length},null,2);}
+document.getElementById("debugStartSandbox")?.addEventListener("click",()=>{if(!debugIsAdmin()){toast("Sign in using the exact username Admin.");return;}if(debugSandboxActive){toast("Sandbox is already active.");return;}debugLiveStateBackup=JSON.parse(JSON.stringify(state));debugSandboxState=JSON.parse(JSON.stringify(state));state=debugSandboxState;debugSandboxActive=true;debugLog("Sandbox started from a copy of the current character.");render();renderDebugPanel();debugInspect();toast("Isolated sandbox started.");});
+document.getElementById("debugExitSandbox")?.addEventListener("click",()=>{if(!debugSandboxActive){toast("Sandbox is not active.");return;}state=debugLiveStateBackup;debugLiveStateBackup=null;debugSandboxState=null;debugSandboxActive=false;render();renderDebugPanel();debugInspect();debugLog("Sandbox discarded; original in-memory character restored.");toast("Sandbox discarded. Real progress restored.");});
+document.querySelectorAll("[data-debug-days]").forEach(b=>b.addEventListener("click",()=>{if(!debugRequireSandbox())return;const d=Number(b.dataset.debugDays)||1;const date=new Date((state.activeDate||today())+"T12:00:00");date.setDate(date.getDate()+d);state.activeDate=date.toLocaleDateString("en-CA");debugLog(`Time Machine shifted sandbox date by +${d} days to ${state.activeDate}.`);renderDebugPanel();debugInspect();}));
+document.getElementById("debugSetOverallXp")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;state.xp=Math.max(0,Number(document.getElementById("debugOverallXp").value)||0);debugLog("Set sandbox overall XP to "+state.xp+".");renderDebugPanel();});
+document.getElementById("debugSetSkillXp")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;const skill=document.getElementById("debugSkillSelect").value;if(!skill){toast("Choose a skill first.");return;}if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};state.skillXp[skill]=Math.max(0,Number(document.getElementById("debugSkillXp").value)||0);debugLog("Set sandbox XP for "+skill+" to "+state.skillXp[skill]+".");renderDebugPanel();});
+document.getElementById("debugAddQuest")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;if(!Array.isArray(state.quests))state.quests=[];state.quests.unshift({id:"debug-"+Date.now(),title:"[TEST] Debug Workshop quest",description:"Disposable sandbox-only quest for checking quest cards and completion behavior.",category:"Skill",skill:state.selectedSkills?.[0]||"Adventure",xp:15,done:false,source:"debug-sandbox"});debugLog("Added disposable test quest to sandbox.");render();debugRenderQuests();});
+document.getElementById("debugRefreshQuests")?.addEventListener("click",()=>{debugRenderQuests();debugLog("Quest inspection refreshed.");});
+document.getElementById("debugRunPlanner")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;const opts={time:Number(document.getElementById("debugPlannerTime").value),energy:document.getElementById("debugPlannerEnergy").value,focus:document.getElementById("debugPlannerFocus").value,place:document.getElementById("debugPlannerLocation").value};try{const result=generateQuests(opts);const el=document.getElementById("debugPlannerResult");if(el)el.textContent=JSON.stringify({preset:opts,result:result??"Planner invoked; inspect quest board below.",quests:(state.quests||[]).map(q=>({title:q.title,skill:q.skill,done:q.done,source:q.source}))},null,2);debugLog("Ran planner preset: "+JSON.stringify(opts));render();}catch(e){document.getElementById("debugPlannerResult").textContent="Planner error: "+String(e?.stack||e);debugLog("Planner test failed: "+String(e));}});
+document.getElementById("debugInspectSave")?.addEventListener("click",()=>{debugInspect();debugLog("State summary inspected; secrets omitted.");});
+document.getElementById("debugClearLog")?.addEventListener("click",()=>{debugLogEntries=[];document.getElementById("debugEventLog").textContent="Log cleared.";});
+// Keep sandbox changes out of localStorage and Supabase. The regular save path is temporarily shadowed while sandbox mode is active.
+const debugOriginalSave=save;
+save=function(skipRender=false){if(debugSandboxActive){if(!skipRender)render();return;}return debugOriginalSave(skipRender);};
+
+renderDebugPanel();
 render();
 </script>
 </body>
