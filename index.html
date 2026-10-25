@@ -128,19 +128,15 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
 </section>
 
 <section class="section" id="section-settings">
-  <div class="sectionHead"><div><h2>Campaign Settings</h2><p>Adapt the quest board to your real life.</p></div></div>
+  <div class="sectionHead"><div><h2>Campaign Settings</h2><p>Choose how challenging today's quests should be.</p></div></div>
   <div class="card">
-    <form id="settingsForm" class="formgrid">
-      <div class="field"><label for="shift">Today's shift / availability</label><select id="shift"><option value="low">Low energy / post-night shift</option><option value="normal" selected>Normal day</option><option value="free">Free day</option></select></div>
-      <div class="field"><label for="difficulty">Quest difficulty</label><select id="difficulty"><option value="gentle">Gentle</option><option value="balanced" selected>Balanced</option><option value="hardcore">Hardcore</option></select></div>
-      <div class="field"><label for="social">Social progression</label><select id="social"><option value="gradual" selected>Gradual</option><option value="direct">Direct</option><option value="mixed">Mixed</option></select></div>
-      <div class="field"><label for="gaming">Gaming rule</label><select id="gaming"><option value="moderate" selected>Moderate</option><option value="strict">After quests</option><option value="minimal">Occasionally only</option></select></div>
-      <div class="field"><label for="workPattern">Work pattern</label><select id="workPattern"><option>Rotating 8-hour shifts</option><option>Morning shift</option><option>Evening shift</option><option>Night shift</option><option>Day off</option></select></div>
-      <div class="field"><label for="readTarget">Daily reading target (pages)</label><input id="readTarget" type="number" min="1" max="100" value="10"></div>
-      <div class="field wide"><button class="btn" type="submit">Save campaign settings</button></div>
-    </form>
-    <div class="notice">This first version saves progress in this browser on this device. Clearing browser website data may erase it. Cloud sync and AI-generated quests can be added in a later version.</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="exportBtn">Export backup</button><button class="btn secondary" id="importBtn">Import backup</button><button class="btn ghost" id="wipeBtn">Reset all data</button><input type="file" id="importFile" accept="application/json" hidden></div>
+    <label for="difficulty">Quest difficulty</label>
+    <select id="difficulty">
+      <option value="lazy">Lazy</option>
+      <option value="normal" selected>Normal</option>
+      <option value="dedicated">Dedicated</option>
+    </select>
+    <button class="btn primary" id="saveSettingsBtn" style="margin-top:14px;width:100%">Save difficulty</button>
   </div>
 </section>
 </main>
@@ -242,6 +238,10 @@ if(!state.settings)state.settings={...defaultSettings};
 if(!state.skillXp)state.skillXp={};
 if(state.activeDate!==today()){state.activeDate=today();state.quests=[]}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function difficultyScale(){
+ const d=(state.settings&&state.settings.difficulty)||"normal";
+ return d==="lazy"?0.7:(d==="dedicated"?1.3:1);
+}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
@@ -284,10 +284,9 @@ function renderSkillProgress(){
  const other=document.getElementById("attributeList");
  const skillMarkup=attrs.length?attrs.map(a=>{
    const xp=Number(state.skillXp[a]||0), level=Math.floor(xp/50)+1, rem=xp%50, progress=rem/50*100;
-   return `<div class="skillProgressCard" style="display:block;padding:14px;border:1px solid var(--line);border-radius:12px;background:rgba(16,12,9,.32)">
-     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><strong>${esc(a)}</strong><span style="color:var(--gold);white-space:nowrap">Level ${level} · ${xp} XP</span></div>
-     <div class="miniBar" style="margin-top:10px"><div style="width:${progress}%"></div></div>
-     <div class="sub" style="margin-top:6px">${rem}/50 XP to Level ${level+1}</div>
+   return `<div class="skillProgressCard" style="display:block;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(16,12,9,.32)">
+     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:nowrap;font-size:14px;line-height:1.2"><strong style="min-width:0;overflow-wrap:anywhere">${esc(a)}</strong><span style="color:var(--gold);white-space:nowrap;font-size:12px">${rem}/50 XP · Lv ${level}</span></div>
+     <div class="miniBar" style="margin-top:6px;height:5px"><div style="width:${progress}%"></div></div>
    </div>`;
  }).join(""):'<div class="empty">No skills selected yet. Open Skills, choose what you want to improve, then tap Save selected skills.</div>';
  if(root) root.innerHTML=skillMarkup;
@@ -362,6 +361,22 @@ document.addEventListener("click", function(event) {
   if (tabName === "skills" && typeof renderSkillCatalog === "function") renderSkillCatalog();
   window.scrollTo(0, 0);
 });
+
+
+
+// Persist the simplified difficulty setting.
+const difficultySelect=document.getElementById("difficulty");
+if(difficultySelect){
+  difficultySelect.value=state.settings.difficulty||"normal";
+  const saveDifficultyButton=document.getElementById("saveSettingsBtn");
+  if(saveDifficultyButton)saveDifficultyButton.addEventListener("click",function(event){
+    event.preventDefault();
+    state.settings.difficulty=difficultySelect.value;
+    save();
+    toast("Difficulty saved: "+difficultySelect.options[difficultySelect.selectedIndex].text);
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+}
 
 // Keep the hosted PWA's service worker updated when a new version is deployed.
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
