@@ -121,7 +121,7 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
 <div><label for="todoDue">Due date (optional)</label><input id="todoDue" type="date" /></div>
 <div><label for="todoPriority">Priority</label><select id="todoPriority"><option value="normal" selected>Normal</option><option value="high">High</option><option value="low">Low</option></select></div>
 <div class="wide"><label for="todoNotes">Notes (optional)</label><textarea id="todoNotes" rows="2" placeholder="Any details to remember..."></textarea></div>
-<div class="wide row" style="flex-wrap:wrap;gap:8px"><button class="btn primary" id="todoSubmitBtn" type="submit">Save task</button><button class="btn" id="cancelTodoEditBtn" type="button" style="display:none">Cancel edit</button></div>
+<div class="wide row" style="flex-wrap:wrap;gap:8px"><button class="btn primary" id="todoSubmitBtn" type="button">Save task</button><button class="btn" id="cancelTodoEditBtn" type="button" style="display:none">Cancel edit</button></div>
 </form></div>
 <div class="card" style="margin-top:14px"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">Your tasks</h3><span class="tag" id="todoCount">0 open</span></div><div id="todoList" style="margin-top:10px"><div class="empty">No tasks yet. Add something you want to remember.</div></div></div>
 </section>
@@ -380,7 +380,33 @@ const todoForm=document.getElementById("todoForm"),todoSubmitBtn=document.getEle
 function resetTodoForm(){todoEditingId=null;if(todoForm)todoForm.reset();if(todoSubmitBtn)todoSubmitBtn.textContent="Save task";if(cancelTodoEditBtn)cancelTodoEditBtn.style.display="none";}
 function editTodo(id){const t=state.todo.find(x=>String(x.id)===String(id));if(!t)return;todoEditingId=t.id;document.getElementById("todoTitle").value=t.title||"";document.getElementById("todoDue").value=t.dueDate||"";document.getElementById("todoPriority").value=t.priority||"normal";document.getElementById("todoNotes").value=t.notes||"";todoSubmitBtn.textContent="Update task";cancelTodoEditBtn.style.display="inline-flex";document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab==="todo"));document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-todo"));window.scrollTo({top:0,behavior:"smooth"});}
 function deleteTodo(id){const t=state.todo.find(x=>String(x.id)===String(id));if(!t||!confirm(`Delete task "${t.title}"?`))return;state.todo=state.todo.filter(x=>String(x.id)!==String(id));if(String(todoEditingId)===String(id))resetTodoForm();save();toast("Task deleted.");}
-todoForm.addEventListener("submit",e=>{e.preventDefault();const title=document.getElementById("todoTitle").value.trim();if(!title)return;const now=new Date(),data={title,dueDate:document.getElementById("todoDue").value,priority:document.getElementById("todoPriority").value,notes:document.getElementById("todoNotes").value.trim(),updatedAt:now.toISOString()};if(todoEditingId!==null){const t=state.todo.find(x=>String(x.id)===String(todoEditingId));if(!t){resetTodoForm();return;}Object.assign(t,data);save();resetTodoForm();render();toast("Task updated.");}else{const id=(crypto.randomUUID?crypto.randomUUID():String(Date.now()));state.todo.push({id,...data,completed:false,createdAt:now.toISOString()});save();resetTodoForm();render();toast("Task saved.");}});
+function saveTodoTask(){
+ const wasEditing=todoEditingId!==null;
+ try{
+  const titleEl=document.getElementById("todoTitle");
+  const title=titleEl.value.trim();
+  if(!title){titleEl.focus();toast("Please enter a task name.");return;}
+  const now=new Date();
+  const data={title,dueDate:document.getElementById("todoDue").value,priority:document.getElementById("todoPriority").value,notes:document.getElementById("todoNotes").value.trim(),updatedAt:now.toISOString()};
+  if(todoEditingId!==null){
+   const task=state.todo.find(x=>String(x.id)===String(todoEditingId));
+   if(!task){resetTodoForm();toast("That task could not be found.");return;}
+   Object.assign(task,data);
+  }else{
+   const id=(window.crypto&&typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2);
+   state.todo.push({id,...data,completed:false,createdAt:now.toISOString()});
+  }
+  localStorage.setItem(KEY,JSON.stringify(state));
+  resetTodoForm();
+  render();
+  toast(wasEditing?"Task updated.":"Task saved.");
+ }catch(error){
+  console.error("Could not save To Do task",error);
+  toast("Couldn't save task. Please try again.");
+ }
+}
+todoSubmitBtn.addEventListener("click",saveTodoTask);
+todoForm.addEventListener("submit",function(event){event.preventDefault();saveTodoTask();});
 cancelTodoEditBtn.addEventListener("click",resetTodoForm);
 document.getElementById("addTodoBtn").addEventListener("click",()=>document.getElementById("todoTitle").focus());
 
