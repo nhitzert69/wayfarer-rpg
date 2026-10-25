@@ -63,7 +63,7 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
   </div>
   <div class="characterSkills">
     <div class="sectionHead" style="margin:18px 0 14px"><div><h2 style="font-size:22px;margin:0">Your Skills</h2><p style="margin-top:5px">Earn skill XP by taking action.</p></div></div>
-    <div class="card" style="background:rgba(16,12,9,.45)"><div class="statList" id="mainAttributeList"></div></div>
+    <div class="card" id="mainSkillCards" style="background:rgba(16,12,9,.45);display:grid;gap:14px"><div class="empty">Choose skills in the Skills tab to see them here.</div></div>
   </div>
   <div class="stats" style="margin-top:14px">
     <div class="stat"><b id="streak">0 days</b><span>Quest days</span></div>
@@ -280,9 +280,18 @@ function completeQuest(id,done=true){const q=state.quests.find(q=>q.id===id);if(
 function renderSkillProgress(){
  ensureSelectedSkills();
  const attrs=state.selectedSkills;
- const skillMarkup=attrs.length?attrs.map(a=>{const xp=Number(state.skillXp[a]||0), level=Math.floor(xp/50)+1, rem=xp%50, progress=rem/50*100;return `<div class="statLine" style="display:block;margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(16,12,9,.32)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>${esc(a)}</strong><span style="color:var(--gold);white-space:nowrap">Level ${level} · ${xp} XP</span></div><div class="miniBar" style="margin-top:9px"><div style="width:${progress}%"></div></div><div class="sub" style="margin-top:5px">${rem}/50 XP to Level ${level+1}</div></div>`}).join(""):'<div class="empty">No skills selected yet. Open Skills, choose what you want to improve, then tap Save selected skills.</div>';
- const main=document.getElementById("mainAttributeList"); if(main) main.innerHTML=skillMarkup;
- const other=document.getElementById("attributeList"); if(other) other.innerHTML=skillMarkup;
+ const root=document.getElementById("mainSkillCards");
+ const other=document.getElementById("attributeList");
+ const skillMarkup=attrs.length?attrs.map(a=>{
+   const xp=Number(state.skillXp[a]||0), level=Math.floor(xp/50)+1, rem=xp%50, progress=rem/50*100;
+   return `<div class="skillProgressCard" style="display:block;padding:14px;border:1px solid var(--line);border-radius:12px;background:rgba(16,12,9,.32)">
+     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><strong>${esc(a)}</strong><span style="color:var(--gold);white-space:nowrap">Level ${level} · ${xp} XP</span></div>
+     <div class="miniBar" style="margin-top:10px"><div style="width:${progress}%"></div></div>
+     <div class="sub" style="margin-top:6px">${rem}/50 XP to Level ${level+1}</div>
+   </div>`;
+ }).join(""):'<div class="empty">No skills selected yet. Open Skills, choose what you want to improve, then tap Save selected skills.</div>';
+ if(root) root.innerHTML=skillMarkup;
+ if(other) other.innerHTML=skillMarkup;
 }
 function renderSkillCatalog(){
  const root=document.getElementById("skillCatalog"); if(!root)return;
@@ -301,11 +310,18 @@ function renderSkillCatalog(){
 const saveSkillsButton=document.getElementById("saveSkillsBtn");
 if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
  event.preventDefault();
+ const catalog=document.getElementById("skillCatalog");
+ if(catalog){
+   state.selectedSkills=Array.from(catalog.querySelectorAll("[data-skill-choice]:checked"))
+     .map(input=>input.getAttribute("data-skill-choice"))
+     .filter(name=>allSkillNames().includes(name));
+ }
  ensureSelectedSkills();
  try{
    localStorage.setItem(KEY,JSON.stringify(state));
    renderSkillProgress();
-   toast(`Saved ${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"}. Return to Quest Board to see your skill cards.`);
+   toast(`✓ Saved ${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"}.`);
+   window.scrollTo({top:0,behavior:"smooth"});
  }catch(error){
    toast("Could not save skills on this device. Please check browser storage settings.");
    console.error("Wayfarer could not save selected skills:",error);
