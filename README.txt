@@ -1,3 +1,5 @@
+WAYFARER v69 — CHARACTER PORTRAITS AND ARTIFACTS SLOT
+
 WAYFARER v47 — PROGRESSIVE SKILL LEVELS
 
 The app is still a static GitHub Pages website. Cross-device cloud saves require a Supabase project that you own. This ZIP includes the account UI, Supabase client integration, and SQL schema, but it is NOT connected to a live database until you configure your project below.
@@ -33,3 +35,10 @@ V47 CHANGES
 - Added five Master quest templates for each of the seven skills (35 new templates).
 - The username + PIN authentication code and Supabase schema are unchanged.
 - IMPORTANT: this distributable ZIP uses placeholders for the Supabase project URL and public key. Before replacing your live repository files, copy the two WAYFARER_SUPABASE_URL and WAYFARER_SUPABASE_ANON_KEY values from your currently working GitHub index.html into this version. Do not change any other authentication code, and never use a service_role key.
+
+
+V69 CHANGES
+- Replaced male and female character portraits with the approved improved sunset-scene versions (670×1029).
+- Removed Main hand and Off hand slots from the Character equipment panel.
+- Added an Artifacts slot.
+- Updated the service-worker cache version to v69.
