@@ -241,7 +241,6 @@ document.querySelectorAll(".tab").forEach(function(button){
     document.querySelectorAll(".tab").forEach(function(tab){tab.classList.toggle("active", tab===button);});
     document.querySelectorAll(".section").forEach(function(section){section.classList.toggle("active", section.id === "section-" + button.dataset.tab);});
     if(button.dataset.tab === "skills" && typeof renderSkillCatalog === "function") renderSkillCatalog();
-    window.scrollTo({top: 0, behavior: "smooth"});
   });
 });
 
@@ -420,8 +419,7 @@ if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
    localStorage.setItem(KEY,JSON.stringify(state));
    renderSkillProgress();
    toast(`✓ Saved ${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"}.`);
-   window.scrollTo({top:0,behavior:"smooth"});
- }catch(error){
+   }catch(error){
    toast("Could not save skills on this device. Please check browser storage settings.");
    console.error("Wayfarer could not save selected skills:",error);
  }
@@ -487,8 +485,7 @@ function editJournalEntry(id){
   if(cancelJournalEditBtn) cancelJournalEditBtn.style.display = "inline-flex";
   document.querySelectorAll(".tab").forEach(tab=>tab.classList.toggle("active",tab.dataset.tab==="journal"));
   document.querySelectorAll(".section").forEach(section=>section.classList.toggle("active",section.id==="section-journal"));
-  window.scrollTo({top:0,behavior:"smooth"});
-}
+ }
 function deleteJournalEntry(id){
   const entry = state.journal.find(item => String(item.id) === String(id));
   if(!entry) return;
@@ -582,8 +579,7 @@ if(difficultySelect){
     state.settings.difficulty=difficultySelect.value;
     save();
     toast("Difficulty saved: "+difficultySelect.options[difficultySelect.selectedIndex].text);
-    window.scrollTo({top:0,behavior:"smooth"});
-  });
+     });
 }
 
 
