@@ -247,19 +247,21 @@ function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
 function categoryIcon(c){return ({Adventure:"🧭",Social:"🗣️",Skill:"🎹",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
 function render(){
+ // The old global-character-level widgets were removed from the main page.
+ // Update them only if a future version puts those elements back.
  const level=Math.floor(state.xp/100)+1, rem=state.xp%100;
- document.getElementById("level").textContent=level;
- document.getElementById("totalXp").textContent=state.xp;
- document.getElementById("toNext").textContent=100-rem;
- document.getElementById("xpBar").style.width=rem+"%";
- document.getElementById("xpCaption").textContent=`${rem} / 100 XP toward your next level`;
+ const levelEl=document.getElementById("level"); if(levelEl) levelEl.textContent=level;
+ const totalXpEl=document.getElementById("totalXp"); if(totalXpEl) totalXpEl.textContent=state.xp;
+ const toNextEl=document.getElementById("toNext"); if(toNextEl) toNextEl.textContent=100-rem;
+ const xpBarEl=document.getElementById("xpBar"); if(xpBarEl) xpBarEl.style.width=rem+"%";
+ const xpCaptionEl=document.getElementById("xpCaption"); if(xpCaptionEl) xpCaptionEl.textContent=`${rem} / 100 XP toward your next level`;
  const done=state.quests.filter(q=>q.done).length;
- document.getElementById("dailyCount").textContent=`${done} / ${state.quests.length}`;
- document.getElementById("completedCount").textContent=state.completedTotal;
- document.getElementById("journalCount").textContent=state.journal.length;
- document.getElementById("streak").textContent=`${state.questDays.length} days`;
- document.getElementById("dateLabel").textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
- document.getElementById("shiftNote").textContent=({low:"Keep it gentle. Recovery is part of the campaign.",normal:"Small steps forge a different life.",free:"Your wider world awaits. Consider a longer adventure."})[state.settings.shift]||"Small steps forge a different life.";
+ const dailyCountEl=document.getElementById("dailyCount"); if(dailyCountEl) dailyCountEl.textContent=`${done} / ${state.quests.length}`;
+ const completedCountEl=document.getElementById("completedCount"); if(completedCountEl) completedCountEl.textContent=state.completedTotal;
+ const journalCountEl=document.getElementById("journalCount"); if(journalCountEl) journalCountEl.textContent=state.journal.length;
+ const streakEl=document.getElementById("streak"); if(streakEl) streakEl.textContent=`${state.questDays.length} days`;
+ const dateLabelEl=document.getElementById("dateLabel"); if(dateLabelEl) dateLabelEl.textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+ const shiftNoteEl=document.getElementById("shiftNote"); if(shiftNoteEl) shiftNoteEl.textContent=({low:"Keep it gentle. Recovery is part of the campaign.",normal:"Small steps forge a different life.",free:"Your wider world awaits. Consider a longer adventure."})[state.settings.shift]||"Small steps forge a different life.";
  const grid=document.getElementById("questGrid");
  grid.innerHTML=state.quests.length?state.quests.map(q=>`<article class="card ${q.done?"questDone":""}">
   <div class="questTop"><input class="check" type="checkbox" aria-label="Complete ${esc(q.title)}" data-complete="${q.id}" ${q.done?"checked":""}>
