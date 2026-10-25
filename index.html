@@ -270,29 +270,47 @@ function render(){
  </article>`).join(""):'<div class="empty">Your quest board is clear. Generate starter quests or add a mission.</div>';
  grid.querySelectorAll("[data-complete],[data-complete-btn]").forEach(el=>el.addEventListener(el.type==="checkbox"?"change":"click",()=>completeQuest(el.dataset.complete||el.dataset.completeBtn,el.type==="checkbox"?el.checked:true)));
  ensureSelectedSkills();
- const attrs=state.selectedSkills;
- const skillMarkup=attrs.length?attrs.map(a=>{const xp=Number(state.skillXp[a]||0), level=Math.floor(xp/50)+1, rem=xp%50, progress=rem/50*100;return `<div class="statLine" style="display:block;margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(16,12,9,.32)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>${esc(a)}</strong><span style="color:var(--gold);white-space:nowrap">Level ${level} · ${xp} XP</span></div><div class="miniBar" style="margin-top:9px"><div style="width:${progress}%"></div></div><div class="sub" style="margin-top:5px">${rem}/50 XP to Level ${level+1}</div></div>`}).join(""):'<div class="empty">No skills selected yet. Open Skills, choose what you want to improve, then tap Save selected skills.</div>';
- document.getElementById("attributeList").innerHTML=skillMarkup;
- document.getElementById("mainAttributeList").innerHTML=skillMarkup;
+ renderSkillProgress();
  renderSkillCatalog();
  document.getElementById("journalList").innerHTML=state.journal.length?[...state.journal].reverse().map(j=>`<div class="logItem"><div class="row"><strong>${esc(j.title)}</strong><span class="tag">${esc(j.type)}</span></div><div class="sub">${esc(j.date)}</div><p style="margin:7px 0 0;color:#d2c2a6;white-space:pre-wrap">${esc(j.text||"")}</p></div>`).join(""):'<div class="empty">Your chronicles will appear here.</div>';
  for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el)el.value=val}
 }
 function completeQuest(id,done=true){const q=state.quests.find(q=>q.id===id);if(!q||q.done===done)return;if(done){q.done=true;state.xp+=Number(q.xp);if(!state.skillXp)state.skillXp={};const skill=q.skill||({"Social":"Social Confidence","Adventure":"Adventure","Skill":"Creativity","Knowledge":"Knowledge","Relationships":"Relationships","Daily":"Discipline","Side quest":"Discipline","Boss quest":"Adventure"})[q.category]||"Discipline";state.skillXp[skill]=(Number(state.skillXp[skill])||0)+Number(q.xp);state.completedTotal++;if(!state.questDays.includes(today()))state.questDays.push(today());toast(`Quest complete! +${q.xp} XP`)}else{toast("Earned XP is never removed. Your completed quest stays recorded.")}save()}
 
+function renderSkillProgress(){
+ ensureSelectedSkills();
+ const attrs=state.selectedSkills;
+ const skillMarkup=attrs.length?attrs.map(a=>{const xp=Number(state.skillXp[a]||0), level=Math.floor(xp/50)+1, rem=xp%50, progress=rem/50*100;return `<div class="statLine" style="display:block;margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(16,12,9,.32)"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>${esc(a)}</strong><span style="color:var(--gold);white-space:nowrap">Level ${level} · ${xp} XP</span></div><div class="miniBar" style="margin-top:9px"><div style="width:${progress}%"></div></div><div class="sub" style="margin-top:5px">${rem}/50 XP to Level ${level+1}</div></div>`}).join(""):'<div class="empty">No skills selected yet. Open Skills, choose what you want to improve, then tap Save selected skills.</div>';
+ const main=document.getElementById("mainAttributeList"); if(main) main.innerHTML=skillMarkup;
+ const other=document.getElementById("attributeList"); if(other) other.innerHTML=skillMarkup;
+}
 function renderSkillCatalog(){
  const root=document.getElementById("skillCatalog"); if(!root)return;
  ensureSelectedSkills();
  root.innerHTML=skillCatalog.map(cat=>`<div class="skillCategory"><h3>${cat.icon} ${esc(cat.category)}</h3><div class="skillChoices">${cat.skills.map(([name,desc])=>`<label class="skillChoice"><input type="checkbox" data-skill-choice="${esc(name)}" ${state.selectedSkills.includes(name)?"checked":""}><span><strong>${esc(name)}</strong><small>${esc(desc)}</small></span></label>`).join("")}</div></div>`).join("");
- document.getElementById("selectedSkillCount").textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
+ const count=document.getElementById("selectedSkillCount");
+ if(count)count.textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
  root.querySelectorAll("[data-skill-choice]").forEach(input=>input.addEventListener("change",()=>{
    const name=input.dataset.skillChoice;
    if(input.checked&&!state.selectedSkills.includes(name))state.selectedSkills.push(name);
    if(!input.checked)state.selectedSkills=state.selectedSkills.filter(s=>s!==name);
-   document.getElementById("selectedSkillCount").textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
+   const countNow=document.getElementById("selectedSkillCount");
+   if(countNow)countNow.textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
  }));
 }
-document.getElementById("saveSkillsBtn").addEventListener("click",()=>{ensureSelectedSkills();save();toast("Skills saved. Your Quest Board has been updated.")});
+const saveSkillsButton=document.getElementById("saveSkillsBtn");
+if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
+ event.preventDefault();
+ ensureSelectedSkills();
+ try{
+   localStorage.setItem(KEY,JSON.stringify(state));
+   renderSkillProgress();
+   toast(`Saved ${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"}. Return to Quest Board to see your skill cards.`);
+ }catch(error){
+   toast("Could not save skills on this device. Please check browser storage settings.");
+   console.error("Wayfarer could not save selected skills:",error);
+ }
+});
 
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
