@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17130f">
+<meta name="description" content="A fantasy-inspired real-life quest tracker for habits, adventures, relationships, reading, and skills.">
+<link rel="manifest" href="manifest.json">
+<title>Wayfarer — Real-Life RPG</title>
+<style>
+:root{--bg:#15120f;--panel:#211b16;--panel2:#2a2119;--line:#59432d;--gold:#e4bd76;--gold2:#b98b49;--cream:#f4e8cf;--muted:#b9a88d;--green:#8fb58b;--red:#c77b67;--shadow:0 12px 30px #0005}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(ellipse at top,#39291b 0,#191410 48%,#100e0c 100%);color:var(--cream);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit} button{cursor:pointer}
+.app{max-width:1050px;margin:auto;padding:18px 16px 92px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:4px 0 18px}
+.brand{display:flex;align-items:center;gap:12px}.crest{width:46px;height:46px;border:1px solid var(--gold2);border-radius:13px;display:grid;place-items:center;font-size:25px;background:linear-gradient(145deg,#44301c,#1b1510);box-shadow:inset 0 0 18px #e4bd7615}
+h1,h2,h3,p{margin-top:0} h1{font:700 24px Georgia,serif;letter-spacing:.5px;margin:0} .eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:10px;color:var(--gold);margin:0 0 3px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:7px 11px;color:var(--muted);font-size:12px;background:#17120f}
+.hero{border:1px solid var(--line);border-radius:20px;padding:22px;background:linear-gradient(120deg,#35251a,#211912 60%,#1b1813);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero:after{content:"✦";position:absolute;right:22px;top:10px;color:#d6a75b22;font-size:110px;pointer-events:none}
+.heroTop{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.level{font:700 30px Georgia,serif;color:var(--gold)}.sub{color:var(--muted);font-size:13px}
+.progress{height:9px;background:#100e0c;border:1px solid #60472a;border-radius:999px;overflow:hidden;margin:13px 0 7px}.progress>div{height:100%;width:0;background:linear-gradient(90deg,#9b6a2c,#f1d18b);transition:width .25s}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.stat{padding:12px;background:#120f0d55;border:1px solid #5a422b;border-radius:12px}.stat b{display:block;font:700 19px Georgia,serif;color:var(--gold)}.stat span{font-size:11px;color:var(--muted)}
+.tabs{display:flex;gap:7px;overflow:auto;padding:14px 0 12px;position:sticky;top:0;z-index:5;background:#15120feF}
+.tab{border:1px solid var(--line);border-radius:10px;background:#211a14;color:var(--muted);padding:9px 13px;white-space:nowrap}.tab.active{background:#604321;color:#fff0ce;border-color:var(--gold2)}
+.section{display:none}.section.active{display:block}
+.sectionHead{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:10px 0 14px}.sectionHead h2{font:700 23px Georgia,serif;margin:0}.sectionHead p{color:var(--muted);font-size:12px;margin:4px 0 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{background:linear-gradient(145deg,#282019,#1e1813);border:1px solid var(--line);border-radius:15px;padding:15px;box-shadow:0 6px 16px #0002}
+.card h3{font:700 17px Georgia,serif;margin:0 0 7px}.card p{font-size:13px;color:var(--muted);margin:0 0 12px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.tag{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gold);border:1px solid #6d512f;border-radius:6px;padding:4px 6px}
+.xp{font-weight:700;color:var(--gold);white-space:nowrap}.btn{border:1px solid var(--gold2);border-radius:9px;background:linear-gradient(#8d632f,#69461f);color:#fff1d4;padding:9px 12px;font-weight:650}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.secondary{background:#251d16;border-color:#604a31;color:var(--cream)}.btn.ghost{background:transparent;border-color:var(--line);color:var(--muted)}.btn.small{padding:7px 10px;font-size:12px}
+.questTop{display:flex;gap:10px;align-items:flex-start}.check{width:22px;height:22px;accent-color:#cda25e;margin-top:2px;flex-shrink:0}.questBody{flex:1;min-width:0}.questDone{opacity:.55}.questDone h3{text-decoration:line-through}
+.empty{border:1px dashed #6a5033;border-radius:14px;padding:24px;text-align:center;color:var(--muted)}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:var(--muted)}.field input,.field select,.field textarea{width:100%;background:#120f0d;border:1px solid #5a422b;border-radius:9px;padding:10px;color:var(--cream)}.field textarea{min-height:100px;resize:vertical}.wide{grid-column:1/-1}
+.statList{display:grid;gap:12px}.statLine{display:grid;grid-template-columns:110px 1fr 40px;gap:10px;align-items:center;font-size:13px}.miniBar{height:7px;border-radius:99px;background:#100e0c;overflow:hidden}.miniBar div{height:100%;background:linear-gradient(90deg,#8e612e,#e5c17c)}
+.logItem{padding:12px 0;border-bottom:1px solid #59432d}.logItem:last-child{border-bottom:0}
+.notice{padding:12px 14px;border:1px solid #5c482e;border-radius:12px;background:#211a13;color:var(--muted);font-size:12px;margin:14px 0}
+footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#f1d18b;color:#21170c;padding:11px 17px;border-radius:999px;font-weight:700;box-shadow:var(--shadow);display:none;z-index:20}
+@media(max-width:650px){.app{padding:12px 12px 90px}.grid{grid-template-columns:1fr}.stats{gap:7px}.stat{padding:10px}.stat b{font-size:17px}.hero{padding:17px}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.sectionHead h2{font-size:21px}.tabs{margin:0 -12px;padding:12px;background:#15120ff5;padding-left:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="crest">⚔</div><div><p class="eyebrow">A life worth adventuring</p><h1>WAYFARER</h1></div></div>
+  <span class="pill" id="dateLabel">Quest journal</span>
+</header>
+
+<section class="hero">
+  <div class="heroTop">
+    <div><p class="eyebrow">Your character</p><div class="level">Level <span id="level">1</span></div><div class="sub"><span id="totalXp">0</span> total XP · <span id="toNext">100</span> XP to next level</div></div>
+    <div style="text-align:right"><p class="eyebrow">Today's progress</p><div style="font:700 24px Georgia,serif" id="dailyCount">0 / 0</div><div class="sub">quests completed</div></div>
+  </div>
+  <div class="progress"><div id="xpBar"></div></div>
+  <div class="sub" id="xpCaption">0 / 100 XP toward your next level</div>
+  <div class="stats">
+    <div class="stat"><b id="streak">0 days</b><span>Quest days</span></div>
+    <div class="stat"><b id="completedCount">0</b><span>Quests completed</span></div>
+    <div class="stat"><b id="journalCount">0</b><span>Journal entries</span></div>
+  </div>
+</section>
+
+<nav class="tabs" aria-label="Main navigation">
+  <button class="tab active" data-tab="quests">⚜ Quest Board</button>
+  <button class="tab" data-tab="character">♜ Character</button>
+  <button class="tab" data-tab="journal">📜 Journal</button>
+  <button class="tab" data-tab="settings">⚙ Settings</button>
+</nav>
+
+<main>
+<section class="section active" id="section-quests">
+  <div class="sectionHead"><div><h2>Today's Quest Board</h2><p id="shiftNote">Small steps forge a different life.</p></div><button class="btn small" id="newQuestBtn">+ Add quest</button></div>
+  <div class="notice">Earn XP for taking action, not for having a perfect experience. Missed quests never cost XP. Start small; rest when you need it.</div>
+  <div class="grid" id="questGrid"></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="generateBtn">✦ Generate starter quests</button><button class="btn ghost" id="resetDayBtn">New day / refresh board</button></div>
+</section>
+
+<section class="section" id="section-character">
+  <div class="sectionHead"><div><h2>Character Attributes</h2><p>Build a life with more adventure, connection, and curiosity.</p></div></div>
+  <div class="card"><div class="statList" id="attributeList"></div></div>
+  <div class="grid" style="margin-top:12px">
+    <div class="card"><h3>Leveling rules</h3><p>Every 100 XP earns one level. XP is awarded when a quest is completed, and never removed for a missed day.</p><div class="tag">No penalties · Keep going</div></div>
+    <div class="card"><h3>Campaign principles</h3><p>Leave the house before you decide whether the outing is worth it. Social courage counts even when an interaction feels awkward. Rest is part of the campaign.</p><div class="tag">Action over perfection</div></div>
+  </div>
+</section>
+
+<section class="section" id="section-journal">
+  <div class="sectionHead"><div><h2>Adventure Journal</h2><p>Record the life you're building, not just the tasks you complete.</p></div></div>
+  <div class="card">
+    <form id="journalForm" class="formgrid">
+      <div class="field"><label for="entryTitle">Entry title</label><input id="entryTitle" placeholder="A new café, a good conversation…" required></div>
+      <div class="field"><label for="entryType">Entry type</label><select id="entryType"><option>Adventure</option><option>Social</option><option>Family & relationships</option><option>Piano / hobby</option><option>Reading / learning</option><option>Reflection</option></select></div>
+      <div class="field wide"><label for="entryText">What happened? What did you learn?</label><textarea id="entryText" placeholder="Even ordinary days count."></textarea></div>
+      <div class="wide"><button class="btn" type="submit">Save journal entry</button></div>
+    </form>
+  </div>
+  <div class="card" style="margin-top:12px"><h3>Chronicle</h3><div id="journalList"></div></div>
+</section>
+
+<section class="section" id="section-settings">
+  <div class="sectionHead"><div><h2>Campaign Settings</h2><p>Adapt the quest board to your real life.</p></div></div>
+  <div class="card">
+    <form id="settingsForm" class="formgrid">
+      <div class="field"><label for="shift">Today's shift / availability</label><select id="shift"><option value="low">Low energy / post-night shift</option><option value="normal" selected>Normal day</option><option value="free">Free day</option></select></div>
+      <div class="field"><label for="difficulty">Quest difficulty</label><select id="difficulty"><option value="gentle">Gentle</option><option value="balanced" selected>Balanced</option><option value="hardcore">Hardcore</option></select></div>
+      <div class="field"><label for="social">Social progression</label><select id="social"><option value="gradual" selected>Gradual</option><option value="direct">Direct</option><option value="mixed">Mixed</option></select></div>
+      <div class="field"><label for="gaming">Gaming rule</label><select id="gaming"><option value="moderate" selected>Moderate</option><option value="strict">After quests</option><option value="minimal">Occasionally only</option></select></div>
+      <div class="field"><label for="workPattern">Work pattern</label><select id="workPattern"><option>Rotating 8-hour shifts</option><option>Morning shift</option><option>Evening shift</option><option>Night shift</option><option>Day off</option></select></div>
+      <div class="field"><label for="readTarget">Daily reading target (pages)</label><input id="readTarget" type="number" min="1" max="100" value="10"></div>
+      <div class="field wide"><button class="btn" type="submit">Save campaign settings</button></div>
+    </form>
+    <div class="notice">This first version saves progress in this browser on this device. Clearing browser website data may erase it. Cloud sync and AI-generated quests can be added in a later version.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="exportBtn">Export backup</button><button class="btn secondary" id="importBtn">Import backup</button><button class="btn ghost" id="wipeBtn">Reset all data</button><input type="file" id="importFile" accept="application/json" hidden></div>
+  </div>
+</section>
+</main>
+<footer>WAYFARER · Your real life is the campaign. · Progress is saved on this device.</footer>
+</div>
+<div id="toast" role="status"></div>
+
+<dialog id="questDialog" style="border:1px solid #8b6738;border-radius:16px;background:#211a14;color:#f4e8cf;width:min(520px,calc(100% - 28px));box-shadow:0 24px 70px #0009">
+<form id="questForm" class="formgrid">
+  <div class="wide"><p class="eyebrow">Write a new mission</p><h2 style="font:700 22px Georgia,serif;margin-bottom:14px">Add a Quest</h2></div>
+  <div class="field wide"><label for="qTitle">Quest name</label><input id="qTitle" required placeholder="Explore a new place"></div>
+  <div class="field wide"><label for="qDesc">Description</label><textarea id="qDesc" placeholder="What counts as completing it?"></textarea></div>
+  <div class="field"><label for="qCategory">Category</label><select id="qCategory"><option>Adventure</option><option>Social</option><option>Skill</option><option>Knowledge</option><option>Relationships</option><option>Daily</option><option>Side quest</option><option>Boss quest</option></select></div>
+  <div class="field"><label for="qXp">XP reward</label><select id="qXp"><option value="10">10 XP · Easy</option><option value="25" selected>25 XP · Normal</option><option value="50">50 XP · Hard</option><option value="100">100 XP · Boss</option></select></div>
+  <div class="wide" style="display:flex;gap:8px"><button class="btn" type="submit">Add to board</button><button class="btn secondary" type="button" id="cancelQuest">Cancel</button></div>
+</form>
+</dialog>
+
+<script>
+const KEY="wayfarer-rpg-v1";
+const today=()=>new Date().toLocaleDateString("en-CA");
+const defaultSettings={shift:"normal",difficulty:"balanced",social:"gradual",gaming:"moderate",workPattern:"Rotating 8-hour shifts",readTarget:10};
+const starters=[
+ {title:"Read a little",description:"Read your daily target. Educational or entertaining books both count.",category:"Knowledge",xp:10},
+ {title:"Practise piano",description:"Spend at least 10 focused minutes practising.",category:"Skill",xp:10},
+ {title:"Get outside",description:"Take a walk somewhere different or spend a little time outdoors.",category:"Adventure",xp:25},
+ {title:"Make a connection",description:"Send a thoughtful message, greet someone first, or initiate a conversation.",category:"Social",xp:25},
+ {title:"Choose life before the screen",description:"Complete one meaningful real-life activity before gaming or television.",category:"Daily",xp:10}
+];
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
+let state=load()||{xp:0,completedTotal:0,quests:[],journal:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};
+if(!state.settings)state.settings={...defaultSettings};
+if(state.activeDate!==today()){state.activeDate=today();state.quests=[]}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
+function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
+function categoryIcon(c){return ({Adventure:"🧭",Social:"🗣️",Skill:"🎹",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
+function render(){
+ const level=Math.floor(state.xp/100)+1, rem=state.xp%100;
+ document.getElementById("level").textContent=level;
+ document.getElementById("totalXp").textContent=state.xp;
+ document.getElementById("toNext").textContent=100-rem;
+ document.getElementById("xpBar").style.width=rem+"%";
+ document.getElementById("xpCaption").textContent=`${rem} / 100 XP toward your next level`;
+ const done=state.quests.filter(q=>q.done).length;
+ document.getElementById("dailyCount").textContent=`${done} / ${state.quests.length}`;
+ document.getElementById("completedCount").textContent=state.completedTotal;
+ document.getElementById("journalCount").textContent=state.journal.length;
+ document.getElementById("streak").textContent=`${state.questDays.length} days`;
+ document.getElementById("dateLabel").textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+ document.getElementById("shiftNote").textContent=({low:"Keep it gentle. Recovery is part of the campaign.",normal:"Small steps forge a different life.",free:"Your wider world awaits. Consider a longer adventure."})[state.settings.shift]||"Small steps forge a different life.";
+ const grid=document.getElementById("questGrid");
+ grid.innerHTML=state.quests.length?state.quests.map(q=>`<article class="card ${q.done?"questDone":""}">
+  <div class="questTop"><input class="check" type="checkbox" aria-label="Complete ${esc(q.title)}" data-complete="${q.id}" ${q.done?"checked":""}>
+   <div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP</span></div>
+   <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span>${q.done?'<span class="tag">Completed ✓</span>':`<button class="btn small" data-complete-btn="${q.id}">Complete</button>`}</div></div></div>
+ </article>`).join(""):'<div class="empty">Your quest board is clear. Generate starter quests or add a mission.</div>';
+ grid.querySelectorAll("[data-complete],[data-complete-btn]").forEach(el=>el.addEventListener(el.type==="checkbox"?"change":"click",()=>completeQuest(el.dataset.complete||el.dataset.completeBtn,el.type==="checkbox"?el.checked:true)));
+ const attrs=["Social","Adventure","Discipline","Knowledge","Creativity","Relationships"];
+ const totals={};attrs.forEach(a=>totals[a]=0);
+ state.journal.forEach(j=>{let k=({"Social":"Social","Adventure":"Adventure","Family & relationships":"Relationships","Piano / hobby":"Creativity","Reading / learning":"Knowledge"})[j.type];if(k)totals[k]+=1});
+ state.quests.filter(q=>q.done).forEach(q=>{let k=({"Social":"Social","Adventure":"Adventure","Skill":"Creativity","Knowledge":"Knowledge","Relationships":"Relationships","Daily":"Discipline","Side quest":"Discipline","Boss quest":"Adventure"})[q.category];if(k)totals[k]+=1});
+ const max=Math.max(1,...Object.values(totals));
+ document.getElementById("attributeList").innerHTML=attrs.map(a=>`<div class="statLine"><span>${a}</span><div class="miniBar"><div style="width:${Math.min(100,totals[a]/max*100)}%"></div></div><span>${totals[a]}</span></div>`).join("");
+ document.getElementById("journalList").innerHTML=state.journal.length?[...state.journal].reverse().map(j=>`<div class="logItem"><div class="row"><strong>${esc(j.title)}</strong><span class="tag">${esc(j.type)}</span></div><div class="sub">${esc(j.date)}</div><p style="margin:7px 0 0;color:#d2c2a6;white-space:pre-wrap">${esc(j.text||"")}</p></div>`).join(""):'<div class="empty">Your chronicles will appear here.</div>';
+ for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el)el.value=val}
+}
+function completeQuest(id,done=true){const q=state.quests.find(q=>q.id===id);if(!q||q.done===done)return;if(done){q.done=true;state.xp+=Number(q.xp);state.completedTotal++;if(!state.questDays.includes(today()))state.questDays.push(today());toast(`Quest complete! +${q.xp} XP`)}else{q.done=false;state.xp=Math.max(0,state.xp-Number(q.xp));state.completedTotal=Math.max(0,state.completedTotal-1);toast("Quest marked incomplete.")}save()}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t===b));document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-"+b.dataset.tab))}));
+document.getElementById("newQuestBtn").addEventListener("click",()=>document.getElementById("questDialog").showModal());
+document.getElementById("cancelQuest").addEventListener("click",()=>document.getElementById("questDialog").close());
+document.getElementById("questForm").addEventListener("submit",e=>{e.preventDefault();state.quests.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),title:document.getElementById("qTitle").value.trim(),description:document.getElementById("qDesc").value.trim(),category:document.getElementById("qCategory").value,xp:Number(document.getElementById("qXp").value),done:false,source:"custom"});e.target.reset();document.getElementById("questDialog").close();save();toast("Quest added to your board.")});
+document.getElementById("generateBtn").addEventListener("click",()=>{if(state.quests.length&&!confirm("Replace today's quest board? Completed quests on the current board will be lost. Earned XP will remain."))return;let pool=starters.map(q=>({...q}));if(state.settings.shift==="low")pool=pool.filter(q=>["Knowledge","Skill","Social","Daily"].includes(q.category));if(state.settings.shift==="free")pool.push({title:"Plan a solo adventure",description:"Choose a nearby destination and go explore one place.",category:"Adventure",xp:50});if(state.settings.difficulty==="gentle")pool=pool.map(q=>({...q,xp:q.xp===25?10:q.xp}));if(state.settings.difficulty==="hardcore")pool=pool.map(q=>({...q,xp:q.xp===10?25:q.xp}));state.quests=pool.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"generated"}));state.activeDate=today();save();toast("A new quest board awaits.")});
+document.getElementById("resetDayBtn").addEventListener("click",()=>{if(!confirm("Start a fresh quest board? Your earned XP and journal will remain."))return;state.quests=[];state.activeDate=today();ensureQuests();save();toast("Fresh day, fresh quests.")});
+document.getElementById("journalForm").addEventListener("submit",e=>{e.preventDefault();state.journal.push({title:document.getElementById("entryTitle").value.trim(),type:document.getElementById("entryType").value,text:document.getElementById("entryText").value.trim(),date:new Date().toLocaleString()});e.target.reset();save();toast("Entry added to your chronicle.")});
+document.getElementById("settingsForm").addEventListener("submit",e=>{e.preventDefault();for(const k of Object.keys(defaultSettings)){const el=document.getElementById(k);if(el)state.settings[k]=el.type==="number"?Number(el.value):el.value}save();toast("Campaign settings saved.")});
+document.getElementById("exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="wayfarer-rpg-backup.json";a.click();URL.revokeObjectURL(a.href);toast("Backup exported.")});
+document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const imported=JSON.parse(await f.text());if(!("xp" in imported)||!Array.isArray(imported.quests))throw Error();state=imported;save();toast("Backup restored.")}catch(err){alert("That backup file doesn't look valid.")}e.target.value=""});
+document.getElementById("wipeBtn").addEventListener("click",()=>{if(confirm("Permanently reset all local Wayfarer data? Export a backup first if you want to keep it.")){localStorage.removeItem(KEY);state={xp:0,completedTotal:0,quests:[],journal:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};ensureQuests();save();toast("Campaign reset.")}});
+ensureQuests();render();
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+</script>
+</body>
+</html>
