@@ -689,7 +689,7 @@ function generateAdventure(type){
   save();
   setAdventureChooserOpen(false);
   toast(`${type==="short"?"Short":"Day"} adventure generated! +15 XP when completed.`);
-  const grid=document.getElementById("questGrid");if(grid)grid.scrollIntoView({behavior:"smooth",block:"start"});
+  // Keep the current scroll position after generating an adventure.
 }
 document.querySelectorAll(".adventure-choice").forEach(button=>button.addEventListener("click",function(){generateAdventure(button.dataset.adventureType);}));
 
