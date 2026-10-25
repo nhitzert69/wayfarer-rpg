@@ -303,3 +303,22 @@ function renderSkillCatalog(){
  }));
 }
 document.getElementById("saveSkillsBtn").addEventListener("click",()=>{ensureSelectedSkills();save();render();toast("Skills saved. Your Quest Board has been updated.")});
+
+// Delegated navigation handler: one click handler for every tab.
+document.addEventListener("click", function(event) {
+  const button = event.target.closest(".tab[data-tab]");
+  if (!button) return;
+  event.preventDefault();
+  const tabName = button.getAttribute("data-tab");
+  document.querySelectorAll(".tab[data-tab]").forEach(function(tab) {
+    tab.classList.toggle("active", tab === button);
+  });
+  document.querySelectorAll("main .section[id^='section-']").forEach(function(section) {
+    section.classList.toggle("active", section.id === "section-" + tabName);
+  });
+  if (tabName === "skills" && typeof renderSkillCatalog === "function") renderSkillCatalog();
+  window.scrollTo(0, 0);
+});
+</script>
+</body>
+</html>
