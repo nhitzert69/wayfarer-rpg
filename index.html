@@ -326,6 +326,16 @@ document.addEventListener("click", function(event) {
   if (tabName === "skills" && typeof renderSkillCatalog === "function") renderSkillCatalog();
   window.scrollTo(0, 0);
 });
+
+// Keep the hosted PWA's service worker updated when a new version is deployed.
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })
+      .then(function (registration) { return registration.update(); })
+      .catch(function (error) { console.warn("Wayfarer offline cache update failed:", error); });
+  });
+}
+
 </script>
 </body>
 </html>
