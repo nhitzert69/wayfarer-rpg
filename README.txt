@@ -20,3 +20,5 @@ Important:
 - Export Backup regularly if you want a portable copy of progress.
 - AI-generated quests, cross-device sync, push notifications, and real authentication are not included yet.
 - This is an initial working prototype; test and refine it before relying on it as your only record.
+
+Version 3 update: the six skill cards are now visible directly on the main Quest Board as well as in the Character tab. Overall character XP is explicitly labelled separately from skill XP.
