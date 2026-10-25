@@ -202,7 +202,7 @@ const skillCatalog = [
   ["History","Study historical events and people."],["Science","Explore scientific ideas."],["Philosophy","Think through ideas and arguments."],["Psychology","Learn about behaviour and the mind."],["Geography","Learn about places and cultures."],["Foreign Languages","Build vocabulary and fluency."],["First Aid","Learn emergency response skills."],["Navigation","Learn maps, routes and orientation."],["Car Maintenance","Learn basic vehicle care."],["Chess","Study tactics and play games."],["Research Skills","Learn to evaluate sources and evidence."]
  ]}
 ];
-const defaultSelected = ["Social Confidence","Adventure","Discipline","Relationships","Reading","Piano"];
+const defaultSelected = [];
 function allSkillNames(){return skillCatalog.flatMap(c=>c.skills.map(s=>s[0]))}
 function ensureSelectedSkills(){
  if(!Array.isArray(state.selectedSkills)) state.selectedSkills=[...defaultSelected];
