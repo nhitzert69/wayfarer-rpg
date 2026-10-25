@@ -175,10 +175,18 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 
 
 <style id="wayfarer-equipment-art-v61">
-.equipmentSlot .equipmentArt{grid-column:1;grid-row:1;width:64px;height:78px;object-fit:contain;align-self:center;justify-self:center;border:0;border-radius:0;background:transparent;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));}
-.equipmentSlot strong{grid-column:2;grid-row:1;align-self:center;}
-.equipmentSlot small{grid-column:2;grid-row:1;align-self:center;margin-top:32px;}
+.equipmentSlot .equipmentArt{grid-column:1;grid-row:1;width:64px;height:78px;object-fit:contain;object-position:center;align-self:center;justify-self:center;display:block;border:0;border-radius:0;background:transparent;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));}
+.equipmentSlot strong{grid-column:2;grid-row:1;align-self:center;justify-self:start;margin:0;text-align:left;line-height:1.25;}
+.equipmentSlot small{display:none!important;}
 @media(max-width:650px){.equipmentSlot .equipmentArt{width:52px;height:64px;}}
+
+<style id="wayfarer-equipment-centering-v63">
+/* Center each equipment illustration inside a fixed, consistent icon cell. */
+.equipmentSlot{grid-template-columns:64px minmax(0,1fr) 76px!important;column-gap:10px!important;}
+.equipmentSlot .equipmentArt{grid-column:1!important;grid-row:1!important;width:64px!important;height:78px!important;max-width:100%;object-fit:contain!important;object-position:50% 50%!important;align-self:center!important;justify-self:center!important;margin:0 auto!important;padding:0!important;}
+.equipmentSlot strong{grid-column:2!important;min-width:0;overflow-wrap:normal;word-break:normal;}
+@media(max-width:900px){.equipmentSlot{grid-template-columns:48px minmax(0,1fr) 56px!important;column-gap:7px!important}.equipmentSlot .equipmentArt{width:48px!important;height:60px!important;}}
+@media(max-width:650px){.equipmentSlot{grid-template-columns:58px minmax(0,1fr) 68px!important}.equipmentSlot .equipmentArt{width:52px!important;height:64px!important;}}
 </style>
 </head>
 <body>
@@ -274,12 +282,12 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
     <div class="card">
       <h3>Equipment</h3><p class="sub">Equip items you own to change your character's look.</p>
       <div class="equipmentGrid">
-        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-head.png" alt="Medieval headwear illustration"><strong>Head</strong><small id="equipHead">Basic headwear</small></div>
-        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-chest.png" alt="Medieval tunic illustration"><strong>Chest</strong><small id="equipChest">Plain tunic</small></div>
-        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-legs.png" alt="Medieval trousers illustration"><strong>Legs</strong><small id="equipLegs">Simple trousers</small></div>
-        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-footwear.png" alt="Medieval boots illustration"><strong>Footwear</strong><small id="equipFeet">Travel boots</small></div>
-        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-main-hand.png" alt="Crossed swords illustration"><strong>Main hand</strong><small id="equipMainHand">Empty</small></div>
-        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-off-hand.png" alt="Medieval shield illustration"><strong>Off hand</strong><small id="equipOffHand">Empty</small></div>
+        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-head.png" alt="Medieval headwear illustration"><strong>Head</strong></div>
+        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-chest.png" alt="Medieval tunic illustration"><strong>Chest</strong></div>
+        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-legs.png" alt="Medieval trousers illustration"><strong>Legs</strong></div>
+        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-footwear.png" alt="Medieval boots illustration"><strong>Footwear</strong></div>
+        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-main-hand.png" alt="Crossed swords illustration"><strong>Main hand</strong></div>
+        <div class="equipmentSlot"><img class="equipmentArt" src="assets/equip-off-hand.png" alt="Medieval shield illustration"><strong>Off hand</strong></div>
       </div>
     </div>
   </div>
@@ -294,15 +302,6 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 <section class="section" id="section-store">
   <div class="sectionHead"><div><h2>Adventurer's Store</h2><p>Spend Gold on equipment, clothing, weapons and collectibles.</p></div></div>
   <div class="storeBalance card"><div><span class="sub">Your balance</span><h2 style="margin:4px 0">🪙 <span id="storeGoldBalance">0</span> Gold</h2></div><span class="tag">No real-money purchases</span></div>
-  <div class="notice" style="margin-top:12px">The Store shelves are being prepared. The next update will add purchasable items, Gold rewards and equipment that can be added to your inventory.</div>
-  <div class="storeCategories grid" style="margin-top:12px">
-    <div class="card storeCategory"><div class="storeCategoryIcon">🧢</div><h3>Headwear</h3><p class="sub">Hoods, hats, helmets and crowns</p><span class="tag">Coming soon</span></div>
-    <div class="card storeCategory"><div class="storeCategoryIcon">👕</div><h3>Shirts & Armor</h3><p class="sub">Tunic, robes, shirts and armor</p><span class="tag">Coming soon</span></div>
-    <div class="card storeCategory"><div class="storeCategoryIcon">👖</div><h3>Pants & Boots</h3><p class="sub">Trousers, greaves and footwear</p><span class="tag">Coming soon</span></div>
-    <div class="card storeCategory"><div class="storeCategoryIcon">⚔️</div><h3>Weapons</h3><p class="sub">Swords, daggers, staffs and shields</p><span class="tag">Coming soon</span></div>
-    <div class="card storeCategory"><div class="storeCategoryIcon">💎</div><h3>Items & Relics</h3><p class="sub">Potions, treasures and collectibles</p><span class="tag">Coming soon</span></div>
-    <div class="card storeCategory"><div class="storeCategoryIcon">🏆</div><h3>Special Rewards</h3><p class="sub">Titles, trophies and rare unlocks</p><span class="tag">Coming soon</span></div>
-  </div>
 </section>
 
 <section class="section" id="section-todo">
