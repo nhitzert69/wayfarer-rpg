@@ -116,6 +116,13 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
   100%{opacity:0;transform:translateX(34px) scale(.97);max-height:0;padding-top:0;padding-bottom:0;margin-top:0;margin-bottom:0;border-width:0}
 }
 @media(prefers-reduced-motion:reduce){#questGrid .questLeaving,#mainQuestGrid .questLeaving,#sideQuestGrid .questLeaving{animation-duration:1ms}}
+
+.inventoryItemActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.inventoryItemCard{display:flex;gap:12px;align-items:center;padding:10px;border:1px solid #5b5144;border-radius:8px;background:rgba(0,0,0,.16)}
+.inventoryItemCard img{width:56px;height:64px;object-fit:contain;flex:0 0 56px;border-radius:5px;background:#171513}
+.inventoryItemInfo{min-width:0;flex:1}.inventoryItemInfo strong{display:block}.inventoryItemInfo small{color:var(--muted)}
+.inventoryItemActions button{padding:6px 10px;font-size:12px}
+@media(max-width:520px){.inventoryItemCard img{width:48px;height:56px;flex-basis:48px}}
 </style>
 
 <style id="admin-debug-styles">
@@ -536,6 +543,25 @@ async function syncCurrentState(){
 }
 let wayfarerSignedInUsername="";
 hideGenderChoice();
+function normalizeCharacterProfile(authUser=null){
+ if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};
+ const saved=state.profile.gender;
+ const metadata=authUser?.user_metadata?.wayfarer_gender;
+ if(metadata==="male"||metadata==="female")state.profile.gender=metadata;
+ if(state.profile.gender!=="male"&&state.profile.gender!=="female")state.profile.gender=null;
+}
+function ensureStarterItems(){
+ if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};
+ if(state.profile.starterItemsGranted)return false;
+ if(!Array.isArray(state.inventory))state.inventory=[];
+ const starter=[
+  {id:"starter-torch",key:"torch",name:"Adventurer's Torch",category:"Main hand",slot:"mainHand",image:"./assets/item-torch.png",price:0},
+  {id:"starter-shield",key:"shield",name:"Wayfarer Shield",category:"Off hand",slot:"offHand",image:"./assets/item-shield.png",price:0}
+ ];
+ for(const item of starter)if(!state.inventory.some(x=>x&&x.id===item.id||x&&x.key===item.key))state.inventory.push(item);
+ state.profile.starterItemsGranted=true;
+ return true;
+}
 async function finishSignIn(username,pin,create,gender=null){
  if(!cloudConfigured){setCloudStatus("Cloud accounts need setup first. Follow the Supabase instructions in README.txt and add your project URL and anon key to index.html.");toast("Cloud accounts are not configured yet.");return;}
  const email=usernameEmail(username);
@@ -554,7 +580,7 @@ async function finishSignIn(username,pin,create,gender=null){
  if(saveRow && saveRow.app_state && typeof saveRow.app_state==="object"){
    state=saveRow.app_state;
    if(!state.settings)state.settings={...defaultSettings};
-   if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;
+   normalizeCharacterProfile(cloudUser);if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;ensureStarterItems();
    if(!Array.isArray(state.quests))state.quests=[];
    if(!Array.isArray(state.journal))state.journal=[];
    if(!Array.isArray(state.todo))state.todo=[];
@@ -568,6 +594,7 @@ async function finishSignIn(username,pin,create,gender=null){
    // An account without a cloud save starts with a clean, independent profile.
    state=freshState();
    if(create && (gender==="male"||gender==="female"))state.profile.gender=gender;
+   normalizeCharacterProfile(cloudUser);ensureStarterItems();
    localStorage.setItem(KEY,JSON.stringify(state));
    cloudHydrating=false;
    await syncCurrentState();
@@ -575,6 +602,7 @@ async function finishSignIn(username,pin,create,gender=null){
    setCloudStatus("Signed in. This account had no saved progress, so a fresh profile was created.");
  }
  cloudHydrating=false;
+ await syncCurrentState();
  document.getElementById("accountUsername").value=username;
  document.getElementById("accountPin").value="";
  document.getElementById("accountPin").placeholder="PIN saved by secure sign-in";
@@ -621,13 +649,14 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  wayfarerSignedInUsername="";
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
-if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=String(data.session.user.user_metadata?.wayfarer_username||"");cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();}else{enforceAccountGate();}});}
+if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=String(data.session.user.user_metadata?.wayfarer_username||"");cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};normalizeCharacterProfile(cloudUser);if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;if(!error)await syncCurrentState();document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();}else{enforceAccountGate();}});}
+document.getElementById("characterInventory")?.addEventListener("click",e=>{const btn=e.target.closest(".inventoryEquipBtn");if(!btn)return;const item=state.inventory.find(x=>x&&(x.id===btn.dataset.itemId||x.key===btn.dataset.key));if(!item)return;const slot=item.slot||((item.key==="torch")?"mainHand":(item.key==="shield")?"offHand":"");if(!slot){toast("This item cannot be equipped yet.");return;}if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(state.equipment[slot]===item.key){delete state.equipment[slot];}else{state.equipment[slot]=item.key;}save();});
 function save(skipRender=false){localStorage.setItem(KEY,JSON.stringify(state));if(!skipRender)render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
 function categoryIcon(c,skill){if(skill==="Fitness")return "💪";if(skill==="Cardio")return "🏃";if(skill==="Piano")return "🎹";return ({Adventure:"🧭",Social:"🗣️",Skill:"✨",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
-function renderCharacterOverview(){const profile=state.profile||{};const gender=profile.gender;const genderLabel=gender==="male"?"Male adventurer":gender==="female"?"Female adventurer":"Starting adventurer";const artwork=document.getElementById("characterArtwork");if(artwork){const female=gender==="female";artwork.src=female?"./assets/character-female.png":"./assets/character-male.png";artwork.alt=female?"Female Wayfarer starting character":"Male Wayfarer starting character";}const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));const items=Array.isArray(state.inventory)?state.inventory:[];const countEl=document.getElementById("inventoryCount");if(countEl)countEl.textContent=items.length+" item"+(items.length===1?"":"s");const inv=document.getElementById("characterInventory");if(inv){if(!items.length){inv.className="inventoryEmpty";inv.textContent="Your inventory is empty. Visit the Store when you're ready to gear up.";}else{inv.className="inventoryList";inv.innerHTML=items.map(item=>"<div class=\"equipmentSlot\"><strong>"+esc(item.name||"Unknown item")+"</strong><small>"+esc(item.category||"Item")+"</small></div>").join("");}}const equipment=state.equipment||{};[["head","equipHead","Basic headwear"],["chest","equipChest","Plain tunic"],["legs","equipLegs","Simple trousers"],["feet","equipFeet","Travel boots"],["mainHand","equipMainHand","Empty"],["offHand","equipOffHand","Empty"]].forEach(([key,id,fallback])=>{const el=document.getElementById(id);if(el)el.textContent=equipment[key]||fallback;});}
+function renderCharacterOverview(){const changed=ensureStarterItems();if(changed){localStorage.setItem(KEY,JSON.stringify(state));if(cloudUser&&!cloudHydrating)syncCurrentState();}const profile=state.profile||{};const gender=profile.gender;const genderLabel=gender==="male"?"Male adventurer":gender==="female"?"Female adventurer":"Starting adventurer";const artwork=document.getElementById("characterArtwork");if(artwork){const female=gender==="female";const prefix=female?"./assets/character-female":"./assets/character-male";const equipment=state.equipment||{};const hasTorch=equipment.mainHand==="torch";const hasShield=equipment.offHand==="shield";let pose="";if(hasTorch&&hasShield)pose="-both";else if(hasTorch)pose="-torch";else if(hasShield)pose="-shield";artwork.src=pose?prefix+pose+".png":(female?"./assets/character-female.png":"./assets/character-male.png");artwork.alt=(female?"Female":"Male")+" Wayfarer character"+(pose?" with equipped items":"");}const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));const items=Array.isArray(state.inventory)?state.inventory:[];const countEl=document.getElementById("inventoryCount");if(countEl)countEl.textContent=items.length+" item"+(items.length===1?"":"s");const inv=document.getElementById("characterInventory");if(inv){if(!items.length){inv.className="inventoryEmpty";inv.textContent="Your inventory is empty. Visit the Store when you're ready to gear up.";}else{inv.className="inventoryList";inv.innerHTML=items.map(item=>{const slot=item.slot||((item.key==="torch")?"mainHand":(item.key==="shield")?"offHand":"");const equipped=slot&&state.equipment&&state.equipment[slot]===item.key;const safeId=esc(item.id||item.key||"");return "<div class=\"inventoryItemCard\"><img src=\""+esc(item.image||"./assets/equip-main-hand.png")+"\" alt=\"\"><div class=\"inventoryItemInfo\"><strong>"+esc(item.name||"Unknown item")+"</strong><small>"+esc(item.category||"Item")+"</small><div class=\"inventoryItemActions\"><button type=\"button\" class=\"btn "+(equipped?"ghost":"secondary")+" inventoryEquipBtn\" data-item-id=\""+safeId+"\" data-slot=\""+esc(slot)+"\" data-key=\""+esc(item.key||"")+"\">"+(equipped?"Unequip":"Equip")+"</button></div></div></div>";}).join("");}}const equipment=state.equipment||{};[["head","equipHead","Basic headwear"],["chest","equipChest","Plain tunic"],["legs","equipLegs","Simple trousers"],["feet","equipFeet","Travel boots"],["mainHand","equipMainHand","Empty"],["offHand","equipOffHand","Empty"]].forEach(([key,id,fallback])=>{const el=document.getElementById(id);if(el){const equippedKey=equipment[key];const item=items.find(x=>x&&x.key===equippedKey);el.textContent=item?item.name:(equippedKey||fallback);}}); }
 function render(){
  // The old global-character-level widgets were removed from the main page.
  // Update them only if a future version puts those elements back.
