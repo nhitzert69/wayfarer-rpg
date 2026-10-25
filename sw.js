@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-v56";
+const CACHE = "wayfarer-v57";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
