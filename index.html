@@ -101,6 +101,20 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 #questGrid .btn.small{padding:6px 9px;font-size:12px}
 #questGrid .xp{font-size:13px}
 @media(max-width:650px){#questGrid .card{padding:8px 9px}#questGrid .card h3{font-size:15px}#questGrid .card p{font-size:12px;margin-bottom:6px}}
+
+/* v49: completed quests confirm, then slide away from the active board. */
+#questGrid .questLeaving{
+  overflow:hidden;
+  transform-origin:right center;
+  animation:wayfarerQuestSlideAway 340ms cubic-bezier(.22,.75,.25,1) forwards;
+  pointer-events:none;
+}
+@keyframes wayfarerQuestSlideAway{
+  0%{opacity:1;transform:translateX(0) scale(1);max-height:320px;padding-top:9px;padding-bottom:9px;margin-top:0;margin-bottom:0;border-width:1px}
+  35%{opacity:.85;transform:translateX(10px) scale(.99)}
+  100%{opacity:0;transform:translateX(34px) scale(.97);max-height:0;padding-top:0;padding-bottom:0;margin-top:0;margin-bottom:0;border-width:0}
+}
+@media(prefers-reduced-motion:reduce){#questGrid .questLeaving{animation-duration:1ms}}
 </style>
 </head>
 <body>
@@ -448,7 +462,7 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
 if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("createAccountBtn").style.display="none";}});}
-function save(){localStorage.setItem(KEY,JSON.stringify(state));render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
+function save(skipRender=false){localStorage.setItem(KEY,JSON.stringify(state));if(!skipRender)render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
@@ -470,11 +484,12 @@ function render(){
  const dateLabelEl=document.getElementById("dateLabel"); if(dateLabelEl) dateLabelEl.textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
  const shiftNoteEl=document.getElementById("shiftNote"); if(shiftNoteEl) shiftNoteEl.textContent=({low:"Keep it gentle. Recovery is part of the campaign.",normal:"Small steps forge a different life.",free:"Your wider world awaits. Consider a longer adventure."})[state.settings.shift]||"Small steps forge a different life.";
  const grid=document.getElementById("questGrid");
- grid.innerHTML=state.quests.length?state.quests.map(q=>`<article class="card ${q.done?"questDone":""}">
-  <div class="questTop"><input class="check" type="checkbox" aria-label="Complete ${esc(q.title)}" data-complete="${q.id}" ${q.done?"checked":""}>
+ const activeQuests=state.quests.filter(q=>!q.done);
+ grid.innerHTML=activeQuests.length?activeQuests.map(q=>`<article class="card questActive" data-quest-card="${esc(q.id)}">
+  <div class="questTop"><input class="check" type="checkbox" aria-label="Complete ${esc(q.title)}" data-complete="${q.id}">
    <div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP</span></div>
-   <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span>${q.done?'<span class="tag">Completed ✓</span>':`<button class="btn small" data-complete-btn="${q.id}">Complete</button>`}</div></div></div>
- </article>`).join(""):'<div class="empty">Your quest board is clear. Generate starter quests or add a mission.</div>';
+   <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span><button class="btn small" data-complete-btn="${q.id}">Complete</button></div></div></div>
+ </article>`).join(""):'<div class="empty">All quests completed! Your board is clear. Generate more quests when you are ready for the next challenge.</div>';
  grid.querySelectorAll("[data-complete],[data-complete-btn]").forEach(el=>el.addEventListener(el.type==="checkbox"?"change":"click",()=>completeQuest(el.dataset.complete||el.dataset.completeBtn,el.type==="checkbox"?el.checked:true)));
  ensureSelectedSkills();
  renderSkillProgress();
@@ -509,7 +524,32 @@ function render(){
  }
  for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el)el.value=val}
 }
-function completeQuest(id,done=true){const q=state.quests.find(q=>q.id===id);if(!q||q.done===done)return;if(done){q.done=true;state.xp+=Number(q.xp);if(!state.skillXp)state.skillXp={};const skill=q.skill||({"Social":"Social Interactions","Adventure":"Adventure","Skill":"Creativity","Knowledge":"Knowledge","Relationships":"Relationships","Daily":"Discipline","Side quest":"Discipline","Boss quest":"Adventure"})[q.category]||"Discipline";state.skillXp[skill]=(Number(state.skillXp[skill])||0)+Number(q.xp);state.completedTotal++;if(!state.questDays.includes(today()))state.questDays.push(today());toast(`Quest complete! +${q.xp} XP`)}else{toast("Earned XP is never removed. Your completed quest stays recorded.")}save()}
+function completeQuest(id,done=true){
+ const q=state.quests.find(q=>String(q.id)===String(id));
+ if(!q||q.done===done)return;
+ if(!done){toast("Earned XP is never removed. Your completed quest stays recorded.");return;}
+ // Record completion and award XP immediately, before the visual card animation.
+ q.done=true;
+ state.xp+=Number(q.xp);
+ if(!state.skillXp)state.skillXp={};
+ const skill=q.skill||({"Social":"Social Interactions","Adventure":"Adventure","Skill":"Creativity","Knowledge":"Knowledge","Relationships":"Relationships","Daily":"Discipline","Side quest":"Discipline","Boss quest":"Adventure"})[q.category]||"Discipline";
+ state.skillXp[skill]=(Number(state.skillXp[skill])||0)+Number(q.xp);
+ state.completedTotal++;
+ if(!state.questDays.includes(today()))state.questDays.push(today());
+ toast(`Quest complete! +${q.xp} XP`);
+ const grid=document.getElementById("questGrid");
+ const trigger=grid?[...grid.querySelectorAll("[data-complete],[data-complete-btn]")].find(el=>String(el.dataset.complete||el.dataset.completeBtn)===String(id)):null;
+ const card=trigger?trigger.closest("article"):null;
+ // Save immediately without rerendering, so the user can see the checked/complete state slide away.
+ save(true);
+ if(!card){render();return;}
+ card.classList.add("questDone","questLeaving");
+ card.querySelectorAll("button,input").forEach(el=>{el.disabled=true;});
+ const title=card.querySelector("h3");if(title)title.setAttribute("aria-label","Completed: "+q.title);
+ const completeButton=card.querySelector("[data-complete-btn]");if(completeButton){completeButton.textContent="Completed ✓";completeButton.setAttribute("aria-label","Quest completed");}
+ const checkbox=card.querySelector("[data-complete]");if(checkbox)checkbox.checked=true;
+ window.setTimeout(()=>render(),340);
+}
 
 function renderSkillProgress(){
  ensureSelectedSkills();
