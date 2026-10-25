@@ -167,6 +167,17 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
   <div class="sectionHead" style="margin:22px 0 8px"><div><h2 style="font-size:22px;margin:0">✦ Side Quests</h2><p class="sub">Your secondary skills</p></div></div>
   <div class="grid" id="sideQuestGrid"></div>
   <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="generateBtn">✦ Generate quests</button><button class="btn secondary" id="generateAdventureBtn" aria-expanded="false" aria-controls="adventureChooser">🧭 Generate adventure</button></div>
+  <div id="campaignPlanner" class="card" style="display:none;margin-top:14px;padding:18px;border:1px solid var(--gold);border-radius:16px;background:rgba(35,25,16,.94)" aria-hidden="true">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px"><div><h3 style="margin:0 0 5px">🧭 Plan Your Campaign</h3><p class="sub" style="margin:0">Tell Wayfarer how much time and energy you have. It will build a connected plan using your existing quest library.</p></div><button class="btn ghost small" type="button" id="closeCampaignPlanner">✕</button></div>
+    <div class="formgrid" style="margin-top:16px">
+      <div class="field wide"><label for="campaignTime">Available free time</label><select id="campaignTime"><option value="15">15 minutes · Quick session</option><option value="30">30 minutes · Short session</option><option value="60" selected>1 hour · Focused session</option><option value="120">2 hours · Extended outing</option><option value="240">4+ hours · Major adventure</option></select><small class="sub">The plan intentionally leaves some time unfilled for travel, breaks and spontaneity.</small></div>
+      <div class="field"><label for="campaignEnergy">Energy level</label><select id="campaignEnergy"><option value="low">Low · Keep it gentle</option><option value="normal" selected>Normal · Balanced</option><option value="high">High · More challenging</option></select></div>
+      <div class="field"><label for="campaignFocus">Campaign focus</label><select id="campaignFocus"><option value="balanced" selected>Balanced · My priority skills</option><option value="adventure">Adventure · Explore outside</option><option value="social">Social · Connect with people</option><option value="productive">Productive · Hobbies and growth</option></select></div>
+      <div class="field wide"><label for="campaignPlace">Where should quests take place?</label><select id="campaignPlace"><option value="either" selected>A mix of home and outside</option><option value="home">At home</option><option value="out">Outside the home</option></select></div>
+      <div class="wide" id="campaignPreview" role="status" class="notice">A one-hour campaign aims for around 45–50 minutes of activities, leaving breathing room.</div>
+      <div class="wide row" style="gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" id="buildCampaignBtn">✦ Build my campaign</button><button class="btn ghost" type="button" id="cancelCampaignBtn">Cancel</button></div>
+    </div>
+  </div>
   <div id="adventureChooser" class="card" style="display:none;margin-top:14px;padding:18px;border:1px solid var(--gold);border-radius:16px;background:rgba(35,25,16,.88)" aria-hidden="true">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px">
       <div><h3 style="margin:0 0 6px">Choose your adventure</h3><p class="sub" style="margin:0">Pick how much time you want to give the journey.</p></div>
@@ -498,7 +509,7 @@ function render(){
  function questCard(q){return `<article class="card questActive" data-quest-card="${esc(q.id)}">
   <div class="questTop"><input class="check" type="checkbox" aria-label="Complete ${esc(q.title)}" data-complete="${q.id}">
    <div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP</span></div>
-   <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span><button class="btn small" data-complete-btn="${q.id}">Complete</button></div></div></div>
+   <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span>${q.estimatedMinutes?`<span class="tag">~${q.estimatedMinutes} min</span>`:""}<button class="btn small" data-complete-btn="${q.id}">Complete</button></div></div></div>
  </article>`;}
  const mainGrid=document.getElementById("mainQuestGrid"),sideGrid=document.getElementById("sideQuestGrid");
  if(mainGrid)mainGrid.innerHTML=mainQuests.length?mainQuests.map(questCard).join(""):'<div class="empty">No main quests yet. Mark one or more selected skills as Priority in the Skills tab, then generate quests.</div>';
@@ -1117,39 +1128,108 @@ function buildQuestPool(skill){
     return {title,description:finalDescription,minLevel,maxLevel,tier,category:skill==="Adventure"?"Adventure":skill==="Reading"?"Knowledge":skill==="Social Interactions"?"Social":skill==="Relationships"?"Relationships":skill==="Piano"?"Skill":skill==="Cardio"?"Adventure":"Skill",skill,xp:15};
   });
 }
-function generateQuests(){
+function openCampaignPlanner(open){
+  const panel=document.getElementById("campaignPlanner");
+  if(!panel)return;
+  const show=!!open;panel.style.display=show?"block":"none";panel.setAttribute("aria-hidden",show?"false":"true");
+  if(show)panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function updateCampaignPreview(){
+  const time=Number(document.getElementById("campaignTime")?.value||60);
+  const energy=document.getElementById("campaignEnergy")?.value||"normal";
+  const target=Math.max(5,Math.floor(time*(time<=30?.8:.82)));
+  const label=time>=240?"4+ hours":`${time} minutes`;
+  const preview=document.getElementById("campaignPreview");
+  if(preview)preview.textContent=`For ${label}, Wayfarer will aim for about ${target} minutes of activity, adjusted for your energy, with spare time for travel, breaks and spontaneity${energy==="low"?". Challenges will be kept gentle.":energy==="high"?". More demanding options will be favoured.":"."}`;
+}
+function estimatedQuestMinutes(q,place){
+ const text=(q.title+" "+q.description+" "+q.skill).toLowerCase();
+ let mins=10;
+ if(/day trip|full-day|half-day|three-stop|multiple stops|museum|market|event|attend|outing|town|village|destination|explore|adventure|café|cafe|waterfront|trail|neighbourhood|neighborhood/.test(text))mins=30;
+ if(/plan a day trip|plan a half-day|full-day|three-stop|attend a social setting|visit a museum|major expedition/.test(text))mins=55;
+ if(/read 10 pages|practise piano|practice piano|warm-up|warm up|one question|one interaction|one small|one sentence|write a one-sentence|read a poem/.test(text))mins=Math.min(mins,10);
+ if(/workout|strength session|run|cycling|bike ride|swim|cardio session|hiking/.test(text))mins=Math.max(mins,20);
+ if(place==="home"&&/visit|outside|walk|town|café|cafe|park|travel|outing|explore a nearby|street|landmark|waterfront/.test(text))return Infinity;
+ if(place==="out"&&/at home|indoor|practise piano|practice piano|read 10 pages|write for 10 minutes|journal|organise your space|organize your space/.test(text))return Infinity;
+ return mins;
+}
+function focusScore(skill,focus){
+ if(focus==="balanced")return 1;
+ const groups={adventure:["Adventure","Walking & Hiking","Cardio","Cycling","Running","Photography","Geography"],social:["Social Interactions","Relationships","Conversation","Networking","Hosting","Community Involvement","Teamwork","Language Practice"],productive:["Piano","Reading","Learning","Fitness","Strength Training","Cardio","Cooking","Writing","Coding","Foreign Languages"]};
+ return (groups[focus]||[]).includes(skill)?4:0.65;
+}
+function pickCampaignQuest(skill,opts,usedTitles,availableMinutes){
+ const pool=buildQuestPool(skill);
+ const recent=Array.isArray(state.questHistory[skill])?state.questHistory[skill]:[];
+ let candidates=pool.filter(q=>!recent.includes(q.title)&&!usedTitles.has(q.title));
+ if(!candidates.length)candidates=pool.filter(q=>!usedTitles.has(q.title));
+ if(!candidates.length)candidates=pool.slice();
+ candidates=candidates.map(q=>({...q,_minutes:estimatedQuestMinutes(q,opts.place),_score:focusScore(skill,opts.focus)})).filter(q=>Number.isFinite(q._minutes)&&q._minutes<=availableMinutes);
+ if(!candidates.length)return null;
+ // Prefer a duration that fits comfortably, avoiding a board packed to the limit.
+ candidates.sort((a,b)=>{
+   const energyFactor=opts.energy==="low"?0.7:opts.energy==="high"?1.2:1;
+   const aDur=Math.abs(a._minutes*energyFactor-Math.min(availableMinutes,20));
+   const bDur=Math.abs(b._minutes*energyFactor-Math.min(availableMinutes,20));
+   return (b._score-a._score)||(aDur-bDur);
+ });
+ // A small random choice among similarly suitable candidates keeps the library fresh.
+ const shortlist=candidates.slice(0,Math.min(6,candidates.length));
+ return shortlist[Math.floor(Math.random()*shortlist.length)];
+}
+function generateQuests(opts){
   ensureSelectedSkills();
   const skills=[...state.selectedSkills];
-  if(!skills.length){
-    state.quests=[];
-    save();
-    toast("Choose at least one skill in the Skills tab first.");
-    return;
-  }
+  if(!skills.length){openCampaignPlanner(false);toast("Choose at least one skill in the Skills tab first.");return;}
   if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
-  const newQuests=[];
-  for(const skill of skills){
-    const pool=buildQuestPool(skill);
-    const recent=Array.isArray(state.questHistory[skill])?state.questHistory[skill]:[];
-    const fresh=pool.filter(q=>!recent.includes(q.title));
-    const choices=fresh.length?fresh:pool;
-    const pick=choices[Math.floor(Math.random()*choices.length)];
-    state.questHistory[skill]=[pick.title,...recent.filter(t=>t!==pick.title)].slice(0,8);
-    newQuests.push({
-      ...pick,
-      id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2),
-      done:false,
-      source:"generated",
-      generatedForLevel:getSkillLevel(skill)
-    });
+  const settings=opts||{
+    time:Number(document.getElementById("campaignTime")?.value||60),
+    energy:document.getElementById("campaignEnergy")?.value||"normal",
+    focus:document.getElementById("campaignFocus")?.value||"balanced",
+    place:document.getElementById("campaignPlace")?.value||"either"
+  };
+  const totalBudget=settings.time>=240?240:settings.time;
+  // Deliberately reserve 18% (at least 5 minutes) for transitions, travel and spontaneity.
+  const activityBudget=Math.max(5,Math.floor(totalBudget*0.82));
+  const priority=skills.filter(skill=>getSkillPriority(skill)==="priority");
+  const secondary=skills.filter(skill=>getSkillPriority(skill)!=="priority");
+  const ordered=[...priority.sort((a,b)=>focusScore(b,settings.focus)-focusScore(a,settings.focus)),...secondary.sort((a,b)=>focusScore(b,settings.focus)-focusScore(a,settings.focus))];
+  const chosen=[];const usedTitles=new Set();let usedMinutes=0;
+  // Give main quests first access to the time budget; side quests fill remaining room.
+  for(const skill of ordered){
+    const remaining=activityBudget-usedMinutes;
+    if(remaining<5)break;
+    const quest=pickCampaignQuest(skill,settings,usedTitles,remaining);
+    if(!quest)continue;
+    const minutes=quest._minutes;
+    delete quest._minutes;delete quest._score;
+    chosen.push({...quest,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:settings.place,done:false,source:"generated",generatedForLevel:getSkillLevel(skill),id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2)});
+    usedTitles.add(quest.title);usedMinutes+=minutes;
+    state.questHistory[skill]=[quest.title,...(state.questHistory[skill]||[]).filter(t=>t!==quest.title)].slice(0,8);
   }
-  state.quests=newQuests;
+  // If an adventure/social focus is chosen, make the campaign feel connected through a shared plan note.
+  if(chosen.length>1){
+    const lead=chosen.find(q=>getSkillPriority(q.skill)==="priority")||chosen[0];
+    const support=chosen.filter(q=>q.id!==lead.id);
+    if(settings.focus==="adventure"&&support.some(q=>/Social Interactions|Relationships|Conversation|Networking|Hosting/.test(q.skill)))lead.description += " Treat any natural, comfortable interaction during the outing as progress toward your social skills too.";
+    if(settings.focus==="social"&&support.some(q=>/Adventure|Walking & Hiking|Photography|Geography/.test(q.skill)))lead.description += " If it feels practical, choose a public place or activity that gives you a natural shared topic to talk about.";
+    if(settings.focus==="balanced")lead.description += " Use this as the anchor for today's session; fit the supporting quests around it where practical.";
+  }
+  state.quests=chosen;
   state.activeDate=today();
   save();
-  toast(`Generated ${newQuests.length} quests — priority skills become main quests, secondary skills become side quests.`);
+  openCampaignPlanner(false);
+  if(!chosen.length){toast("No quests fit that time and location combination. Try more time or choose a different location.");return;}
+  const total=chosen.reduce((sum,q)=>sum+(q.estimatedMinutes||10),0);
+  toast(`Campaign ready: ${chosen.length} quests, about ${total} minutes planned, with time left to breathe.`);
 }
 const generateQuestsButton=document.getElementById("generateBtn");
-if(generateQuestsButton)generateQuestsButton.addEventListener("click",generateQuests);
+if(generateQuestsButton)generateQuestsButton.addEventListener("click",()=>{updateCampaignPreview();openCampaignPlanner(true);});
+["campaignTime","campaignEnergy"].forEach(id=>document.getElementById(id)?.addEventListener("change",updateCampaignPreview));
+document.getElementById("buildCampaignBtn")?.addEventListener("click",()=>generateQuests());
+document.getElementById("closeCampaignPlanner")?.addEventListener("click",()=>openCampaignPlanner(false));
+document.getElementById("cancelCampaignBtn")?.addEventListener("click",()=>openCampaignPlanner(false));
+updateCampaignPreview();
 
 
 // Initialize the interface from saved local data on every page load.
