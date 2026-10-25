@@ -34,11 +34,11 @@ h1,h2,h3,p{margin-top:0} h1{font:700 24px Georgia,serif;letter-spacing:.5px;marg
 .empty{border:1px dashed #6a5033;border-radius:14px;padding:24px;text-align:center;color:var(--muted)}
 .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:var(--muted)}.field input,.field select,.field textarea{width:100%;background:#120f0d;border:1px solid #5a422b;border-radius:9px;padding:10px;color:var(--cream)}.field textarea{min-height:100px;resize:vertical}.wide{grid-column:1/-1}
 .statList{display:grid;gap:16px}.statLine{display:grid;grid-template-columns:minmax(120px,1fr) 1.5fr auto;gap:12px;align-items:center;font-size:14px}.characterHero .statLine{grid-template-columns:minmax(130px,1fr) minmax(70px,1.5fr) auto;font-size:14px}.characterHero .statLine strong{white-space:nowrap}.miniBar{height:7px;border-radius:99px;background:#100e0c;overflow:hidden}.miniBar div{height:100%;background:linear-gradient(90deg,#8e612e,#e5c17c)}
-.logItem{padding:12px 0;border-bottom:1px solid #59432d}.logItem:last-child{border-bottom:0}
+.skillCategory{margin:14px 0}.skillCategory h3{font:700 19px Georgia,serif;color:var(--gold);margin:0 0 9px}.skillChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.skillChoice{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#17120f}.skillChoice input{accent-color:#d7ad63;margin-top:4px;flex-shrink:0}.skillChoice strong{display:block;font-size:13px}.skillChoice small{display:block;color:var(--muted);font-size:11px;line-height:1.35;margin-top:3px}.logItem{padding:12px 0;border-bottom:1px solid #59432d}.logItem:last-child{border-bottom:0}
 .notice{padding:12px 14px;border:1px solid #5c482e;border-radius:12px;background:#211a13;color:var(--muted);font-size:12px;margin:14px 0}
 footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#f1d18b;color:#21170c;padding:11px 17px;border-radius:999px;font-weight:700;box-shadow:var(--shadow);display:none;z-index:20}
-@media(max-width:650px){.app{padding:12px 12px 90px}.grid{grid-template-columns:1fr}.stats{gap:7px}.stat{padding:10px}.stat b{font-size:17px}.hero{padding:17px}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.sectionHead h2{font-size:21px}.tabs{margin:0 -12px;padding:12px;background:#15120ff5;padding-left:12px}}
+@media(max-width:650px){.app{padding:12px 12px 90px}.grid{grid-template-columns:1fr}.skillChoices{grid-template-columns:1fr}.stats{gap:7px}.stat{padding:10px}.stat b{font-size:17px}.hero{padding:17px}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.sectionHead h2{font-size:21px}.tabs{margin:0 -12px;padding:12px;background:#15120ff5;padding-left:12px}}
 </style>
 </head>
 <body>
@@ -74,6 +74,7 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
 
 <nav class="tabs" aria-label="Main navigation">
   <button class="tab active" data-tab="quests">⚜ Quest Board</button>
+  <button class="tab" data-tab="skills">✧ Skills</button>
   
   <button class="tab" data-tab="journal">📜 Journal</button>
   <button class="tab" data-tab="settings">⚙ Settings</button>
@@ -93,6 +94,16 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
   <div class="grid" style="margin-top:12px">
     <div class="card"><h3>Leveling rules</h3><p>Every 100 XP earns one level. XP is awarded when a quest is completed, and never removed for a missed day.</p><div class="tag">No penalties · Keep going</div></div>
     <div class="card"><h3>Campaign principles</h3><p>Leave the house before you decide whether the outing is worth it. Social courage counts even when an interaction feels awkward. Rest is part of the campaign.</p><div class="tag">Action over perfection</div></div>
+  </div>
+</section>
+
+<section class="section" id="section-skills">
+  <div class="sectionHead"><div><h2>Choose Your Skills</h2><p>Select what you want to develop. Your choices appear on the Quest Board and guide quest generation.</p></div></div>
+  <div class="notice">Choose as many as you like, or start with a few. Your existing XP is kept if you deselect a skill; you can select it again later.</div>
+  <div id="skillCatalog"></div>
+  <div class="row" style="margin-top:14px;flex-wrap:wrap">
+    <span class="sub" id="selectedSkillCount">0 skills selected</span>
+    <button class="btn" id="saveSkillsBtn">Save selected skills</button>
   </div>
 </section>
 
@@ -153,6 +164,61 @@ const starters=[
  {title:"Make a connection",description:"Send a thoughtful message, greet someone first, or initiate a conversation.",category:"Social",skill:"Social Confidence",xp:25},
  {title:"Choose life before the screen",description:"Complete one meaningful real-life activity before gaming or television.",category:"Daily",skill:"Discipline",xp:10}
 ];
+
+const skillCatalog = [
+ {category:"Lifestyle & personal growth", icon:"🧭", skills:[
+  ["Adventure","Explore new places, take solo outings, try new experiences."],["Social Confidence","Start conversations, speak up, meet people."],["Relationships","Invest in friendships, family and acquaintances."],["Discipline","Follow through, build routines and take action."],["Reading","Read fiction, non-fiction or educational books."],["Learning","Study subjects, languages and practical knowledge."],["Mindfulness","Reflect, slow down and pay attention."],["Confidence","Practise courage and self-trust."],["Independence","Handle more activities and decisions yourself."],["Cooking","Learn recipes and prepare meals."],["Personal Style","Develop grooming, clothing and presentation."],["Financial Literacy","Learn budgeting, saving and money management."],["Sleep & Recovery","Build healthier rest and recovery habits."],["Digital Balance","Use screens intentionally and reduce scrolling."],["Fitness Habits","Build consistency with movement and exercise."]
+ ]},
+ {category:"Instruments & music", icon:"🎼", skills:[
+  ["Piano","Practise piano technique and songs."],["Guitar","Acoustic or electric guitar."],["Bass Guitar","Develop bass lines and rhythm."],["Drums","Practise timing, grooves and coordination."],["Violin","Develop bowing, intonation and repertoire."],["Viola","Learn viola technique and pieces."],["Cello","Develop cello technique and repertoire."],["Double Bass","Practise upright bass."],["Ukulele","Learn chords and songs."],["Mandolin","Practise picking and melody."],["Banjo","Learn rolls, chords and tunes."],["Harp","Develop harp technique."],["Flute","Practise tone and repertoire."],["Clarinet","Develop breath, tone and fingering."],["Oboe","Learn oboe technique."],["Bassoon","Practise bassoon fundamentals."],["Saxophone","Learn saxophone tone and songs."],["Trumpet","Practise embouchure and melodies."],["Trombone","Develop slide technique and tone."],["French Horn","Practise horn fundamentals."],["Tuba","Build brass technique."],["Recorder","Learn melodies and breath control."],["Harmonica","Practise bends and tunes."],["Accordion","Learn chords and melodies."],["Organ","Practise keyboard and pedal technique."],["Singing","Develop pitch, breath and vocal control."],["Music Production","Create and arrange music."],["Music Theory","Learn harmony, rhythm and notation."]
+ ]},
+ {category:"Sports & movement", icon:"🏅", skills:[
+  ["Strength Training","Build strength through resistance exercise."],["Running","Improve endurance and pace."],["Walking & Hiking","Build distance and explore trails."],["Cycling","Improve cycling fitness and skills."],["Swimming","Develop technique and endurance."],["Football / Soccer","Practise skills and play matches."],["Basketball","Work on shooting, dribbling and games."],["Tennis","Practise strokes and match play."],["Badminton","Develop footwork and racket skills."],["Table Tennis","Practise control, spin and reactions."],["Padel","Build racket skills and tactics."],["Squash","Improve movement and match play."],["Boxing","Train footwork, fitness and technique safely."],["Martial Arts","Develop discipline and technique."],["Climbing / Bouldering","Build climbing skill and confidence."],["Yoga","Improve mobility, balance and focus."],["Pilates","Build control and core strength."],["Dance","Learn steps, rhythm and choreography."],["Rowing","Develop technique and endurance."],["Skiing / Snowboarding","Improve winter-sport skills."],["Skateboarding","Practise balance and board control."],["Golf","Develop swing and course skills."],["Volleyball","Practise serving, passing and teamwork."],["Badminton","Practise movement and racket control."],["Stretching & Mobility","Improve range of motion."]
+ ]},
+ {category:"Creativity & making", icon:"🎨", skills:[
+  ["Drawing","Practise sketching and observation."],["Painting","Develop colour, composition and technique."],["Photography","Learn composition and capture moments."],["Writing","Write stories, essays or personal reflections."],["Creative Writing","Develop fiction, poetry and storytelling."],["Pottery / Ceramics","Learn to shape and glaze clay."],["Woodworking","Build and finish useful objects."],["DIY & Repair","Learn practical repair skills."],["Sewing","Make or repair clothing and fabric items."],["Knitting / Crochet","Create useful or decorative pieces."],["Graphic Design","Learn visual communication."],["Coding","Build small software projects."],["Gardening","Grow plants and care for a garden."],["Calligraphy","Practise lettering and penmanship."]
+ ]},
+ {category:"Social & community", icon:"🤝", skills:[
+  ["Conversation","Practise asking questions and sharing stories."],["Public Speaking","Speak clearly to groups."],["Networking","Build new connections naturally."],["Hosting","Invite people and organise get-togethers."],["Community Involvement","Volunteer or participate locally."],["Teamwork","Cooperate and communicate with others."],["Language Practice","Practise speaking another language with people."]
+ ]},
+ {category:"Knowledge & practical skills", icon:"📚", skills:[
+  ["History","Study historical events and people."],["Science","Explore scientific ideas."],["Philosophy","Think through ideas and arguments."],["Psychology","Learn about behaviour and the mind."],["Geography","Learn about places and cultures."],["Foreign Languages","Build vocabulary and fluency."],["First Aid","Learn emergency response skills."],["Navigation","Learn maps, routes and orientation."],["Car Maintenance","Learn basic vehicle care."],["Chess","Study tactics and play games."],["Research Skills","Learn to evaluate sources and evidence."]
+ ]}
+];
+const defaultSelected = ["Social Confidence","Adventure","Discipline","Relationships","Reading","Piano"];
+function allSkillNames(){return skillCatalog.flatMap(c=>c.skills.map(s=>s[0]))}
+function ensureSelectedSkills(){
+ if(!Array.isArray(state.selectedSkills)) state.selectedSkills=[...defaultSelected];
+ state.selectedSkills=state.selectedSkills.filter(s=>allSkillNames().includes(s));
+ if(!state.skillXp)state.skillXp={};
+}
+function skillDescription(name){for(const c of skillCatalog){const found=c.skills.find(s=>s[0]===name);if(found)return found[1]}return ""}
+function questForSkill(skill){
+ const map={
+  "Reading":["Read 10 pages","Read for 15 focused minutes."],
+  "Piano":["Practise piano","Practise one technique or work on a song for 10 minutes."],
+  "Adventure":["Explore somewhere new","Visit a nearby place you don't usually go, even briefly."],
+  "Social Confidence":["Initiate one interaction","Start a conversation, ask a question or greet someone first."],
+  "Relationships":["Reconnect with someone","Send a thoughtful message or make plans with someone you care about."],
+  "Discipline":["Do one thing before screens","Complete one meaningful real-life task before gaming or TV."],
+  "Learning":["Learn something new","Spend 10 minutes learning a topic and note one thing you discovered."],
+  "Digital Balance":["Choose an offline activity","Put your phone away and spend 15 minutes doing something offline."],
+  "Fitness Habits":["Move your body","Take a walk or do a short movement session suited to your energy."],
+  "Cooking":["Make something simple","Prepare a meal or learn one new cooking technique."],
+  "Conversation":["Ask a good question","Ask someone an open-ended question and listen to their answer."],
+  "Photography":["Take three thoughtful photos","Look for interesting light, shapes or details around you."],
+  "Writing":["Write for 10 minutes","Write a paragraph, journal entry or short scene."],
+  "Strength Training":["Complete a short strength session","Do a safe, manageable session suited to your current ability."],
+  "Running":["Go for an easy run or walk-run","Keep it comfortable and adapt to your current fitness."],
+  "Walking & Hiking":["Take a different route","Walk somewhere you don't usually go."],
+  "Guitar":["Practise guitar","Spend 10 focused minutes on chords or a song."],
+  "Singing":["Practise your voice","Spend 10 minutes on warm-ups or a song."]
+ };
+ const pair=map[skill]||[`Practise ${skill.toLowerCase()}`,`Spend 10 focused minutes practising ${skill.toLowerCase()} or learning one small thing about it.`];
+ const xp=/Adventure|Social Confidence|Relationships|Conversation|Networking|Public Speaking|Community|Hosting/.test(skill)?25:10;
+ return {title:pair[0],description:pair[1],category:/Adventure|Walking|Hiking|Explore/.test(skill)?"Adventure":/Social|Relationships|Conversation|Networking|Speaking|Hosting|Community|Teamwork/.test(skill)?"Social":/Reading|Learning|History|Science|Philosophy|Psychology|Geography|Language|Research|Knowledge/.test(skill)?"Knowledge":/Piano|Guitar|Music|Instrument|Singing|Drawing|Painting|Photography|Writing|Creative|Pottery|Woodworking|Sewing|Knitting|Coding|Design/.test(skill)?"Skill":"Daily",skill,xp};
+}
+
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
 let state=load()||{xp:0,completedTotal:0,quests:[],journal:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};
 if(!state.settings)state.settings={...defaultSettings};
@@ -184,31 +250,46 @@ function render(){
    <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span>${q.done?'<span class="tag">Completed ✓</span>':`<button class="btn small" data-complete-btn="${q.id}">Complete</button>`}</div></div></div>
  </article>`).join(""):'<div class="empty">Your quest board is clear. Generate starter quests or add a mission.</div>';
  grid.querySelectorAll("[data-complete],[data-complete-btn]").forEach(el=>el.addEventListener(el.type==="checkbox"?"change":"click",()=>completeQuest(el.dataset.complete||el.dataset.completeBtn,el.type==="checkbox"?el.checked:true)));
- const attrs=["Social Confidence","Adventure","Discipline","Relationships","Knowledge","Creativity"];
- const totals={};attrs.forEach(a=>totals[a]=0);
- if(!state.skillXp)state.skillXp={};
- attrs.forEach(a=>totals[a]=Number(state.skillXp[a]||0));
- const skillMarkup=attrs.map(a=>{const xp=totals[a], level=Math.floor(xp/100)+1, rem=xp%100;return `<div class="statLine" style="display:block;margin:12px 0"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${a}</strong><span style="color:var(--gold)">Lv. ${level} · ${xp} XP</span></div><div class="miniBar" style="margin-top:7px"><div style="width:${rem}%"></div></div><div class="sub" style="margin-top:4px">${rem}/100 XP to next skill level</div></div>`}).join("");
+ ensureSelectedSkills();
+ const attrs=state.selectedSkills;
+ const skillMarkup=attrs.length?attrs.map(a=>{const xp=Number(state.skillXp[a]||0), level=Math.floor(xp/100)+1, rem=xp%100;return `<div class="statLine" style="display:block;margin:12px 0"><div style="display:flex;justify-content:space-between;gap:8px"><strong>${esc(a)}</strong><span style="color:var(--gold)">Lv. ${level} · ${xp} XP</span></div><div class="miniBar" style="margin-top:7px"><div style="width:${rem}%"></div></div><div class="sub" style="margin-top:4px">${rem}/100 XP to next skill level</div></div>`}).join(""):'<div class="empty">No skills selected yet. Open Skills to choose what you want to improve.</div>';
  document.getElementById("attributeList").innerHTML=skillMarkup;
  document.getElementById("mainAttributeList").innerHTML=skillMarkup;
+ renderSkillCatalog();
  document.getElementById("journalList").innerHTML=state.journal.length?[...state.journal].reverse().map(j=>`<div class="logItem"><div class="row"><strong>${esc(j.title)}</strong><span class="tag">${esc(j.type)}</span></div><div class="sub">${esc(j.date)}</div><p style="margin:7px 0 0;color:#d2c2a6;white-space:pre-wrap">${esc(j.text||"")}</p></div>`).join(""):'<div class="empty">Your chronicles will appear here.</div>';
  for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el)el.value=val}
 }
 function completeQuest(id,done=true){const q=state.quests.find(q=>q.id===id);if(!q||q.done===done)return;if(done){q.done=true;state.xp+=Number(q.xp);if(!state.skillXp)state.skillXp={};const skill=q.skill||({"Social":"Social Confidence","Adventure":"Adventure","Skill":"Creativity","Knowledge":"Knowledge","Relationships":"Relationships","Daily":"Discipline","Side quest":"Discipline","Boss quest":"Adventure"})[q.category]||"Discipline";state.skillXp[skill]=(Number(state.skillXp[skill])||0)+Number(q.xp);state.completedTotal++;if(!state.questDays.includes(today()))state.questDays.push(today());toast(`Quest complete! +${q.xp} XP`)}else{toast("Earned XP is never removed. Your completed quest stays recorded.")}save()}
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t===b));document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-"+b.dataset.tab))}));
-document.getElementById("newQuestBtn").addEventListener("click",()=>document.getElementById("questDialog").showModal());
-document.getElementById("cancelQuest").addEventListener("click",()=>document.getElementById("questDialog").close());
-document.getElementById("questForm").addEventListener("submit",e=>{e.preventDefault();state.quests.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),title:document.getElementById("qTitle").value.trim(),description:document.getElementById("qDesc").value.trim(),category:document.getElementById("qCategory").value,skill:document.getElementById("qSkill").value,xp:Number(document.getElementById("qXp").value),done:false,source:"custom"});e.target.reset();document.getElementById("questDialog").close();save();toast("Quest added to your board.")});
-document.getElementById("generateBtn").addEventListener("click",()=>{if(state.quests.length&&!confirm("Replace today's quest board? Completed quests on the current board will be lost. Earned XP will remain."))return;let pool=starters.map(q=>({...q}));if(state.settings.shift==="low")pool=pool.filter(q=>["Knowledge","Skill","Social","Daily"].includes(q.category));if(state.settings.shift==="free")pool.push({title:"Plan a solo adventure",description:"Choose a nearby destination and go explore one place.",category:"Adventure",xp:50});if(state.settings.difficulty==="gentle")pool=pool.map(q=>({...q,xp:q.xp===25?10:q.xp}));if(state.settings.difficulty==="hardcore")pool=pool.map(q=>({...q,xp:q.xp===10?25:q.xp}));state.quests=pool.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"generated"}));state.activeDate=today();save();toast("A new quest board awaits.")});
-document.getElementById("resetDayBtn").addEventListener("click",()=>{if(!confirm("Start a fresh quest board? Your earned XP and journal will remain."))return;state.quests=[];state.activeDate=today();ensureQuests();save();toast("Fresh day, fresh quests.")});
-document.getElementById("journalForm").addEventListener("submit",e=>{e.preventDefault();state.journal.push({title:document.getElementById("entryTitle").value.trim(),type:document.getElementById("entryType").value,text:document.getElementById("entryText").value.trim(),date:new Date().toLocaleString()});e.target.reset();save();toast("Entry added to your chronicle.")});
-document.getElementById("settingsForm").addEventListener("submit",e=>{e.preventDefault();for(const k of Object.keys(defaultSettings)){const el=document.getElementById(k);if(el)state.settings[k]=el.type==="number"?Number(el.value):el.value}save();toast("Campaign settings saved.")});
-document.getElementById("exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="wayfarer-rpg-backup.json";a.click();URL.revokeObjectURL(a.href);toast("Backup exported.")});
-document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
-document.getElementById("importFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const imported=JSON.parse(await f.text());if(!("xp" in imported)||!Array.isArray(imported.quests))throw Error();state=imported;save();toast("Backup restored.")}catch(err){alert("That backup file doesn't look valid.")}e.target.value=""});
-document.getElementById("wipeBtn").addEventListener("click",()=>{if(confirm("Permanently reset all local Wayfarer data? Export a backup first if you want to keep it.")){localStorage.removeItem(KEY);state={xp:0,completedTotal:0,quests:[],journal:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};ensureQuests();save();toast("Campaign reset.")}});
-ensureQuests();render();
-if("serviceWorker" in navigator && location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
-</script>
-</body>
-</html>
+
+function renderSkillCatalog(){
+ const root=document.getElementById("skillCatalog"); if(!root)return;
+ ensureSelectedSkills();
+ root.innerHTML=skillCatalog.map(cat=>`<div class="skillCategory"><h3>${cat.icon} ${esc(cat.category)}</h3><div class="skillChoices">${cat.skills.map(([name,desc])=>`<label class="skillChoice"><input type="checkbox" data-skill-choice="${esc(name)}" ${state.selectedSkills.includes(name)?"checked":""}><span><strong>${esc(name)}</strong><small>${esc(desc)}</small></span></label>`).join("")}</div></div>`).join("");
+ document.getElementById("selectedSkillCount").textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
+ root.querySelectorAll("[data-skill-choice]").forEach(input=>input.addEventListener("change",()=>{
+   const name=input.dataset.skillChoice;
+   if(input.checked&&!state.selectedSkills.includes(name))state.selectedSkills.push(name);
+   if(!input.checked)state.selectedSkills=state.selectedSkills.filter(s=>s!==name);
+   document.getElementById("selectedSkillCount").textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
+ }));
+}
+document.getElementById("saveSkillsBtn").addEventListener("click",()=>{ensureSelectedSkills();save();toast("Skills saved. Your Quest Board has been updated.")});
+
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
+ document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-"+b.dataset.tab));
+ if(b.dataset.tab==="skills")renderSkillCatalog();
+}));
+function renderSkillCatalog(){
+ const root=document.getElementById("skillCatalog"); if(!root)return;
+ ensureSelectedSkills();
+ root.innerHTML=skillCatalog.map(cat=>`<div class="skillCategory"><h3>${cat.icon} ${esc(cat.category)}</h3><div class="skillChoices">${cat.skills.map(([name,desc])=>`<label class="skillChoice"><input type="checkbox" data-skill-choice="${esc(name)}" ${state.selectedSkills.includes(name)?"checked":""}><span><strong>${esc(name)}</strong><small>${esc(desc)}</small></span></label>`).join("")}</div></div>`).join("");
+ document.getElementById("selectedSkillCount").textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
+ root.querySelectorAll("[data-skill-choice]").forEach(input=>input.addEventListener("change",()=>{
+   const name=input.dataset.skillChoice;
+   if(input.checked&&!state.selectedSkills.includes(name))state.selectedSkills.push(name);
+   if(!input.checked)state.selectedSkills=state.selectedSkills.filter(s=>s!==name);
+   document.getElementById("selectedSkillCount").textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
+ }));
+}
+document.getElementById("saveSkillsBtn").addEventListener("click",()=>{ensureSelectedSkills();save();render();toast("Skills saved. Your Quest Board has been updated.")});
