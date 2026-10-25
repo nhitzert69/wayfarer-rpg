@@ -85,7 +85,23 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
   <div class="sectionHead"><div><h2>Today's Quest Board</h2><p id="shiftNote">Small steps forge a different life.</p></div><button class="btn small" id="newQuestBtn">+ Add quest</button></div>
   <div class="notice">Earn XP for taking action, not for having a perfect experience. Missed quests never cost XP. Start small; rest when you need it.</div>
   <div class="grid" id="questGrid"></div>
-  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="generateBtn">✦ Generate starter quests</button><button class="btn ghost" id="resetDayBtn">New day / refresh board</button></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="generateBtn">✦ Generate starter quests</button><button class="btn ghost" id="resetDayBtn">New day / refresh board</button><button class="btn secondary" id="generateAdventureBtn" aria-expanded="false" aria-controls="adventureChooser">🧭 Generate adventure</button></div>
+  <div id="adventureChooser" class="card" style="display:none;margin-top:14px;padding:18px;border:1px solid var(--gold);border-radius:16px;background:rgba(35,25,16,.88)" aria-hidden="true">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px">
+      <div><h3 style="margin:0 0 6px">Choose your adventure</h3><p class="sub" style="margin:0">Pick how much time you want to give the journey.</p></div>
+      <button class="btn ghost small" id="closeAdventureChooser" aria-label="Close adventure choices">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:14px">
+      <button type="button" class="btn secondary" style="min-height:100px;text-align:left;white-space:normal;padding:16px">
+        <span style="display:block;font-size:17px;font-weight:700">🌿 Small Adventure</span>
+        <span style="display:block;font-size:14px;font-weight:400;line-height:1.45;margin-top:7px">A short outing · 1–2 hours</span>
+      </button>
+      <button type="button" class="btn secondary" style="min-height:100px;text-align:left;white-space:normal;padding:16px">
+        <span style="display:block;font-size:17px;font-weight:700">🏔️ Large Adventure</span>
+        <span style="display:block;font-size:14px;font-weight:400;line-height:1.45;margin-top:7px">A full-day adventure</span>
+      </button>
+    </div>
+  </div>
 </section>
 
 <section class="section" id="section-character">
@@ -377,6 +393,24 @@ if(difficultySelect){
     window.scrollTo({top:0,behavior:"smooth"});
   });
 }
+
+
+// Toggle the adventure chooser on the Quest Board. Adventure choices are visual placeholders for now.
+const adventureToggle=document.getElementById("generateAdventureBtn");
+const adventureChooser=document.getElementById("adventureChooser");
+const adventureClose=document.getElementById("closeAdventureChooser");
+function setAdventureChooserOpen(open){
+  if(!adventureChooser||!adventureToggle)return;
+  adventureChooser.style.display=open?"block":"none";
+  adventureChooser.setAttribute("aria-hidden",open?"false":"true");
+  adventureToggle.setAttribute("aria-expanded",open?"true":"false");
+  if(open){adventureChooser.scrollIntoView({behavior:"smooth",block:"nearest"});}
+}
+if(adventureToggle)adventureToggle.addEventListener("click",function(){
+  const isOpen=adventureChooser&&adventureChooser.style.display!=="none";
+  setAdventureChooserOpen(!isOpen);
+});
+if(adventureClose)adventureClose.addEventListener("click",function(){setAdventureChooserOpen(false);});
 
 // Keep the hosted PWA's service worker updated when a new version is deployed.
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
