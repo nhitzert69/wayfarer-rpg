@@ -418,6 +418,7 @@ if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
  try{
    localStorage.setItem(KEY,JSON.stringify(state));
    renderSkillProgress();
+   window.scrollTo({top: 0, behavior: "smooth"});
    toast(`✓ Saved ${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"}.`);
    }catch(error){
    toast("Could not save skills on this device. Please check browser storage settings.");
@@ -564,7 +565,6 @@ document.addEventListener("click", function(event) {
     section.classList.toggle("active", section.id === "section-" + tabName);
   });
   if (tabName === "skills" && typeof renderSkillCatalog === "function") renderSkillCatalog();
-  window.scrollTo(0, 0);
 });
 
 
