@@ -74,6 +74,7 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
 
 <nav class="tabs" aria-label="Main navigation">
   <button class="tab active" data-tab="quests">⚜ Quest Board</button>
+  <button class="tab" data-tab="todo" type="button">☑ To Do</button>
   <button class="tab" data-tab="skills">✧ Skills</button>
   
   <button class="tab" data-tab="journal">📜 Journal</button>
@@ -82,7 +83,7 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
 
 <main>
 <section class="section active" id="section-quests">
-  <div class="sectionHead"><div><h2>Today's Quest Board</h2><p id="shiftNote">Small steps forge a different life.</p></div><button class="btn small" id="newQuestBtn">+ Add quest</button></div>
+  <div class="sectionHead"><div><h2>Today's Quest Board</h2><p id="shiftNote">Small steps forge a different life.</p></div></div>
   <div class="notice">Earn XP for taking action, not for having a perfect experience. Missed quests never cost XP. Start small; rest when you need it.</div>
   <div class="grid" id="questGrid"></div>
   <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="generateBtn">✦ Generate starter quests</button><button class="btn ghost" id="resetDayBtn">New day / refresh board</button><button class="btn secondary" id="generateAdventureBtn" aria-expanded="false" aria-controls="adventureChooser">🧭 Generate adventure</button></div>
@@ -113,6 +114,17 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
   </div>
 </section>
 
+<section class="section" id="section-todo">
+<div class="sectionHead"><div><h2>Personal To Do</h2><p>Everyday tasks, separate from your real-life quests.</p></div><button class="btn primary" id="addTodoBtn" type="button">+ Add task</button></div>
+<div class="card"><form id="todoForm" class="formGrid">
+<div class="wide"><label for="todoTitle">Task</label><input id="todoTitle" maxlength="180" placeholder="e.g. Buy groceries, call family..." required /></div>
+<div><label for="todoDue">Due date (optional)</label><input id="todoDue" type="date" /></div>
+<div><label for="todoPriority">Priority</label><select id="todoPriority"><option value="normal" selected>Normal</option><option value="high">High</option><option value="low">Low</option></select></div>
+<div class="wide"><label for="todoNotes">Notes (optional)</label><textarea id="todoNotes" rows="2" placeholder="Any details to remember..."></textarea></div>
+<div class="wide row" style="flex-wrap:wrap;gap:8px"><button class="btn primary" id="todoSubmitBtn" type="submit">Save task</button><button class="btn" id="cancelTodoEditBtn" type="button" style="display:none">Cancel edit</button></div>
+</form></div>
+<div class="card" style="margin-top:14px"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">Your tasks</h3><span class="tag" id="todoCount">0 open</span></div><div id="todoList" style="margin-top:10px"><div class="empty">No tasks yet. Add something you want to remember.</div></div></div>
+</section>
 <section class="section" id="section-skills">
   <div class="sectionHead"><div><h2>Choose Your Skills</h2><p>Select what you want to develop. Your choices appear on the Quest Board and guide quest generation.</p></div></div>
   <div class="notice">Choose as many as you like, or start with a few. Your existing XP is kept if you deselect a skill; you can select it again later.</div>
@@ -220,6 +232,7 @@ function ensureSelectedSkills(){
  if(!Array.isArray(state.selectedSkills)) state.selectedSkills=[...defaultSelected];
  state.selectedSkills=state.selectedSkills.filter(s=>allSkillNames().includes(s));
  if(!state.skillXp)state.skillXp={};
+if(!Array.isArray(state.todo))state.todo=[];
 }
 function skillDescription(name){for(const c of skillCatalog){const found=c.skills.find(s=>s[0]===name);if(found)return found[1]}return ""}
 function questForSkill(skill){
@@ -249,7 +262,7 @@ function questForSkill(skill){
 }
 
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
-let state=load()||{xp:0,completedTotal:0,quests:[],journal:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};
+let state=load()||{xp:0,completedTotal:0,quests:[],journal:[],todo:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};
 if(!state.settings)state.settings={...defaultSettings};
 if(!state.skillXp)state.skillXp={};
 if(state.activeDate!==today()){state.activeDate=today();state.quests=[]}
@@ -288,6 +301,18 @@ function render(){
  ensureSelectedSkills();
  renderSkillProgress();
  renderSkillCatalog();
+
+ const todoListEl=document.getElementById("todoList");
+ const todoCountEl=document.getElementById("todoCount");
+ const openTodoCount=state.todo.filter(t=>!t.completed).length;
+ if(todoCountEl)todoCountEl.textContent=`${openTodoCount} open`;
+ if(todoListEl)todoListEl.innerHTML=state.todo.length?[...state.todo].sort((a,b)=>Number(a.completed)-Number(b.completed)||(a.dueDate||"9999-12-31").localeCompare(b.dueDate||"9999-12-31")||(b.createdAt||"").localeCompare(a.createdAt||"")).map(t=>`<div class="logItem" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"><div class="row" style="align-items:flex-start;gap:8px"><label style="display:flex;align-items:flex-start;gap:8px;flex:1"><input type="checkbox" data-todo-complete="${esc(t.id)}" ${t.completed?"checked":""} style="width:auto;margin-top:5px"/><span style="${t.completed?"text-decoration:line-through;opacity:.7":""}"><strong>${esc(t.title)}</strong>${t.dueDate?`<span class="sub" style="display:block">Due ${esc(t.dueDate)}</span>`:""}${t.notes?`<span class="sub" style="display:block;white-space:pre-wrap">${esc(t.notes)}</span>`:""}</span></label><span class="tag">${esc(t.priority||"normal")}</span></div><div class="row" style="margin-top:10px;gap:8px"><button class="btn small" type="button" data-edit-todo="${esc(t.id)}">Edit</button><button class="btn small" type="button" data-delete-todo="${esc(t.id)}">Delete</button></div></div>`).join(""):'<div class="empty">No tasks yet. Add something you want to remember.</div>';
+ if(todoListEl){
+ todoListEl.querySelectorAll("[data-todo-complete]").forEach(el=>el.addEventListener("change",()=>{const t=state.todo.find(x=>String(x.id)===String(el.dataset.todoComplete));if(t){t.completed=el.checked;save();}}));
+ todoListEl.querySelectorAll("[data-edit-todo]").forEach(el=>el.addEventListener("click",()=>editTodo(el.dataset.editTodo)));
+ todoListEl.querySelectorAll("[data-delete-todo]").forEach(el=>el.addEventListener("click",()=>deleteTodo(el.dataset.deleteTodo)));
+ }
+
  const journalListEl=document.getElementById("journalList");
  if(journalListEl) journalListEl.innerHTML=state.journal.length?[...state.journal].sort((a,b)=>(b.createdAt||b.date||"").localeCompare(a.createdAt||a.date||"")).map(j=>`<div class="logItem" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"><div class="row" style="align-items:flex-start"><strong>${esc(j.title)}</strong><span class="tag">${esc(j.type)}</span></div><div class="sub">${esc(j.displayDate||j.date||"Date unknown")}</div><p style="margin:7px 0 0;color:#d2c2a6;white-space:pre-wrap">${esc(j.text||"")}</p><div class="row" style="margin-top:10px;gap:8px"><button class="btn small" type="button" data-edit-journal="${esc(j.id||"")}">Edit</button><button class="btn small" type="button" data-delete-journal="${esc(j.id||"")}">Delete</button></div></div>`).join(""):'<div class="empty">Your chronicles will appear here.</div>';
  if(journalListEl){
@@ -347,6 +372,17 @@ if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
    console.error("Wayfarer could not save selected skills:",error);
  }
 });
+
+
+
+let todoEditingId=null;
+const todoForm=document.getElementById("todoForm"),todoSubmitBtn=document.getElementById("todoSubmitBtn"),cancelTodoEditBtn=document.getElementById("cancelTodoEditBtn");
+function resetTodoForm(){todoEditingId=null;if(todoForm)todoForm.reset();if(todoSubmitBtn)todoSubmitBtn.textContent="Save task";if(cancelTodoEditBtn)cancelTodoEditBtn.style.display="none";}
+function editTodo(id){const t=state.todo.find(x=>String(x.id)===String(id));if(!t)return;todoEditingId=t.id;document.getElementById("todoTitle").value=t.title||"";document.getElementById("todoDue").value=t.dueDate||"";document.getElementById("todoPriority").value=t.priority||"normal";document.getElementById("todoNotes").value=t.notes||"";todoSubmitBtn.textContent="Update task";cancelTodoEditBtn.style.display="inline-flex";document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab==="todo"));document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-todo"));window.scrollTo({top:0,behavior:"smooth"});}
+function deleteTodo(id){const t=state.todo.find(x=>String(x.id)===String(id));if(!t||!confirm(`Delete task "${t.title}"?`))return;state.todo=state.todo.filter(x=>String(x.id)!==String(id));if(String(todoEditingId)===String(id))resetTodoForm();save();toast("Task deleted.");}
+todoForm.addEventListener("submit",e=>{e.preventDefault();const title=document.getElementById("todoTitle").value.trim();if(!title)return;const now=new Date(),data={title,dueDate:document.getElementById("todoDue").value,priority:document.getElementById("todoPriority").value,notes:document.getElementById("todoNotes").value.trim(),updatedAt:now.toISOString()};if(todoEditingId!==null){const t=state.todo.find(x=>String(x.id)===String(todoEditingId));if(!t){resetTodoForm();return;}Object.assign(t,data);save();resetTodoForm();render();toast("Task updated.");}else{const id=(crypto.randomUUID?crypto.randomUUID():String(Date.now()));state.todo.push({id,...data,completed:false,createdAt:now.toISOString()});save();resetTodoForm();render();toast("Task saved.");}});
+cancelTodoEditBtn.addEventListener("click",resetTodoForm);
+document.getElementById("addTodoBtn").addEventListener("click",()=>document.getElementById("todoTitle").focus());
 
 
 // Journal entries are saved locally with a timestamp and can be edited or deleted.
