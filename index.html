@@ -232,7 +232,6 @@ function ensureSelectedSkills(){
  if(!Array.isArray(state.selectedSkills)) state.selectedSkills=[...defaultSelected];
  state.selectedSkills=state.selectedSkills.filter(s=>allSkillNames().includes(s));
  if(!state.skillXp)state.skillXp={};
-if(!Array.isArray(state.todo))state.todo=[];
 }
 function skillDescription(name){for(const c of skillCatalog){const found=c.skills.find(s=>s[0]===name);if(found)return found[1]}return ""}
 function questForSkill(skill){
@@ -264,6 +263,9 @@ function questForSkill(skill){
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
 let state=load()||{xp:0,completedTotal:0,quests:[],journal:[],todo:[],settings:{...defaultSettings},activeDate:today(),questDays:[],lastDay:today()};
 if(!state.settings)state.settings={...defaultSettings};
+if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
+if(!Array.isArray(state.todo))state.todo=[];
+if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
 if(!state.skillXp)state.skillXp={};
 if(state.activeDate!==today()){state.activeDate=today();state.quests=[]}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
@@ -350,6 +352,8 @@ function renderSkillCatalog(){
    if(!input.checked)state.selectedSkills=state.selectedSkills.filter(s=>s!==name);
    const countNow=document.getElementById("selectedSkillCount");
    if(countNow)countNow.textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
+   try{localStorage.setItem(KEY,JSON.stringify(state));}catch(error){console.error("Could not persist selected skills:",error);}
+   renderSkillProgress();
  }));
 }
 const saveSkillsButton=document.getElementById("saveSkillsBtn");
@@ -496,7 +500,9 @@ function renderSkillCatalog(){
    document.getElementById("selectedSkillCount").textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
  }));
 }
-document.getElementById("saveSkillsBtn").addEventListener("click",()=>{ensureSelectedSkills();save();render();toast("Skills saved. Your Quest Board has been updated.")});
+document.getElementById("saveSkillsBtn").addEventListener("click",()=>{ensureSelectedSkills();save();ensureSelectedSkills();
+renderSkillProgress();
+render();toast("Skills saved. Your Quest Board has been updated.")});
 
 // Delegated navigation handler: one click handler for every tab.
 document.addEventListener("click", function(event) {
