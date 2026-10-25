@@ -154,6 +154,16 @@ footer{color:#7e6e58;text-align:center;font-size:11px;margin-top:26px}
 </dialog>
 
 <script>
+// Register navigation immediately so a later optional feature cannot disable the tabs.
+document.querySelectorAll(".tab").forEach(function(button){
+  button.addEventListener("click", function(){
+    document.querySelectorAll(".tab").forEach(function(tab){tab.classList.toggle("active", tab===button);});
+    document.querySelectorAll(".section").forEach(function(section){section.classList.toggle("active", section.id === "section-" + button.dataset.tab);});
+    if(button.dataset.tab === "skills" && typeof renderSkillCatalog === "function") renderSkillCatalog();
+    window.scrollTo({top: 0, behavior: "smooth"});
+  });
+});
+
 const KEY="wayfarer-rpg-v1";
 const today=()=>new Date().toLocaleDateString("en-CA");
 const defaultSettings={shift:"normal",difficulty:"balanced",social:"gradual",gaming:"moderate",workPattern:"Rotating 8-hour shifts",readTarget:10};
