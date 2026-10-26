@@ -114,3 +114,9 @@ Every new theme must follow these rules unless explicitly changed.
 - Optimize and compress every background before inclusion; store it under `assets/images/` and use a consistent registered path.
 - Register the background with the theme so it appears behind the application interface when that theme is equipped, with a dark readability overlay that preserves text and controls contrast.
 - Verify desktop and mobile rendering, positioning, scrolling, and legibility. Confirm the background changes with the equipped theme and does not leak into other themes.
+
+
+## Mandatory theme visual integration tests
+Every theme must have a dedicated, registered full-screen background and a complete theme-specific color system—not merely an icon and character artwork. The theme stylesheet must define its own palette and apply it to active tabs, buttons, cards/panels, progress bars, form controls, borders, and character portrait framing as appropriate. The background must be layered behind the app with a readability overlay on desktop and mobile.
+
+The Debug Theme Integration Tests must verify: (1) theme registry entry; (2) icon/background asset references; (3) theme-specific body class; (4) theme-specific background CSS; (5) distinct color rules for key UI components; (6) Store visibility and unlock requirement; (7) Inventory ownership and equip action; (8) character art selection; (9) soundtrack mapping; and (10) perk/reward-locking rules. A theme must fail testing if it inherits Dungeon colors or background unintentionally. Report each failure with test ID, expected behavior, actual behavior, and suggested investigation.

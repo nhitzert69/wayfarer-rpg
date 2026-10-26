@@ -9,3 +9,5 @@
 
 - Any new picture/image added to Wayfarer must be compressed/optimized before inclusion.
 - Every theme must include its own optimized full-screen app background, registered to the theme and displayed behind the interface with a legibility overlay.
+
+Every new theme must be tested for its complete visual identity: dedicated background with overlay, theme-specific palette applied to major UI components, active body class, icon, character art, soundtrack, Store/Inventory/equip integration, and Debug test coverage.
