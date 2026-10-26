@@ -214,7 +214,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 </style>
 
 
-<style id="wayfarer-character-inventory-v70">
+<style id="wayfarer-character-inventory-v71">
 /* v70: compact character details and split, tappable inventory */
 .characterOptionsCard{padding:10px!important;margin-top:8px!important}
 .characterOptionsCard>h3{font-size:19px!important;line-height:1.15!important;margin:0 0 3px!important}
@@ -242,6 +242,26 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 .characterOptionSlot.themeUnequipped{border-style:dashed!important;opacity:.82}.inventoryItemButton:focus-visible{outline:2px solid #8cff9d;outline-offset:2px}
 .inventoryItemButton:active{transform:scale(.97)}
 @media(max-width:420px){.characterOptionsCard{padding:9px!important}.characterOptionSlot{padding:6px!important}.characterOptionSlot .slotPreview{width:32px!important;height:32px!important;min-width:32px!important;flex-basis:32px!important}.characterInventoryCard{padding:9px!important}.characterInventoryColumns{gap:7px}.inventoryCategory{padding:6px}.inventoryItems{gap:5px}.inventoryItemButton{padding:5px 3px}}
+</style>
+
+
+<style id="wayfarer-character-slots-v71">
+/* v71: compact, readable theme/artifact slots; the equipped icon fills its preview frame. */
+.characterOptionsCard{padding:10px!important;margin-top:8px!important}
+.characterOptionsCard>h3{font-size:clamp(19px,4.5vw,23px)!important;line-height:1.15!important;margin:0 0 3px!important}
+.characterOptionsCard>.sub{font-size:12px!important;line-height:1.35!important;margin:0 0 8px!important}
+.characterSlotGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:8px!important;align-items:stretch!important}
+.characterOptionSlot{position:relative!important;box-sizing:border-box!important;min-width:0!important;min-height:104px!important;height:104px!important;padding:9px!important;display:block!important;overflow:hidden!important;border:1px solid #8d6a3d!important;border-radius:9px!important;background:linear-gradient(120deg,rgba(255,255,255,.035),rgba(0,0,0,.2) 50%,rgba(180,130,65,.035))!important}
+.characterOptionSlot:before{content:"";position:absolute;inset:3px;border:1px solid rgba(190,146,82,.18);pointer-events:none;border-radius:6px}
+.characterOptionSlot:after{content:"";position:absolute;right:8px;top:24px;display:block;width:50px;height:54px;box-sizing:border-box;border:1px solid #8d6a3d;border-radius:5px;background:linear-gradient(145deg,rgba(0,0,0,.55),rgba(39,31,23,.42));box-shadow:inset 0 0 0 2px rgba(0,0,0,.24),inset 0 0 12px rgba(0,0,0,.25);pointer-events:none}
+.characterOptionSlot .slotCopy{position:relative;z-index:2;min-width:0;max-width:calc(100% - 56px);display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.characterOptionSlot strong{font-family:Georgia,serif;font-size:clamp(13px,3.5vw,17px)!important;line-height:1.15!important;color:#f0d9ae;font-weight:600;overflow-wrap:anywhere}
+.characterOptionSlot small{display:block!important;color:#b6a48b;font-size:11px!important;line-height:1.25!important;overflow-wrap:anywhere;max-height:42px;overflow:hidden}
+.characterOptionSlot .slotPreview{position:absolute!important;z-index:3!important;right:8px!important;top:24px!important;display:block!important;box-sizing:border-box!important;width:50px!important;height:54px!important;max-width:50px!important;max-height:54px!important;object-fit:contain!important;padding:2px!important;border:1px solid #8d6a3d!important;border-radius:5px!important;background:linear-gradient(145deg,rgba(0,0,0,.35),rgba(39,31,23,.35))!important}
+.characterOptionSlot .equippedThemePreview{object-fit:contain!important;box-shadow:0 0 8px rgba(57,255,101,.75)!important;filter:brightness(.9) saturate(.9);transform:scale(.94);transform-origin:center}
+.characterOptionSlot.themeUnequipped .equippedThemePreview{box-shadow:none!important;filter:none;transform:none}
+.characterOptionSlot .artifactPreview{border:1px solid #8d6a3d!important}
+@media(max-width:360px){.characterOptionsCard{padding:8px!important}.characterSlotGrid{gap:6px!important}.characterOptionSlot{height:100px!important;min-height:100px!important;padding:7px!important}.characterOptionSlot:after,.characterOptionSlot .slotPreview{right:6px!important;width:42px!important;max-width:42px!important;height:46px!important;max-height:46px!important}.characterOptionSlot .slotCopy{max-width:calc(100% - 46px)}.characterOptionSlot:after,.characterOptionSlot .slotPreview{top:28px!important}}
 </style>
 
 </head>
@@ -404,6 +424,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
         <option>Creativity &amp; making</option>
         <option>Social &amp; community</option>
         <option>Knowledge &amp; practical skills</option>
+        <option>Faith</option>
       </select></div>
       <div class="field wide"><label for="entryText">What happened? What did you learn?</label><textarea id="entryText" placeholder="Even ordinary days count."></textarea></div>
       <div class="wide row" style="flex-wrap:wrap;gap:8px"><button class="btn" id="journalSubmitBtn" type="submit">Save journal entry</button><button class="btn" id="cancelJournalEditBtn" type="button" style="display:none">Cancel edit</button></div>
@@ -495,6 +516,9 @@ const skillCatalog = [
  {category:"Fitness & movement", icon:"🏅", skills:[
   ["Fitness","Build strength through resistance training, bodyweight exercises, and consistent technique practice."],
   ["Cardio","Improve cardiovascular endurance through activities such as walking, running, cycling, or swimming."]
+ ]},
+ {category:"Faith", icon:"✝️", skills:[
+  ["Orthodox Christianity","Grow in Orthodox Christian practice through prayer, Scripture, and the prayer rope at a thoughtful, sustainable pace."]
  ]}
 ];
 const defaultSelected = [];
@@ -1254,6 +1278,13 @@ function buildQuestPool(skill){
     "Fitness": [
       ["Complete a short strength session","Do a manageable strength workout using familiar exercises."],["Practise push-up technique","Use a suitable variation and focus on controlled form."],["Practise a squat pattern","Perform bodyweight squats or another suitable squat variation."],["Practise a hip hinge","Rehearse a comfortable hinge pattern without forcing range."],["Train your back","Do a suitable row or pulling movement with controlled form."],["Train your chest","Do a suitable push movement at a manageable effort."],["Train your legs","Choose a safe leg-strength exercise you know."],["Train your core","Practise a controlled core exercise suited to your ability."],["Train your shoulders","Choose a comfortable shoulder-strength movement."],["Practise a lunge variation","Use support or a smaller range if needed."],["Do a full-body session","Choose one push, one pull, one leg, and one core movement."],["Review your workout plan","Check that your plan covers the main movement patterns."],["Log your workout","Record exercises, sets, reps, and how the session felt."],["Warm up before training","Do a gradual warm-up before your strength session."],["Practise controlled repetitions","Slow down a familiar movement and keep it controlled."],["Focus on range of motion","Use a comfortable range without forcing joints."],["Learn one exercise variation","Research or practise a safe variation of a familiar movement."],["Train with resistance bands","Use a band for a suitable pulling, pushing, or leg exercise."],["Try a dumbbell movement","Practise a familiar dumbbell exercise with a manageable load."],["Practise bodyweight strength","Choose a suitable bodyweight movement and focus on technique."],["Train your glutes","Choose a comfortable glute bridge or other suitable movement."],["Strengthen your upper back","Practise a controlled row, band pull-apart, or similar movement."],["Work on grip strength","Use a safe, simple grip exercise without overdoing it."],["Practise single-leg balance and strength","Use support and a suitable movement if needed."],["Review your technique","Check one exercise against reliable form guidance."],["Plan your next strength session","Choose exercises and prepare what you need."],["Respect your recovery","Assess soreness and energy before choosing training or rest."],["Take a rest-day walk and recover","Use gentle movement if it feels good, rather than forcing a workout."],["Repeat a familiar workout consistently","Complete your planned session without chasing a personal record."],["Try a new machine safely","Learn the setup and use a manageable load if at a gym."],["Practise a deadlift pattern","Use a very manageable load or bodyweight hinge to focus on technique."],["Practise an overhead press variation","Choose a comfortable, controlled press suited to your ability."],["Work on hamstrings","Choose a suitable hamstring exercise and focus on control."],["Work on calves","Perform a comfortable calf-raise variation."],["Build a simple progression plan","Choose one exercise to improve gradually over several sessions."],["Check your training consistency","Review how many strength sessions you completed recently."],["Do a short accessory session","Choose one or two manageable exercises for an area you want to develop."],["Practise breathing while lifting","Keep breathing naturally and avoid straining or holding your breath unnecessarily."],["Set up your training space","Prepare equipment and remove trip hazards before exercising."],["Celebrate consistency, not maximums","Record a win based on showing up and using good form."]
     ],
+    "Orthodox Christianity": [
+      ["Say a short prayer","Pause for a few quiet minutes and pray sincerely, using your own words or a familiar Orthodox prayer."],
+      ["Study a passage of the Bible","Read a short passage from Scripture slowly, then reflect on one thing it teaches or raises for you."],
+      ["Pray with the prayer rope","Set aside a quiet few minutes to pray with your prayer rope at a comfortable pace, without treating the count as a performance target."],
+      ["Learn about an Orthodox practice","Spend 10 minutes reading a trustworthy Orthodox source about a prayer, feast, saint, or part of the Divine Liturgy."],
+      ["Reflect on a Gospel teaching","Read a few verses from one of the Gospels and consider one small way to put the teaching into practice today."]
+    ],
     "Cardio": [
       ["Take a brisk walk","Walk at a pace that feels purposeful but sustainable."],["Try an easy walk-run","Alternate gentle jogging and walking if appropriate for you."],["Go for a relaxed bike ride","Choose a safe route and comfortable pace."],["Swim at an easy pace","Swim comfortably if you have access to a suitable pool."],["Explore a walking route","Find a safe route you might enjoy using regularly."],["Do a gentle cardio warm-up","Use easy walking, cycling, or marching to warm up."],["Take the stairs if suitable","Choose stairs only if they feel safe and comfortable."],["Try a dance session","Put on music and move for a few songs."],["Walk during a break","Use a free pocket of time for a short walk."],["Cycle for an errand","Use a bike for a practical trip if the route is safe."],["Try an indoor cardio session","Choose a suitable low-impact follow-along session."],["Build a simple cardio routine","Choose an activity and a realistic time to repeat it."],["Explore a park on foot","Walk a loop or a section of a local park."],["Do a steady-paced session","Choose a pace at which you can still speak in sentences."],["Practise gentle intervals","Alternate slightly brisker movement with easy recovery periods."],["Try a rowing machine","Learn the setup and start at a comfortable effort if available."],["Use an exercise bike","Ride at a sustainable pace and focus on consistency."],["Walk with a destination","Walk to a shop, café, or other nearby place."],["Take a longer weekend walk","Choose a route that matches your current ability."],["Try a beginner fitness class","Find a suitable class with an intensity you can adapt."],["Walk without scrolling","Keep your phone away and pay attention to the route."],["Track a comfortable session","Record activity and duration without judging your pace."],["Try a new cardio activity","Sample a safe activity you have not done recently."],["Do a recovery cardio session","Choose gentle movement on a day when you need an easier effort."],["Plan a scenic route","Find a pleasant, safe route for a future walk or ride."],["Walk with a friend","Invite someone for a comfortable walk together."],["Use music for movement","Choose a playlist and move at a sustainable pace."],["Practise pacing","Start easy and avoid going too hard too soon."],["Try a short after-work session","Fit in a manageable amount of movement if your energy allows."],["Explore a nature path","Walk a suitable trail and enjoy the surroundings."],["Build toward a regular habit","Choose two realistic times for cardio this week."],["Try low-impact cardio","Choose an activity that is gentle on your joints."],["Notice your breathing","During a comfortable session, notice how effort changes your breathing."],["Finish with an easy cooldown","Slow down gradually after a cardio session."],["Review your cardio progress","Note what you did and how your stamina felt."],["Prepare for a cardio outing","Set out comfortable shoes or other needed gear."],["Try a short hill walk","Choose a gentle hill only if it suits your current ability."],["Make an active errand","Walk or cycle for part of a practical journey if safe."],["Enjoy movement outdoors","Choose an outdoor activity simply because it feels good."],["Schedule your next session","Put a realistic cardio session into your upcoming week."]
     ]
@@ -1363,7 +1394,7 @@ function buildQuestPool(skill){
     let finalDescription=description;
     if(skill==="Reading") finalDescription=`Read 10 pages. ${description}`;
     if(skill==="Piano") finalDescription=`Practise piano for 10 minutes. ${description}`;
-    return {title,description:finalDescription,minLevel,maxLevel,tier,category:skill==="Adventure"?"Adventure":skill==="Reading"?"Knowledge":skill==="Social Interactions"?"Social":skill==="Relationships"?"Relationships":skill==="Piano"?"Skill":skill==="Cardio"?"Adventure":"Skill",skill,xp:15};
+    return {title,description:finalDescription,minLevel,maxLevel,tier,category:skill==="Adventure"?"Adventure":skill==="Reading"?"Knowledge":skill==="Social Interactions"?"Social":skill==="Relationships"?"Relationships":skill==="Piano"?"Skill":skill==="Cardio"?"Adventure":skill==="Orthodox Christianity"?"Faith":"Skill",skill,xp:15};
   });
 }
 function openCampaignPlanner(open){
