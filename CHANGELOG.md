@@ -1,8 +1,18 @@
+# Wayfarer Changelog
+
+## v0.15 — Academy theme
+- Added the Academy theme perk: completing any quest while it is equipped grants an additional +5 Reading skill XP, alongside the quest’s normal skill XP. The completion confirmation and toast display the bonus.
+- Added the Academy theme with a transparent owl medallion icon and male/female low-poly Greek scholar scenes.
+- Added Academy theme styling using Aegean midnight, marble ivory, antique gold, and Mediterranean teal.
+- Added the Academy Store unlock requirement: Reading level 3, followed by a 100-coin purchase.
+- Integrated Academy ownership, inventory display, equipping, character selection, theme icon, and saved equipped-theme state through the existing systems.
+- Registered Academy in the shared unlockable-item registry for the existing Debug sandbox.
+- Standardized the Adventure theme purchase price at 100 coins, consistent with the established v0.14.6 specification.
+- Preserved the existing Dungeon default theme, username/PIN Supabase login, save schema, and account-specific progress.
+
 ## v0.14 — Character Details text layout polish
 - Updated narrow-screen Character Details slots to give Theme, Artifacts and Pets readable horizontal text space instead of forcing words to wrap vertically.
 - Kept the three equipment slots, previews, theme behavior, and overall visual design intact.
-
-# Wayfarer Changelog
 
 ## v0.14 — Character frame and Adventure perk polish
 - Character artwork now fills its portrait frame edge-to-edge without the thin gray side gaps; Adventure uses a distinct leather-and-bronze explorer frame while Dungeon keeps its stone frame.

@@ -1,5 +1,5 @@
-const CACHE = "wayfarer-v0.14.6.1";
-const ASSETS = ["./", "./index.html", "./manifest.json", "./CHANGELOG.md", "./assets/male-dungeon.png", "./assets/female-dungeon.png", "./assets/dungeon-theme.png", "./assets/adventure-theme.png", "./assets/male-adventurer.jpg", "./assets/female-adventurer.jpg"];
+const CACHE = "wayfarer-v0.15";
+const ASSETS = ["./", "./index.html", "./manifest.json", "./CHANGELOG.md", "./assets/male-dungeon.png", "./assets/female-dungeon.png", "./assets/dungeon-theme.png", "./assets/adventure-theme.png", "./assets/male-adventurer.jpg", "./assets/female-adventurer.jpg", "./assets/academy-theme.png", "./assets/female-academy.jpg", "./assets/male-academy.jpg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
   self.skipWaiting();
