@@ -1,3 +1,7 @@
+## v0.15.2 — Academy inventory perk label
+- Added the visible “Reading +5 XP/quest” perk label beneath the Academy theme in Character > Inventory, matching the Adventure theme card.
+- Preserved the existing quest-generation perk snapshot behavior and username/PIN Supabase login.
+
 ## v0.15.2 — Quest-generation perk snapshots
 - Theme XP bonuses are now captured when each quest is generated, so later equipment changes cannot alter existing quests.
 - Academy adds +5 XP to Reading quests generated while equipped; Adventure adds +5 XP to Adventure quests generated while equipped. The quest card displays the full XP reward (for example, +20 XP) and identifies the included theme bonus.
