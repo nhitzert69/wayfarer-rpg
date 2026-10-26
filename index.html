@@ -458,6 +458,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
   <div class="card"><h3>XP & Level Lab</h3><p class="sub">Set overall XP or a skill's XP while sandbox mode is active.</p><div class="debugTools"><input id="debugOverallXp" type="number" min="0" placeholder="Overall XP"><button class="btn secondary" id="debugSetOverallXp">Set overall XP</button><select id="debugSkillSelect"><option value="">Choose skill…</option></select><input id="debugSkillXp" type="number" min="0" placeholder="Skill XP"><button class="btn secondary" id="debugSetSkillXp">Set skill XP</button></div><div class="debugMetric"><span>Calculated overall level</span><strong id="debugLevel">—</strong></div><div class="debugMetric"><span>Skill progression thresholds</span><strong>60 / 90 / 120 / 150 / 180 / 225 / 270 / 300 XP per level band</strong></div></div>
   <div class="card"><h3>Quest Lab</h3><p class="sub">Inspect current quests, inject a disposable test quest, or test the completion animation in the sandbox.</p><div class="debugTools"><button class="btn secondary" id="debugAddQuest">Add test quest</button><button class="btn secondary" id="debugRefreshQuests">Refresh inspection</button></div><div id="debugQuestList" class="debugLog">Start sandbox to inspect quests.</div></div>
   <div class="card"><h3>Campaign Planner Test Bench</h3><p class="sub">Run the planner with preset combinations; results are isolated in the sandbox.</p><div class="debugTools"><select id="debugPlannerTime"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60" selected>1 hour</option><option value="120">2 hours</option><option value="240">4+ hours</option></select><select id="debugPlannerEnergy"><option value="low">Low energy</option><option value="normal" selected>Normal energy</option><option value="high">High energy</option></select><select id="debugPlannerFocus"><option value="balanced">Balanced</option><option value="adventure">Adventure</option><option value="social">Social</option><option value="productive">Productive</option></select><select id="debugPlannerLocation"><option value="either">Either location</option><option value="home">Home</option><option value="outside">Outside</option></select><button class="btn" id="debugRunPlanner">Run planner preset</button></div><div id="debugPlannerResult" class="debugLog">No planner test run yet.</div></div>
+  <div class="card"><h3>Version History</h3><p class="sub">Release notes loaded from <code>CHANGELOG.md</code>. Keep this file updated with every release.</p><div class="debugTools"><button class="btn secondary" id="debugReloadChangelog" type="button">Reload changelog</button></div><pre id="debugChangelogContent" class="debugLog" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:560px;overflow:auto">Loading CHANGELOG.md…</pre></div>
   <div class="card"><h3>Save Inspector & Event Log</h3><p class="sub">Read-only state summary. No raw PINs or authentication secrets are displayed.</p><div class="debugTools"><button class="btn secondary" id="debugInspectSave">Inspect sandbox save</button><button class="btn secondary" id="debugClearLog">Clear event log</button></div><div id="debugSaveInspector" class="debugLog">Start sandbox to inspect state.</div><div id="debugEventLog" class="debugLog">Debug workshop ready. Authentication and cloud configuration are unchanged.</div></div>
 </section>
 </main>
@@ -1527,6 +1528,22 @@ const debugOriginalSave=save;
 save=function(skipRender=false){if(debugSandboxActive){if(!skipRender)render();return;}return debugOriginalSave(skipRender);};
 
 renderDebugPanel();
+
+// Display the project's maintained release history inside the Admin Debug Workshop.
+async function loadWayfarerChangelog(){
+ const el=document.getElementById("debugChangelogContent");
+ if(!el)return;
+ el.textContent="Loading CHANGELOG.md…";
+ try{
+  const response=await fetch("./CHANGELOG.md",{cache:"no-store"});
+  if(!response.ok)throw new Error("HTTP "+response.status);
+  el.textContent=await response.text();
+ }catch(error){
+  el.textContent="Could not load CHANGELOG.md. Make sure the file is deployed beside index.html and try Reload changelog. Details: "+String(error?.message||error);
+ }
+}
+document.getElementById("debugReloadChangelog")?.addEventListener("click",loadWayfarerChangelog);
+loadWayfarerChangelog();
 render();
 enforceAccountGate();
 </script>
