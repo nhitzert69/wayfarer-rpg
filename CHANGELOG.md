@@ -1,3 +1,19 @@
+# Wayfarer Changelog
+
+## v0.13 — Admin Debug session persistence and gender testing
+- Added an Admin-only Character Gender Test control in Debug to switch the signed-in account's saved character between male and female for portrait testing.
+- Requires confirmation because it changes the real account profile, not the temporary sandbox; the control is disabled while sandbox mode is active.
+- Updates both the Supabase user metadata (`wayfarer_gender`) and the account's saved app state, then refreshes the Character portrait and Debug status.
+- Preserves existing username/PIN authentication, cloud-save schema, and prior release history.
+
+
+## v0.13 — Admin Debug session persistence hotfix
+- Persist the last signed-in username locally so the Admin identity can be restored when session metadata is incomplete.
+- Restore username from Supabase metadata first, then the synthetic account email, with the saved username as a fallback.
+- Reapply the account navigation gate and refresh the Debug tab after auth state/session restoration.
+- Clear the remembered username on sign-out to avoid leaking Admin visibility between accounts.
+- Existing username-based Supabase login and cloud save schema remain unchanged.
+
 # Wayfarer — Update Log
 
 This file is the release history for Wayfarer. Add a new dated/versioned section whenever the project changes. Keep older entries intact; append new releases at the top.
