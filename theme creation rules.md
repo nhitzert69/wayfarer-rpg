@@ -107,3 +107,10 @@ Every new theme must follow these rules unless explicitly changed.
 - Update every HTML/CSS/JavaScript reference and the service-worker cache whenever an asset moves.
 - Every theme should use its own full-screen background image where available, with a dark overlay and responsive positioning so interface text remains readable. Preserve theme palettes and opaque card surfaces.
 - The current theme background files are `dungeon-background.webp`, `adventure-background.webp`, `academy-background.webp`, `social-interactions-background.webp`, `relationships-background.webp`, and the existing `orthodox-theme-background.webp`, all in `assets/images/`.
+
+
+## Permanent full-screen app background requirement (added for v0.15.1)
+- Every theme must include its own dedicated full-screen app background image, in addition to its theme icon and male/female character artwork.
+- Optimize and compress every background before inclusion; store it under `assets/images/` and use a consistent registered path.
+- Register the background with the theme so it appears behind the application interface when that theme is equipped, with a dark readability overlay that preserves text and controls contrast.
+- Verify desktop and mobile rendering, positioning, scrolling, and legibility. Confirm the background changes with the equipped theme and does not leak into other themes.

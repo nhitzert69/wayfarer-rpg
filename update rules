@@ -6,3 +6,6 @@
 - Keep images visually clear at their actual display size while minimizing file size.
 - Update every asset reference and the service-worker cache when adding, converting, renaming, or moving images.
 - Verify that every referenced image exists and loads after the update.
+
+- Any new picture/image added to Wayfarer must be compressed/optimized before inclusion.
+- Every theme must include its own optimized full-screen app background, registered to the theme and displayed behind the interface with a legibility overlay.

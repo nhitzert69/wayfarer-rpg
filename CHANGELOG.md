@@ -1,3 +1,14 @@
+# Wayfarer v0.15.1 — Roman Fitness
+
+- Added the Roman Fitness theme to the shared theme registry, Store and Inventory.
+- Unlock requirement: Fitness skill Level 3; Store price remains consistent with existing themes.
+- Added +5 Fitness XP to eligible newly generated Fitness quests while Roman Fitness is equipped. The bonus is stored on the quest at generation time.
+- Added optimized Roman Fitness icon, full-screen Roman training courtyard background, male legionary artwork and Athena-inspired female character artwork.
+- Added crimson/gold/bronze theme accents and a dark full-screen background overlay for readability.
+- Uses the existing `fitness-theme.mp3` soundtrack.
+- Added a permanent full-screen background requirement to `theme creation rules.md` and the general `update rules`.
+- Updated the service worker cache for the new theme assets.
+
 ## v0.14.5 — Music default and Dungeon icon fix
 - Music is enabled by default for new and existing users on first load of this update; users can still pause it in Settings.
 - Fixed the Dungeon theme icon in Inventory by resolving theme icons from the canonical theme registry instead of potentially stale saved item paths.
