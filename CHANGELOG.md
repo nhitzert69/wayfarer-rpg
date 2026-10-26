@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.13.1 — Social Interactions theme
+- Added Social Interactions as a Store theme, unlocked at Social Interactions skill level 3 for 100 coins.
+- Added the burgundy-and-gold theme palette and handshake medallion icon.
+- Added the shared medieval marketplace conversation artwork for both male and female character selections.
+- Added the +5 Social Interactions XP perk to eligible quests generated while equipped, saved at quest generation so existing quest rewards do not change.
+- Registered the theme with Inventory, equipment, Debug “Unlock All Items”, character appearance and service-worker caching.
+- Preserved existing login, Supabase configuration, progress and theme systems.
+
 ## v0.12.5
 - Replaced the male Dungeon character artwork with the updated realistic medieval linen outfit.
 - Replaced the female Dungeon character artwork with the updated realistic medieval linen outfit.
