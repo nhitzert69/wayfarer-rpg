@@ -1,5 +1,13 @@
 # Wayfarer Changelog
 
+## v0.14 — Adventure theme, coins and unlock testing
+- Every completed quest now awards 5 coins in addition to its existing XP reward.
+- Added the Adventure theme as a Store item, initially locked until Adventure reaches level 3; then it costs 30 coins. After purchase it moves to Inventory.
+- Added Adventure theme equipment behavior: the theme icon, female/male adventurer portraits, and warm explorer palette switch together. Dungeon remains the default owned theme.
+- Added a sandbox-only Debug option, Unlock all items, backed by a shared unlockable-item registry so future themes, pets and artifacts can be registered for the same testing override.
+- Added the Adventure icon and both user-provided adventurer portraits to assets.
+- Preserved existing username/PIN authentication, Supabase save schema, quest safeguards, Pets, and prior release history.
+
 ## v0.13 — Admin Debug session persistence and gender testing
 - Added an Admin-only Character Gender Test control in Debug to switch the signed-in account's saved character between male and female for portrait testing.
 - Requires confirmation because it changes the real account profile, not the temporary sandbox; the control is disabled while sandbox mode is active.
