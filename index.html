@@ -117,6 +117,20 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 }
 @media(prefers-reduced-motion:reduce){#questGrid .questLeaving,#mainQuestGrid .questLeaving,#sideQuestGrid .questLeaving{animation-duration:1ms}}
 
+/* v0.14 Adventure portrait frame and exact image fit */
+.characterPortrait{position:relative;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch;padding:0!important;box-sizing:border-box;background:#17100c!important}
+.characterPortrait .characterArtwork{display:block;width:100%!important;height:100%!important;min-width:0;min-height:0;object-fit:cover!important;object-position:center center!important;margin:0!important;border-radius:0!important}
+.characterPortrait:before{inset:7px!important;z-index:3!important;border-color:rgba(226,174,95,.8)!important}
+.characterPortrait:after{z-index:2!important;pointer-events:none}
+body.adventureTheme .characterPortrait{padding:7px!important;border:3px solid #6d432a!important;border-radius:17px!important;outline:2px solid #d3a05a!important;outline-offset:-3px;background:linear-gradient(135deg,#e4b56d,#57331f 18%,#25170f 45%,#9c6032 78%,#e5bd72)!important;box-shadow:inset 0 0 0 2px #201108,inset 0 0 0 5px #9b6638,0 0 0 2px #1c1009,0 8px 22px #000b!important}
+body.adventureTheme .characterPortrait:before{inset:10px!important;border:2px solid rgba(230,183,105,.92)!important;box-shadow:inset 0 0 0 2px rgba(43,24,12,.75),inset 0 0 20px rgba(0,0,0,.18)!important}
+body.adventureTheme .characterPortrait:after{box-shadow:inset 0 0 0 5px rgba(41,22,10,.45)!important}
+/* Inventory status text is removed to keep cards compact; the green outline marks equipped items. */
+.inventoryItemButton.is-equipped{opacity:1!important;transform:none!important}
+.inventoryItemButton.is-equipped img{transform:none!important;opacity:1!important}
+.inventoryItemButton.is-equipped:after{content:none!important;display:none!important}
+.inventoryItemButton small.inventoryPerk{display:block;font-size:8px;line-height:1.15;color:#e8bb72;font-weight:600}
+
 /* v0.14 Adventure theme palette: preserve layout, change the atmosphere across all UI surfaces. */
 body.adventureTheme{--bg:#20150f;--panel:#2b1d17;--panel2:#38241b;--line:#8a6041;--gold:#f0c16f;--gold2:#c57b38;--cream:#fff0d7;--muted:#c7ad8c;--green:#a6c58a;--red:#d47c61;background:linear-gradient(180deg,#3a271c 0%,#241710 42%,#100b08 100%)!important}
 body.adventureTheme .pill{background:linear-gradient(145deg,#38271e,#20140f)!important;border-color:#8a6041!important;color:#d7bb95!important}
@@ -282,6 +296,20 @@ body.adventureTheme .crest{background:linear-gradient(145deg,#6c3822,#21130e)!im
 .characterOptionSlot.themeUnequipped .equippedThemePreview{box-shadow:none!important;filter:none;transform:none}
 .characterOptionSlot .artifactPreview{border:1px solid #8d6a3d!important}
 @media(max-width:360px){.characterOptionsCard{padding:8px!important}.characterSlotGrid{gap:6px!important}.characterOptionSlot{height:100px!important;min-height:100px!important;padding:7px!important}.characterOptionSlot:after,.characterOptionSlot .slotPreview{right:6px!important;width:42px!important;max-width:42px!important;height:46px!important;max-height:46px!important}.characterOptionSlot .slotCopy{max-width:calc(100% - 46px)}.characterOptionSlot:after,.characterOptionSlot .slotPreview{top:28px!important}}
+</style>
+
+
+<style id="wayfarer-character-details-text-v0-14">
+/* v0.14: keep Character Details labels readable on narrow screens. */
+@media(max-width:650px){
+  .characterSlotGrid{grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+  .characterOptionSlot{height:82px!important;min-height:82px!important;padding:10px 12px!important}
+  .characterOptionSlot .slotCopy{max-width:100%!important;width:100%!important;gap:5px!important}
+  .characterOptionSlot .slotCopy strong{display:block!important;width:100%!important;padding-right:62px!important;box-sizing:border-box!important;white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important;font-size:16px!important;line-height:1.15!important}
+  .characterOptionSlot .slotCopy small{display:block!important;width:100%!important;max-width:calc(100% - 62px)!important;white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important;font-size:12px!important;line-height:1.25!important;max-height:30px!important;margin:0!important}
+  .characterOptionSlot:after,.characterOptionSlot .slotPreview{right:10px!important;top:14px!important;width:50px!important;max-width:50px!important;height:54px!important;max-height:54px!important}
+}
+@media(max-width:360px){.characterOptionSlot{height:78px!important;min-height:78px!important}.characterOptionSlot .slotCopy strong{font-size:15px!important}.characterOptionSlot .slotCopy small{font-size:11px!important}.characterOptionSlot:after,.characterOptionSlot .slotPreview{right:8px!important;top:14px!important;width:44px!important;max-width:44px!important;height:48px!important;max-height:48px!important}.characterOptionSlot .slotCopy small{max-width:calc(100% - 54px)!important}}
 </style>
 
 </head>
@@ -771,7 +799,7 @@ function renderCharacterInventory(){
  const equippedPet=state.equipment?.pet||null;
  const themeRoot=document.getElementById("themeInventory"),artifactRoot=document.getElementById("artifactInventory"),petRoot=document.getElementById("petInventory");
  const countEl=document.getElementById("inventoryCount");if(countEl)countEl.textContent=items.length+" item"+(items.length===1?"":"s");
- const makeItem=(item)=>{const id=String(item.id||"");const itemType=String(item.type||item.category||"artifact").toLowerCase();const equipped=itemType==="theme"?equippedTheme===id:(itemType==="pet"?String(equippedPet)===id:false);const icon=item.icon||"";return `<button type="button" class="inventoryItemButton${equipped?" is-equipped":""}" data-inventory-item="${esc(id)}" data-inventory-type="${esc(item.type||item.category||"artifact")}" aria-pressed="${equipped?"true":"false"}" aria-label="${esc((equipped?"Unequip ":"Equip ")+(item.name||"item"))}"><img src="${esc(icon)}" alt=""><strong>${esc(item.name||"Unknown item")}</strong><small>${equipped?"Equipped":"Tap to equip"}</small></button>`;};
+ const makeItem=(item)=>{const id=String(item.id||"");const itemType=String(item.type||item.category||"artifact").toLowerCase();const equipped=itemType==="theme"?equippedTheme===id:(itemType==="pet"?String(equippedPet)===id:false);const icon=item.icon||"";const perk=id==="adventure-theme"?`<small class="inventoryPerk">${equipped?"Equipped · ":""}Adventure +5 XP/quest</small>`:"";return `<button type="button" class="inventoryItemButton${equipped?" is-equipped":""}" data-inventory-item="${esc(id)}" data-inventory-type="${esc(item.type||item.category||"artifact")}" aria-pressed="${equipped?"true":"false"}" aria-label="${esc((equipped?"Currently equipped: ":"Equip ")+(item.name||"item"))}"><img src="${esc(icon)}" alt=""><strong>${esc(item.name||"Unknown item")}</strong>${perk}</button>`;};
  if(themeRoot){themeRoot.innerHTML=themes.length?themes.map(makeItem).join(""):'<div class="inventoryEmpty">No themes available.</div>';}
  if(artifactRoot){artifactRoot.innerHTML=artifacts.length?artifacts.map(item=>`<div class="equipmentSlot"><strong>${esc(item.name||"Unknown item")}</strong><small>${esc(item.category||"Artifact")}</small></div>`).join(""):'<div class="inventoryEmpty">No artifacts yet.</div>';}
  if(petRoot){petRoot.innerHTML=pets.length?pets.map(makeItem).join(""):'<div class="inventoryEmpty">No pets yet.</div>';}
@@ -788,7 +816,7 @@ function renderCharacterInventory(){
 function hasUnlockable(id){return Array.isArray(state.inventory)&&state.inventory.some(item=>item&&item.id===id);}
 function renderStoreCatalog(){const root=document.getElementById("storeThemeCatalog");if(!root)return;const adventureLevel=getSkillLevel("Adventure");const owned=hasUnlockable(ADVENTURE_THEME_ITEM.id);if(owned){root.innerHTML="";return;}const unlocked=adventureLevel>=ADVENTURE_THEME_ITEM.unlockLevel;root.innerHTML=`<article class="card storeThemeCard${unlocked?"":" locked"}"><img src="${ADVENTURE_THEME_ITEM.icon}" alt="Adventure theme icon"><div><div class="row" style="align-items:flex-start"><h3 style="margin:0">${unlocked?"🧭 Adventure":"🔒 Adventure"}</h3><span class="themePrice">${unlocked?"30 coins":"🔒 Locked"}</span></div><p style="margin:6px 0">${esc(ADVENTURE_THEME_ITEM.description)}</p>${unlocked?'<button class="btn" type="button" id="buyAdventureTheme">Buy for 30 coins</button>':`<div class="themeRequirement">Reach Adventure level ${ADVENTURE_THEME_ITEM.unlockLevel} to unlock · Current level ${adventureLevel}</div>`}</div></article>`;const button=document.getElementById("buyAdventureTheme");button?.addEventListener("click",()=>{if(hasUnlockable(ADVENTURE_THEME_ITEM.id))return;if(!(debugSandboxActive&&debugUnlockAllItems)&&getSkillLevel("Adventure")<ADVENTURE_THEME_ITEM.unlockLevel){toast("Reach Adventure level 3 first.");renderStoreCatalog();return;}if(!(debugSandboxActive&&debugUnlockAllItems)&&(Number(state.gold)||0)<ADVENTURE_THEME_ITEM.price){toast("You need 30 coins to buy the Adventure theme.");return;}if(!(debugSandboxActive&&debugUnlockAllItems))state.gold=Math.max(0,Number(state.gold)||0)-ADVENTURE_THEME_ITEM.price;state.inventory.push({...ADVENTURE_THEME_ITEM});save();render();toast("Adventure theme added to your inventory.");});}
 function applyUnlockAllItems(enabled){if(!debugRequireSandbox())return;debugUnlockAllItems=!!enabled;if(!Array.isArray(state.inventory))state.inventory=[];if(debugUnlockAllItems){for(const item of UNLOCKABLE_ITEMS){if(!hasUnlockable(item.id))state.inventory.push({...item});}debugLog("Unlock all items enabled; all registered unlockables added to the sandbox inventory.");toast("All registered items unlocked in sandbox.");}else{const liveIds=new Set((debugLiveStateBackup?.inventory||[]).map(item=>item?.id));state.inventory=state.inventory.filter(item=>!UNLOCKABLE_ITEMS.some(def=>def.id===item.id)&&!UNLOCKABLE_ITEMS.some(def=>def.id===item.id&&liveIds.has(item.id)));for(const item of UNLOCKABLE_ITEMS){if(liveIds.has(item.id)&&!hasUnlockable(item.id))state.inventory.push({...item});}if(state.equipment?.theme&&!hasUnlockable(state.equipment.theme))state.equipment.theme="dungeon-theme";debugLog("Unlock all items disabled; temporary grants removed unless owned before the sandbox.");toast("Sandbox item unlock override disabled.");}save(true);render();renderDebugPanel();}
-function renderCharacterOverview(){if(ensureDungeonThemeState())save(true);const profile=state.profile||{};const gender=profile.gender;const genderLabel=gender==="male"?"Male Dungeon":gender==="female"?"Female Dungeon":"Starting adventurer";const artwork=document.getElementById("characterArtwork");if(artwork){const female=gender==="female";const adventure=state.equipment?.theme==="adventure-theme";artwork.src=adventure?(female?"./assets/female-adventurer.jpg":"./assets/male-adventurer.jpg"):(female?"./assets/female-dungeon.png":"./assets/male-dungeon.png");artwork.alt=(female?"Female":"Male")+(adventure?" Adventure character portrait":" Dungeon character portrait");}const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));renderCharacterInventory();}
+function renderCharacterOverview(){if(ensureDungeonThemeState())save(true);const profile=state.profile||{};const gender=profile.gender;const genderLabel=gender==="male"?"Male Dungeon":gender==="female"?"Female Dungeon":"Starting adventurer";const artwork=document.getElementById("characterArtwork");if(artwork){const female=gender==="female";const adventure=state.equipment?.theme==="adventure-theme";artwork.src=adventure?(female?"./assets/female-adventurer.jpg":"./assets/male-adventurer.jpg"):(female?"./assets/female-dungeon.png":"./assets/male-dungeon.png");artwork.alt=(female?"Female":"Male")+(adventure?" Adventure character portrait":" Dungeon character portrait");}const nameEl=document.getElementById("characterNameLabel");if(nameEl)nameEl.textContent=String(wayfarerSignedInUsername||cloudUser?.user_metadata?.wayfarer_username||((cloudUser?.email||"").split("@")[0])||"Wayfarer").trim()||"Wayfarer";const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));renderCharacterInventory();}
 function render(){
  // The old global-character-level widgets were removed from the main page.
  // Update them only if a future version puts those elements back.
@@ -856,7 +884,7 @@ function completeQuest(id,done=true){
  const q=state.quests.find(q=>String(q.id)===String(id));
  if(!q||q.done===done)return;
  if(!done){toast("Earned XP is never removed. Your completed quest stays recorded.");return;}
- if(!debugQuestRulesOverridden()&&!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP?`))return;
+ if(!debugQuestRulesOverridden()&&!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP + 5 coins${state.equipment?.theme==="adventure-theme"?" + 5 Adventure skill XP":""}?`))return;
  // Record completion and award XP immediately, before the visual card animation.
  q.done=true;
  state.xp+=Number(q.xp);
@@ -864,9 +892,11 @@ function completeQuest(id,done=true){
  if(!state.skillXp)state.skillXp={};
  const skill=q.skill||({"Social":"Social Interactions","Adventure":"Adventure","Skill":"Creativity","Knowledge":"Knowledge","Relationships":"Relationships","Daily":"Discipline","Side quest":"Discipline","Boss quest":"Adventure"})[q.category]||"Discipline";
  state.skillXp[skill]=(Number(state.skillXp[skill])||0)+Number(q.xp);
+ const adventureThemeEquipped=state.equipment?.theme==="adventure-theme";
+ if(adventureThemeEquipped)state.skillXp["Adventure"]=(Number(state.skillXp["Adventure"])||0)+5;
  state.completedTotal++;
  if(!state.questDays.includes(today()))state.questDays.push(today());
- toast(`Quest complete! +${q.xp} XP · +5 coins`);
+ toast(`Quest complete! +${q.xp} XP · +5 coins${adventureThemeEquipped?" · +5 Adventure XP":""}`);
  const grids=[document.getElementById("mainQuestGrid"),document.getElementById("sideQuestGrid")].filter(Boolean);
  const trigger=grids.flatMap(grid=>[...grid.querySelectorAll("[data-complete-btn]")]).find(el=>String(el.dataset.completeBtn)===String(id));
  const card=trigger?trigger.closest("article"):null;

@@ -1,4 +1,15 @@
+## v0.14 — Character Details text layout polish
+- Updated narrow-screen Character Details slots to give Theme, Artifacts and Pets readable horizontal text space instead of forcing words to wrap vertically.
+- Kept the three equipment slots, previews, theme behavior, and overall visual design intact.
+
 # Wayfarer Changelog
+
+## v0.14 — Character frame and Adventure perk polish
+- Character artwork now fills its portrait frame edge-to-edge without the thin gray side gaps; Adventure uses a distinct leather-and-bronze explorer frame while Dungeon keeps its stone frame.
+- The label below the character portrait now shows the signed-in account username instead of the generic “Wayfarer” label.
+- Removed the redundant “Equipped” and “Tap to equip” inventory labels and the extra green “EQUIPPED” stamp, preserving a compact card size.
+- Adventure theme inventory cards show a small “Adventure +5 XP/quest” perk note without changing their overall sizing.
+- While Adventure is equipped, each completed quest adds 5 bonus XP to the Adventure skill, shown in the completion confirmation and toast. This is skill XP, separate from the quest's normal XP and +5 coins.
 
 ## v0.14 — Adventure theme, coins and unlock testing
 - Polish follow-up: quest cards now show both XP and the +5 coin reward before completion.
