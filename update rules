@@ -27,3 +27,10 @@ Every new theme must be tested for its complete visual identity: dedicated backg
 - Character reset must require explicit confirmation, preserve Journal, To Do, and Groceries, and offer one-step restoration from a snapshot. Explain which character fields are reset before confirmation.
 - XP/gold grant tools are Admin-only, can run in live or Sandbox, and must clearly state which environment is being changed.
 - Store and quest tests must not alter real progress; simulated purchase/reward flows should run only against isolated sandbox state.
+
+
+## Data-driven gameplay fault injection (v0.15.54)
+- Debug unlock, purchase, and theme-bonus XP injectors must only operate for Admin inside Sandbox and must alter the actual shared gameplay decision/reward path. Tests must inspect observed results, never infer failure merely from a checked injector.
+- Store integration tests must iterate every registered unlockable theme, simulate its required skill level and exact price in isolated state, and verify actual ownership and remaining currency after the purchase transaction.
+- Theme definitions that grant a skill bonus must declare `perkSkill`; quest-generation tests discover skills from the skill catalog and theme perks from the unlockable registry. Skills with no registered theme perk must be marked INCONCLUSIVE for bonus testing rather than falsely passing.
+- Quest XP tests must create an isolated eligible quest through the shared theme-bonus calculation and award XP through the same reward helper used by quest completion. Never mutate real quests, inventory, currency, or saved progress during diagnostic tests.
