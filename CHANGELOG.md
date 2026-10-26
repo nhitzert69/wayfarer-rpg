@@ -1,3 +1,8 @@
+## v0.12.3 — Theme perks and generation notice
+- Added an Inventory notice explaining that XP and Gold bonuses activate on the next quest generation and do not change rewards on already-generated quests.
+- Added clear perk descriptions to Store theme cards, including locked themes: Adventure grants +5 Adventure XP per quest generated while equipped; Academy grants +5 Reading XP per quest generated while equipped.
+- Preserved the existing theme purchase requirements, inventory behaviour, quest-generation reward snapshots and username/PIN Supabase login.
+
 ## v0.15.2 — Academy inventory perk label
 - Added the visible “Reading +5 XP/quest” perk label beneath the Academy theme in Character > Inventory, matching the Adventure theme card.
 - Preserved the existing quest-generation perk snapshot behavior and username/PIN Supabase login.

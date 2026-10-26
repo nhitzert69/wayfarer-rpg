@@ -1,0 +1,80 @@
+# Wayfarer — Theme Creation Specification
+
+Every new theme must follow these rules unless explicitly changed.
+
+## 1. Theme Perks and Rewards
+- Every theme must provide a defined XP bonus, coin bonus, or another explicitly specified perk.
+- Before implementation, specify the perk type, amount and target skill.
+- Display the perk clearly in the Store and Inventory.
+- A theme perk applies only to quests generated while that theme is equipped.
+- Apply each perk exactly once; never accidentally duplicate or stack it.
+
+## 2. Quest Generation and Reward Locking
+- **Quest generation is the reward-locking boundary.** Save applicable XP, coin and other perk bonuses with each quest when it is generated.
+- Saved rewards remain unchanged until completion, regardless of later equipment changes.
+- Equipping or unequipping a theme never changes rewards on existing quests.
+- Equipment changes affect only quests generated afterward.
+- Regenerated or replacement quests use the equipment and perks active at their own generation time.
+- Saved rewards must survive refreshes and returning to the application.
+
+### Multiple Skill Bonuses
+- A quest may receive bonuses from multiple themes when it contains multiple matching skills.
+- Each equipped theme whose target skill matches a skill associated with the quest may contribute its perk.
+- Example: a quest containing Reading and Adventure receives both bonuses if both corresponding themes are equipped when it is generated.
+- Apply every eligible bonus exactly once.
+
+## 3. Theme Artwork
+- Every theme has a personalized theme icon and character artwork.
+- Artwork fits the theme and follows Wayfarer’s established visual style unless specified otherwise.
+- Shared artwork between themes is allowed only when explicitly requested.
+- Assets must load correctly on mobile and desktop.
+
+## 4. Themed Interface
+- Equipping a theme changes the top-left application icon to its personalized icon.
+- Each theme applies a coordinated colour palette fitting its setting.
+- Maintain readable text, accessible contrast and clear interactive elements.
+- Theme changes must not break unrelated layouts or navigation.
+
+## 5. Store and Unlock Requirements
+- Every theme is available through the Store.
+- Specify coin cost and skill-level unlock requirement before implementation.
+- The Store displays name, icon, description, price, unlock requirement and perk, including while locked.
+- Locked themes remain unavailable until requirements are met.
+- Purchased themes remain owned and available in Inventory.
+- Purchasing does not automatically equip a theme unless explicitly specified.
+- Preserve existing ownership, currency and progression.
+
+## 6. Inventory and Equipment
+- Every owned theme appears correctly in Inventory, and the equipped theme is identifiable.
+- Equipping updates the relevant appearance and prepares perks for future quest generation.
+- Equipment changes never modify rewards saved on existing quests.
+
+## 7. Debug Compatibility
+- Every theme integrates with the existing Debug system.
+- “Unlock All Items” correctly unlocks the new theme and makes it available in the appropriate Store/Inventory states.
+- Debug actions must not corrupt ownership, equipment, XP, coins, progress or account data.
+- Existing themes and debug functionality must continue to work.
+
+## 8. Regression Testing and Preservation
+- Test Store listing, purchase requirements, Inventory, equipment, icon, artwork and palette.
+- Verify perks are saved at generation time and remain unchanged after equipment changes.
+- Test quests with multiple skills and confirm all eligible bonuses apply exactly once.
+- Test regeneration, refresh and return-to-app persistence.
+- Test existing themes and “Unlock All Items”.
+- Verify mobile and desktop behaviour.
+- Preserve username/PIN Supabase login, database configuration, account isolation, saved progress and unrelated functionality.
+- Update version, changelog and service-worker cache as appropriate. Validate JavaScript syntax, asset paths and ZIP integrity.
+
+## 9. Implementation Rules
+- Build on the current approved Wayfarer baseline.
+- Reuse existing theme, equipment and reward systems wherever possible.
+- Do not remove or modify existing features unless explicitly requested.
+- Deliver the complete updated project ZIP, not individual files only.
+
+## Required Details Before Creating a Theme
+1. Theme name and description.
+2. Associated skill(s) and unlock level.
+3. Store price in coins.
+4. Exact perk type, amount and target skill.
+5. Personalized icon and character artwork.
+6. Colour palette or visual direction.
