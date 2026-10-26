@@ -1,3 +1,10 @@
+## v0.14.5 — Theme Music System
+- Added Settings controls for music enable/pause, independent volume, and explicit mobile-friendly playback.
+- Added looping soundtracks for all six current themes and reserved soundtracks for future Fitness, Cardio, and Piano themes.
+- Added theme-aware soundtrack selection, crossfade transitions, and saved music preferences.
+- Added the permanent mandatory-theme-audio rule and new `update rules` file requiring image compression.
+- Compressed the supplied Piano WAV soundtrack to MP3 for web delivery.
+
 # Changelog
 
 ## v0.14.5 demo b1 — Dungeon music test

@@ -585,6 +585,22 @@ body.orthodoxTheme{
     </form>
     <p class="sub" style="margin-top:12px">Use a unique PIN, not your phone unlock or banking PIN. Username + PIN has no recovery option if forgotten.</p>
   </div>
+  <div class="card" style="margin-top:12px" id="musicSettingsCard">
+    <h3>Music settings</h3>
+    <p class="sub">Choose whether Wayfarer plays background music. The soundtrack follows your equipped theme.</p>
+    <div class="field" style="margin:12px 0">
+      <label style="display:flex;align-items:center;gap:10px"><input id="musicEnabled" type="checkbox" style="width:auto"> Music enabled</label>
+      <p class="sub" style="margin:5px 0 0">Play or pause music whenever you want. On mobile, press Play music once to allow audio playback.</p>
+    </div>
+    <div class="field" style="margin:12px 0">
+      <label for="musicVolume">Music volume <span id="musicVolumeValue">35%</span></label>
+      <input id="musicVolume" type="range" min="0" max="100" step="1" value="35" style="width:100%">
+    </div>
+    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn" id="musicPlayButton" type="button">▶ Play music</button>
+      <span class="sub" id="musicStatus" role="status" aria-live="polite">Music paused</span>
+    </div>
+  </div>
   <div class="card" style="margin-top:12px">
     <h3>Quest rewards</h3>
     <p>Every completed quest awards <strong>15 XP + 5 coins</strong>. Reading quests ask for 10 pages, and piano quests ask for 10 minutes of practice.</p>
@@ -635,7 +651,7 @@ document.querySelectorAll(".tab").forEach(function(button){
 const KEY="wayfarer-rpg-v1";
 const STATE_UPDATED_KEY=KEY+"-updatedAt";
 const today=()=>new Date().toLocaleDateString("en-CA");
-const defaultSettings={shift:"normal",social:"gradual",gaming:"moderate",workPattern:"Rotating 8-hour shifts",readTarget:10};
+const defaultSettings={shift:"normal",social:"gradual",gaming:"moderate",workPattern:"Rotating 8-hour shifts",readTarget:10,musicEnabled:false,musicVolume:35};
 const starters=[
  {title:"Read 10 pages",description:"Read 10 pages of any book you enjoy.",category:"Knowledge",skill:"Reading",xp:15},
  {title:"Practise piano for 10 minutes",description:"Spend 10 focused minutes practising piano.",category:"Skill",skill:"Piano",xp:15},
@@ -934,28 +950,44 @@ function renderStoreCatalog(){
 }
 function renderCharacterOverview(){if(ensureDungeonThemeState())save(true);const profile=state.profile||{};const gender=profile.gender;const equippedTheme=state.equipment?.theme||"dungeon-theme";const themeName=equippedTheme==="orthodox-theme"?"Orthodox Christianity":equippedTheme==="academy-theme"?"Academy":equippedTheme==="adventure-theme"?"Adventure":equippedTheme==="social-interactions-theme"?"Social Interactions":equippedTheme==="relationships-theme"?"Relationships":"Dungeon";const genderLabel=gender==="male"?"Male "+themeName:gender==="female"?"Female "+themeName:"Starting adventurer";const artwork=document.getElementById("characterArtwork");if(artwork){const female=gender==="female";artwork.src=equippedTheme==="orthodox-theme"?(female?"./assets/images/female-orthodox.webp":"./assets/images/male-orthodox.webp"):equippedTheme==="relationships-theme"?(female?"./assets/images/female-relationships.webp":"./assets/images/male-relationships.webp"):equippedTheme==="social-interactions-theme"?(female?"./assets/images/female-social.webp":"./assets/images/male-social.webp"):equippedTheme==="academy-theme"?(female?"./assets/images/female-academy.webp":"./assets/images/male-academy.webp"):equippedTheme==="adventure-theme"?(female?"./assets/images/female-adventurer.webp":"./assets/images/male-adventurer.webp"):(female?"./assets/images/female-dungeon.webp":"./assets/images/male-dungeon.webp");artwork.alt=(female?"Female":"Male")+" "+themeName+" character portrait";}const nameEl=document.getElementById("characterNameLabel");if(nameEl)nameEl.textContent=String(wayfarerSignedInUsername||cloudUser?.user_metadata?.wayfarer_username||((cloudUser?.email||"").split("@")[0])||"Wayfarer").trim()||"Wayfarer";const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));renderCharacterInventory();}
 
-// v0.14.5 demo b1: Dungeon-only original ambient loop. Playback waits for user interaction on mobile browsers.
-function syncDungeonMusic(){
- const audio=document.getElementById("dungeonThemeMusic");
- const equippedTheme=state?.equipment?.theme||"dungeon-theme";
- if(!audio)return;
- if(equippedTheme!=="dungeon-theme"){
-  audio.pause();
-  try{audio.currentTime=0;}catch(_){}
- }
+// v0.14.5: theme-aware music system. Settings are persisted in the existing account state.
+const THEME_MUSIC={
+ "dungeon-theme":"./assets/sound/dungeon-theme.mp3",
+ "adventure-theme":"./assets/sound/adventure-theme.mp3",
+ "academy-theme":"./assets/sound/academy-theme.mp3",
+ "social-interactions-theme":"./assets/sound/social-interactions-theme.mp3",
+ "relationships-theme":"./assets/sound/relationships-theme.mp3",
+ "orthodox-theme":"./assets/sound/orthodox-theme.mp3",
+ // Reserved tracks for future themes; these themes are not registered or equipable yet.
+ "fitness-theme":"./assets/sound/fitness-theme.mp3",
+ "cardio-theme":"./assets/sound/cardio-theme.mp3",
+ "piano-theme":"./assets/sound/piano-theme.mp3"
+};
+let themeMusicAudio=null, themeMusicSource="", themeMusicFadeTimers=new Map(), musicPlaybackUnlocked=false;
+function getMusicSettings(){if(!state.settings||typeof state.settings!=="object")state.settings={...defaultSettings};if(typeof state.settings.musicEnabled!=="boolean")state.settings.musicEnabled=false;const volume=Number(state.settings.musicVolume);state.settings.musicVolume=Number.isFinite(volume)?Math.max(0,Math.min(100,volume)):35;return state.settings;}
+function getEquippedMusicSource(){const id=state?.equipment?.theme||"dungeon-theme";return THEME_MUSIC[id]||THEME_MUSIC["dungeon-theme"];}
+function updateMusicControls(){const settings=getMusicSettings();const toggle=document.getElementById("musicEnabled"),volume=document.getElementById("musicVolume"),value=document.getElementById("musicVolumeValue"),button=document.getElementById("musicPlayButton"),status=document.getElementById("musicStatus");if(toggle)toggle.checked=settings.musicEnabled;if(volume)volume.value=String(settings.musicVolume);if(value)value.textContent=settings.musicVolume+"%";if(button)button.textContent=settings.musicEnabled?"Ⅱ Pause music":"▶ Play music";if(status)status.textContent=!settings.musicEnabled?"Music paused":(themeMusicAudio&&!themeMusicAudio.paused?"Playing current theme soundtrack":"Ready to play — tap Play music if your browser blocks autoplay");}
+function stopMusicFade(audio){if(audio&&themeMusicFadeTimers.has(audio)){clearInterval(themeMusicFadeTimers.get(audio));themeMusicFadeTimers.delete(audio);}else if(!audio){for(const timer of themeMusicFadeTimers.values())clearInterval(timer);themeMusicFadeTimers.clear();}}
+function fadeAudio(audio,target,duration=700,done){stopMusicFade(audio);if(!audio){if(done)done();return;}const start=Number(audio.volume)||0,steps=14;let step=0;const timer=setInterval(()=>{step++;audio.volume=Math.max(0,Math.min(1,start+(target-start)*(step/steps)));if(step>=steps){stopMusicFade(audio);audio.volume=target;if(done)done();}},Math.max(16,duration/steps));themeMusicFadeTimers.set(audio,timer);}
+function createThemeAudio(src){const audio=new Audio(src);audio.loop=true;audio.preload="none";audio.volume=0;audio.addEventListener("error",()=>{const status=document.getElementById("musicStatus");if(status)status.textContent="Could not load this soundtrack. Check the deployed audio files.";});return audio;}
+async function applyThemeMusic({userInitiated=false}={}){
+ const settings=getMusicSettings(),src=getEquippedMusicSource(),target=settings.musicVolume/100;
+ updateMusicControls();
+ if(!settings.musicEnabled){if(themeMusicAudio&&!themeMusicAudio.paused)fadeAudio(themeMusicAudio,0,450,()=>themeMusicAudio.pause());else if(themeMusicAudio)themeMusicAudio.pause();return;}
+ if(!musicPlaybackUnlocked&&!userInitiated){const status=document.getElementById("musicStatus");if(status)status.textContent="Ready — tap Play music to start";return;}
+ musicPlaybackUnlocked=musicPlaybackUnlocked||userInitiated;
+ if(themeMusicSource!==src||!themeMusicAudio){const old=themeMusicAudio;themeMusicSource=src;const next=createThemeAudio(src);themeMusicAudio=next;try{await next.play();fadeAudio(next,target,850);if(old){fadeAudio(old,0,500,()=>{old.pause();old.src="";});}}catch(_){const status=document.getElementById("musicStatus");if(status)status.textContent="Tap Play music to allow playback";return;}}
+ else {try{if(themeMusicAudio.paused)await themeMusicAudio.play();fadeAudio(themeMusicAudio,target,450);}catch(_){const status=document.getElementById("musicStatus");if(status)status.textContent="Tap Play music to allow playback";return;}}
+ updateMusicControls();
 }
-function tryStartDungeonMusic(){
- const audio=document.getElementById("dungeonThemeMusic");
- if(!audio)return;
- if((state?.equipment?.theme||"dungeon-theme")!=="dungeon-theme"){audio.pause();return;}
- if(audio.paused){
-  const playback=audio.play();
-  if(playback&&typeof playback.catch==="function")playback.catch(()=>{});
- }
-}
-window.addEventListener("pointerdown",tryStartDungeonMusic,{passive:true});
-window.addEventListener("keydown",tryStartDungeonMusic);
-window.addEventListener("touchstart",tryStartDungeonMusic,{passive:true});
+function syncDungeonMusic(){applyThemeMusic();}
+function tryStartDungeonMusic(){if(getMusicSettings().musicEnabled)applyThemeMusic({userInitiated:true});}
+document.getElementById("musicEnabled")?.addEventListener("change",event=>{getMusicSettings().musicEnabled=!!event.target.checked;save(true);updateMusicControls();if(event.target.checked)applyThemeMusic({userInitiated:true});else applyThemeMusic();});
+document.getElementById("musicVolume")?.addEventListener("input",event=>{const settings=getMusicSettings();settings.musicVolume=Math.max(0,Math.min(100,Number(event.target.value)||0));const label=document.getElementById("musicVolumeValue");if(label)label.textContent=settings.musicVolume+"%";if(themeMusicAudio&&!themeMusicAudio.paused){stopMusicFade();themeMusicAudio.volume=settings.musicVolume/100;}save(true);});
+document.getElementById("musicPlayButton")?.addEventListener("click",()=>{const settings=getMusicSettings();settings.musicEnabled=!settings.musicEnabled;save(true);updateMusicControls();if(settings.musicEnabled)applyThemeMusic({userInitiated:true});else applyThemeMusic();});
+window.addEventListener("pointerdown",()=>{if(getMusicSettings().musicEnabled)tryStartDungeonMusic();},{passive:true});
+window.addEventListener("keydown",()=>{if(getMusicSettings().musicEnabled)tryStartDungeonMusic();});
+window.addEventListener("pagehide",()=>{stopMusicFade();if(themeMusicAudio)themeMusicAudio.pause();});
 
 function render(){
  // The old global-character-level widgets were removed from the main page.
@@ -1018,7 +1050,8 @@ function render(){
    journalListEl.querySelectorAll("[data-edit-journal]").forEach(button=>button.addEventListener("click",()=>editJournalEntry(button.dataset.editJournal)));
    journalListEl.querySelectorAll("[data-delete-journal]").forEach(button=>button.addEventListener("click",()=>deleteJournalEntry(button.dataset.deleteJournal)));
  }
- for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el)el.value=val}
+ for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el&&el.type!=="checkbox"&&el.type!=="range")el.value=val}
+updateMusicControls();
 renderCharacterOverview();}
 function completeQuest(id,done=true){
  const q=state.quests.find(q=>String(q.id)===String(id));
@@ -1762,7 +1795,7 @@ function renderDebugPanel(){document.body.classList.toggle("sandbox-active",!!de
 function debugRenderQuests(){const el=document.getElementById("debugQuestList");if(!el)return;const qs=Array.isArray(state.quests)?state.quests:[];el.textContent=qs.length?qs.map((q,i)=>`${i+1}. ${q.done?'[DONE]':'[OPEN]'} ${q.title||'(untitled)'} · skill=${q.skill||'—'} · xp=${q.xp??'—'} · source=${q.source||'—'} · id=${q.id||'—'}`).join("\n"):"No quests in sandbox.";}
 function debugInspect(){const el=document.getElementById("debugSaveInspector");if(!el)return;const d=debugSandboxActive?state:(debugLiveStateBackup||state);el.textContent=JSON.stringify({mode:debugSandboxActive?"sandbox":"read-only live snapshot",xp:d.xp,calculatedLevel:Math.floor((Number(d.xp)||0)/100)+1,completedTotal:d.completedTotal,questCount:(d.quests||[]).length,openQuests:(d.quests||[]).filter(q=>!q.done).length,completedQuests:(d.quests||[]).filter(q=>q.done).length,selectedSkills:d.selectedSkills,skillXp:d.skillXp,activeDate:d.activeDate,lastDay:d.lastDay,journalEntries:(d.journal||[]).length,todoItems:(d.todo||[]).length,questHistoryKeys:Object.keys(d.questHistory||{}).length},null,2);}
 document.getElementById("debugApplyAccountGender")?.addEventListener("click",async()=>{if(!debugIsAdmin()||!cloudUser){toast("Sign in using the Admin account first.");return;}if(debugSandboxActive){toast("Exit the sandbox before changing the real account gender.");return;}const select=document.getElementById("debugAccountGender");const gender=select?.value;if(gender!=="male"&&gender!=="female")return;const label=gender==="female"?"Female":"Male";if(!window.confirm("Change the saved character for this account to "+label+"? This updates the real account profile and character portrait."))return;const button=document.getElementById("debugApplyAccountGender");if(button)button.disabled=true;try{const metadata={...(cloudUser.user_metadata||{}),wayfarer_gender:gender};const {data,error}=await cloudClient.auth.updateUser({data:metadata});if(error)throw error;if(data?.user)cloudUser=data.user;if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};state.profile.gender=gender;localStorage.setItem(KEY,JSON.stringify(state));await syncCurrentState();render();renderDebugPanel();debugLog("Changed saved account character gender to "+gender+".");toast("Character gender updated to "+label+".");}catch(error){console.error("Could not update account character gender",error);toast("Could not update gender: "+String(error?.message||error));}finally{if(button)button.disabled=!cloudUser||!debugIsAdmin()||debugSandboxActive;}});
-document.getElementById("themeInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;if(!["dungeon-theme","adventure-theme","academy-theme","social-interactions-theme","relationships-theme","orthodox-theme"].includes(itemId))return;if(state.equipment?.theme===itemId) {if(debugSandboxActive&&debugAllowThemeUnequip){state.equipment.theme=null;debugLog("Unequipped theme in sandbox test mode.");toast("Theme unequipped (sandbox only).");}else{toast("A theme must always be equipped. Enable the sandbox exception to test unequipped state.");return;}}else{state.equipment.theme=itemId;const themeName=itemId==="orthodox-theme"?"Orthodox Christianity":itemId==="academy-theme"?"Academy":itemId==="adventure-theme"?"Adventure":itemId==="social-interactions-theme"?"Social Interactions":itemId==="relationships-theme"?"Relationships":"Dungeon";debugLog(debugSandboxActive?"Equipped "+themeName+" theme in sandbox.":"Equipped "+themeName+" theme.");toast(themeName+" theme equipped.");}syncDungeonMusic();if((state.equipment?.theme||"dungeon-theme")==="dungeon-theme")tryStartDungeonMusic();save();renderDebugPanel();});
+document.getElementById("themeInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;if(!["dungeon-theme","adventure-theme","academy-theme","social-interactions-theme","relationships-theme","orthodox-theme"].includes(itemId))return;if(state.equipment?.theme===itemId) {if(debugSandboxActive&&debugAllowThemeUnequip){state.equipment.theme=null;debugLog("Unequipped theme in sandbox test mode.");toast("Theme unequipped (sandbox only).");}else{toast("A theme must always be equipped. Enable the sandbox exception to test unequipped state.");return;}}else{state.equipment.theme=itemId;const themeName=itemId==="orthodox-theme"?"Orthodox Christianity":itemId==="academy-theme"?"Academy":itemId==="adventure-theme"?"Adventure":itemId==="social-interactions-theme"?"Social Interactions":itemId==="relationships-theme"?"Relationships":"Dungeon";debugLog(debugSandboxActive?"Equipped "+themeName+" theme in sandbox.":"Equipped "+themeName+" theme.");toast(themeName+" theme equipped.");}applyThemeMusic({userInitiated:true});save();renderDebugPanel();});
 document.getElementById("petInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;const pet=(state.inventory||[]).find(item=>item&&String(item.id)===String(itemId)&&(item.type==="pet"||String(item.category||"").toLowerCase()==="pet"));if(!pet)return;if(state.equipment?.pet===itemId){state.equipment.pet=null;toast((pet.name||"Pet")+" unequipped.");}else{state.equipment.pet=itemId;toast((pet.name||"Pet")+" equipped.");}save();renderDebugPanel();});
 document.getElementById("debugAllowThemeUnequip")?.addEventListener("change",event=>{if(!debugRequireSandbox()){event.target.checked=false;return;}debugAllowThemeUnequip=!!event.target.checked;if(!debugAllowThemeUnequip&&state.equipment?.theme==null){state.equipment.theme="dungeon-theme";save();}render();renderDebugPanel();debugLog(debugAllowThemeUnequip?"Sandbox-only unequipped theme exception enabled.":"Sandbox-only unequipped theme exception disabled.");toast(debugAllowThemeUnequip?"Sandbox can test no-theme state.":"Theme required again.");});
 document.getElementById("debugOverrideQuestRules")?.addEventListener("change",event=>{if(!debugRequireSandbox()){event.target.checked=false;return;}debugOverrideQuestRules=!!event.target.checked;updateGenerateButtonStatus();renderDebugPanel();debugLog(debugOverrideQuestRules?"Sandbox-only quest safeguards override enabled: cooldown and completion confirmation bypassed.":"Sandbox-only quest safeguards restored.");toast(debugOverrideQuestRules?"Quest safeguards overridden in sandbox only.":"Quest safeguards restored.");});
@@ -1802,6 +1835,6 @@ loadWayfarerChangelog();
 render();
 enforceAccountGate();
 </script>
-<audio id="dungeonThemeMusic" src="./assets/sound/dungeon-ambient-original.mp3" loop preload="none" aria-hidden="true"></audio>
+
 </body>
 </html>

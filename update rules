@@ -1,0 +1,8 @@
+# Update Rules
+
+## Image Compression
+- Every new image added to Wayfarer must be compressed and optimized before being included in the project.
+- Prefer WebP for photographic or illustrated backgrounds, character art, and theme icons when transparency and visual quality are preserved. Use PNG when lossless transparency or other specific requirements make it necessary.
+- Keep images visually clear at their actual display size while minimizing file size.
+- Update every asset reference and the service-worker cache when adding, converting, renaming, or moving images.
+- Verify that every referenced image exists and loads after the update.

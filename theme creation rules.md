@@ -83,6 +83,15 @@ Every new theme must follow these rules unless explicitly changed.
 - Do not remove or modify existing features unless explicitly requested.
 - Deliver the complete updated project ZIP, not individual files only.
 
+## Mandatory Theme Audio (v0.14.5)
+- Every theme must include its own dedicated audio track. This is required for all future themes; a theme is not complete without artwork and audio.
+- Store all audio files in `assets/sound/` and use compressed, web-friendly formats such as MP3 or OGG.
+- Register each theme's soundtrack in the shared theme-music mapping. Equipping a theme must select its matching track; switching themes must crossfade smoothly rather than cut abruptly.
+- Music must loop, respect the user's Play/Pause toggle and independent volume setting, and persist those preferences across refreshes using the existing settings/save system.
+- Support mobile autoplay restrictions: do not assume playback can begin before a user gesture; provide an explicit Play button and recover gracefully when playback is blocked.
+- Future theme tracks may be included before the corresponding theme is registered, but must remain reserved and must not make that theme equipable prematurely.
+- Verify each theme's audio path, looping, theme switching, fade transitions, volume, saved preferences, mobile play gesture, and service-worker cache.
+
 ## Required Details Before Creating a Theme
 1. Theme name and description.
 2. Associated skill(s) and unlock level.
