@@ -26,7 +26,7 @@ Every new theme must follow these rules unless explicitly changed.
 ## 3. Theme Artwork and Asset Storage
 - Every new theme requires all three image asset files to function: (1) a personalized theme icon, (2) a male character asset, and (3) a female character asset.
 - Store all new theme image files in the project's existing `assets/` folder.
-- Use clear, consistent filenames that identify the theme and asset type (for example, `relationships-theme.png`, `male-relationships.jpg`, and `female-relationships.jpg`).
+- Use clear, consistent filenames that identify the theme and asset type (for example, `relationships-theme.webp`, `male-relationships.webp`, and `female-relationships.webp`).
 - The male and female character assets may use the exact same image only when explicitly requested; do not crop, zoom, or otherwise alter shared artwork when the user asks for the exact same image.
 - Artwork fits the theme and follows Wayfarer’s established visual style unless specified otherwise.
 - Shared artwork between themes is allowed only when explicitly requested.
@@ -90,3 +90,11 @@ Every new theme must follow these rules unless explicitly changed.
 4. Exact perk type, amount and target skill.
 5. Personalized icon and character artwork.
 6. Colour palette or visual direction.
+
+
+## Asset Folder Organization (v0.14.5 demo b2)
+- Keep all image assets in `assets/images/`. This includes theme icons, character artwork, theme backgrounds, and other UI images.
+- Keep all audio assets in `assets/sound/`.
+- Update every HTML/CSS/JavaScript reference and the service-worker cache whenever an asset moves.
+- Every theme should use its own full-screen background image where available, with a dark overlay and responsive positioning so interface text remains readable. Preserve theme palettes and opaque card surfaces.
+- The current theme background files are `dungeon-background.webp`, `adventure-background.webp`, `academy-background.webp`, `social-interactions-background.webp`, `relationships-background.webp`, and the existing `orthodox-theme-background.webp`, all in `assets/images/`.

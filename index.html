@@ -176,7 +176,7 @@ body.academyTheme .characterPortrait{border-color:#B58A4A!important;box-shadow:0
   body.orthodoxTheme{
     --bg:#20131f;--panel:#302033;--panel2:#40283f;--line:#9b7549;--gold:#e8c16b;--gold2:#bd8d45;
     --cream:#f7ecd9;--muted:#c9b9c8;--green:#819783;--red:#c66d62;
-    background-image:linear-gradient(180deg,rgba(24,14,26,.78) 0%,rgba(19,12,21,.88) 48%,rgba(12,9,14,.94) 100%),url("./assets/orthodox-theme-background.png")!important;
+    background-image:linear-gradient(180deg,rgba(24,14,26,.78) 0%,rgba(19,12,21,.88) 48%,rgba(12,9,14,.94) 100%),url("./assets/images/orthodox-theme-background.webp")!important;
     background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#f7ecd9!important
   }
   body.orthodoxTheme .pill{background:linear-gradient(145deg,#40283f,#20131f)!important;border-color:#bd8d45!important;color:#f7ecd9!important}
@@ -374,6 +374,33 @@ body.socialInteractionsTheme .pill{background:linear-gradient(145deg,#48202d,#24
 body.socialInteractionsTheme .hero{background:linear-gradient(130deg,rgba(89,38,55,.99),rgba(57,24,38,.99) 58%,rgba(36,16,23,.99))!important;border-color:#c99542!important;box-shadow:inset 0 0 0 2px #241017,inset 0 0 0 4px #9b6a4a,0 12px 28px #0009!important}
 body.socialInteractionsTheme .stat{background:linear-gradient(145deg,#48202d,#241017)!important;border-color:#9b6a4a!important;box-shadow:inset 0 0 0 2px #241017,0 4px 10px #0006!important}
 body.socialInteractionsTheme .tabs{background:linear-gradient(180deg,rgba(72,32,45,.99),rgba(36,16,23,.99))!important;border-bottom-color:#c99542!important}
+
+/* v0.14.5 demo b2 — immersive theme backgrounds. Keep UI panels opaque enough for legibility. */
+body:not(.adventureTheme):not(.academyTheme):not(.socialInteractionsTheme):not(.relationshipsTheme):not(.orthodoxTheme){
+ background-image:linear-gradient(180deg,rgba(8,10,12,.60) 0%,rgba(8,10,12,.72) 48%,rgba(8,10,12,.88) 100%),url("./assets/images/dungeon-background.webp")!important;
+ background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
+}
+body.adventureTheme{
+ background-image:linear-gradient(180deg,rgba(24,15,9,.40) 0%,rgba(24,15,9,.60) 48%,rgba(12,8,6,.82) 100%),url("./assets/images/adventure-background.webp")!important;
+ background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
+}
+body.academyTheme{
+ background-image:linear-gradient(180deg,rgba(16,28,43,.38) 0%,rgba(20,27,39,.58) 48%,rgba(13,17,26,.82) 100%),url("./assets/images/academy-background.webp")!important;
+ background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
+}
+body.socialInteractionsTheme{
+ background-image:linear-gradient(180deg,rgba(25,12,6,.42) 0%,rgba(25,12,6,.62) 48%,rgba(12,7,4,.84) 100%),url("./assets/images/social-interactions-background.webp")!important;
+ background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
+}
+body.relationshipsTheme{
+ background-image:linear-gradient(180deg,rgba(27,15,7,.42) 0%,rgba(27,15,7,.62) 48%,rgba(12,7,4,.84) 100%),url("./assets/images/relationships-background.webp")!important;
+ background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
+}
+body.orthodoxTheme{
+ background-image:linear-gradient(180deg,rgba(24,14,26,.60) 0%,rgba(19,12,21,.72) 48%,rgba(12,9,14,.86) 100%),url("./assets/images/orthodox-theme-background.webp")!important;
+ background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
+}
+@media(max-width:650px){body,body.adventureTheme,body.academyTheme,body.socialInteractionsTheme,body.relationshipsTheme,body.orthodoxTheme{background-attachment:scroll!important;background-position:center top!important}}
 </style>
 
 </head>
@@ -462,7 +489,7 @@ body.socialInteractionsTheme .tabs{background:linear-gradient(180deg,rgba(72,32,
   <div class="sectionHead"><div><h2>Your Character</h2><p>Your adventurer, equipment and collected items will live here.</p></div></div>
   <div class="characterLayout">
     <div class="card characterPortraitCard">
-      <div class="characterPortrait" aria-label="Starting adventurer illustration"><img id="characterArtwork" class="characterArtwork" src="./assets/male-dungeon.png" alt="Male Dungeon character portrait"></div>
+      <div class="characterPortrait" aria-label="Starting adventurer illustration"><img id="characterArtwork" class="characterArtwork" src="./assets/images/male-dungeon.webp" alt="Male Dungeon character portrait"></div>
       <h3 id="characterNameLabel" style="text-align:center;margin:8px 0 3px">Wayfarer</h3>
       <p class="sub" id="characterGenderLabel" style="text-align:center;margin:0">Starting adventurer</p>
       <div class="characterLevelLine"><span>Character XP</span><strong id="characterXpLabel">0 XP</strong></div>
@@ -470,7 +497,7 @@ body.socialInteractionsTheme .tabs{background:linear-gradient(180deg,rgba(72,32,
     <div class="card characterOptionsCard">
       <h3>Character Details</h3><p class="sub">Choose your atmosphere, artifacts, and companions.</p>
       <div class="equipmentGrid characterSlotGrid">
-        <div class="equipmentSlot characterOptionSlot" id="characterThemeSlot"><div class="slotCopy"><strong>Theme</strong><small id="characterThemeLabel">Dungeon</small></div><img id="characterThemeEquippedIcon" class="slotPreview themePreview equippedThemePreview" src="./assets/dungeon-theme.png" alt="Dungeon theme equipped"></div>
+        <div class="equipmentSlot characterOptionSlot" id="characterThemeSlot"><div class="slotCopy"><strong>Theme</strong><small id="characterThemeLabel">Dungeon</small></div><img id="characterThemeEquippedIcon" class="slotPreview themePreview equippedThemePreview" src="./assets/images/dungeon-theme.webp" alt="Dungeon theme equipped"></div>
         <div class="equipmentSlot characterOptionSlot" id="characterArtifactsSlot"><div class="slotCopy"><strong>Artifacts</strong><small id="characterArtifactsLabel">No artifacts equipped</small></div><span class="slotPreview artifactPreview" aria-hidden="true"></span></div>
         <div class="equipmentSlot characterOptionSlot" id="characterPetsSlot"><div class="slotCopy"><strong>Pets</strong><small id="characterPetLabel">No pet equipped</small></div><span class="slotPreview artifactPreview petPreview" aria-hidden="true">🐾</span></div>
       </div>
@@ -853,12 +880,12 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
 function categoryIcon(c,skill){if(skill==="Fitness")return "💪";if(skill==="Cardio")return "🏃";if(skill==="Piano")return "🎹";return ({Adventure:"🧭",Social:"🗣️",Skill:"✨",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
-const DUNGEON_THEME_ITEM={id:"dungeon-theme",name:"Dungeon",category:"Theme",type:"theme",icon:"./assets/dungeon-theme.png",description:"A torchlit dungeon atmosphere."};
-const ADVENTURE_THEME_ITEM={id:"adventure-theme",name:"Adventure",category:"Theme",type:"theme",icon:"./assets/adventure-theme.png",description:"A warm, adventurous world of maps, mountains and discovery.",unlockSkill:"Adventure",unlockLevel:3,price:100};
-const ACADEMY_THEME_ITEM={id:"academy-theme",name:"Academy",category:"Theme",type:"theme",icon:"./assets/academy-theme.png",description:"A scholarly Athenian terrace of books, wisdom and discovery.",unlockSkill:"Reading",unlockLevel:3,price:100};
-const SOCIAL_INTERACTIONS_THEME_ITEM={id:"social-interactions-theme",name:"Social Interactions",category:"Theme",type:"theme",icon:"./assets/social-interactions-theme.png",description:"Build confidence, meet new people, and strengthen your connections throughout the realm.",unlockSkill:"Social Interactions",unlockLevel:3,price:100};
-const RELATIONSHIPS_THEME_ITEM={id:"relationships-theme",name:"Relationships",category:"Theme",type:"theme",icon:"./assets/relationships-theme.png",description:"Strengthen your bonds, nurture meaningful relationships, and build lasting connections throughout the realm.",unlockSkill:"Relationships",unlockLevel:3,price:100};
-const ORTHODOX_THEME_ITEM={id:"orthodox-theme",name:"Orthodox Christianity",category:"Theme",type:"theme",icon:"./assets/orthodox-theme.png",description:"Deepen your faith, cultivate prayer and discipline, and grow in wisdom through the Orthodox Christian tradition.",unlockSkill:"Orthodox Christianity",unlockLevel:3,price:100};
+const DUNGEON_THEME_ITEM={id:"dungeon-theme",name:"Dungeon",category:"Theme",type:"theme",icon:"./assets/images/dungeon-theme.webp",description:"A torchlit dungeon atmosphere."};
+const ADVENTURE_THEME_ITEM={id:"adventure-theme",name:"Adventure",category:"Theme",type:"theme",icon:"./assets/images/adventure-theme.webp",description:"A warm, adventurous world of maps, mountains and discovery.",unlockSkill:"Adventure",unlockLevel:3,price:100};
+const ACADEMY_THEME_ITEM={id:"academy-theme",name:"Academy",category:"Theme",type:"theme",icon:"./assets/images/academy-theme.webp",description:"A scholarly Athenian terrace of books, wisdom and discovery.",unlockSkill:"Reading",unlockLevel:3,price:100};
+const SOCIAL_INTERACTIONS_THEME_ITEM={id:"social-interactions-theme",name:"Social Interactions",category:"Theme",type:"theme",icon:"./assets/images/social-interactions-theme.webp",description:"Build confidence, meet new people, and strengthen your connections throughout the realm.",unlockSkill:"Social Interactions",unlockLevel:3,price:100};
+const RELATIONSHIPS_THEME_ITEM={id:"relationships-theme",name:"Relationships",category:"Theme",type:"theme",icon:"./assets/images/relationships-theme.webp",description:"Strengthen your bonds, nurture meaningful relationships, and build lasting connections throughout the realm.",unlockSkill:"Relationships",unlockLevel:3,price:100};
+const ORTHODOX_THEME_ITEM={id:"orthodox-theme",name:"Orthodox Christianity",category:"Theme",type:"theme",icon:"./assets/images/orthodox-theme.webp",description:"Deepen your faith, cultivate prayer and discipline, and grow in wisdom through the Orthodox Christian tradition.",unlockSkill:"Orthodox Christianity",unlockLevel:3,price:100};
 // Add future unlockables here; the Debug sandbox's Unlock all items uses this shared registry.
 const UNLOCKABLE_ITEMS=[ADVENTURE_THEME_ITEM,ACADEMY_THEME_ITEM,SOCIAL_INTERACTIONS_THEME_ITEM,RELATIONSHIPS_THEME_ITEM,ORTHODOX_THEME_ITEM];
 let debugUnlockAllItems=false;
@@ -905,7 +932,7 @@ function renderStoreCatalog(){
  root.innerHTML=storeItems.map(item=>{const level=getSkillLevel(item.unlockSkill);const unlocked=level>=item.unlockLevel;const name=item.name;const titleIcon=item.id==="orthodox-theme"?"✝️":item.id==="academy-theme"?"📚":item.id==="social-interactions-theme"?"🗣️":item.id==="relationships-theme"?"🤝":"🧭";return `<article class="card storeThemeCard${unlocked?"":" locked"}"><img src="${esc(item.icon)}" alt="${esc(name)} theme icon"><div><div class="row" style="align-items:flex-start"><h3 style="margin:0">${unlocked?titleIcon+" ":"🔒 "}${esc(name)}</h3><span class="themePrice">${unlocked?item.price+" coins":"🔒 Locked"}</span></div><p style="margin:6px 0">${esc(item.description)}</p>${`<div class="themeRequirement"><strong>Perk:</strong> ${item.id==="adventure-theme"?"+5 Adventure XP per quest generated while equipped.":item.id==="academy-theme"?"+5 Reading XP per quest generated while equipped.":item.id==="relationships-theme"?"+5 Relationships XP per eligible quest generated while equipped.":item.id==="orthodox-theme"?"+5 Orthodox Christianity XP per eligible quest generated while equipped.":"+5 Social Interactions XP per eligible quest generated while equipped."}</div>`}${unlocked?`<button class="btn" type="button" id="buy-${esc(item.id)}">Buy for ${item.price} coins</button>`:`<div class="themeRequirement">Reach ${esc(item.unlockSkill)} level ${item.unlockLevel} to unlock · Current level ${level}</div>`}</div></article>`;}).join("");
  for(const item of storeItems){const button=document.getElementById("buy-"+item.id);button?.addEventListener("click",()=>{if(hasUnlockable(item.id))return;if(!(debugSandboxActive&&debugUnlockAllItems)&&getSkillLevel(item.unlockSkill)<item.unlockLevel){toast(`Reach ${item.unlockSkill} level ${item.unlockLevel} first.`);renderStoreCatalog();return;}if(!(debugSandboxActive&&debugUnlockAllItems)&&(Number(state.gold)||0)<item.price){toast(`You need ${item.price} coins to buy the ${item.name} theme.`);return;}if(!Array.isArray(state.inventory))state.inventory=[];if(!hasUnlockable(item.id)){if(!(debugSandboxActive&&debugUnlockAllItems))state.gold=Math.max(0,Number(state.gold)||0)-item.price;state.inventory.push({...item});}save();render();toast(item.name+" theme added to your inventory.");});}
 }
-function renderCharacterOverview(){if(ensureDungeonThemeState())save(true);const profile=state.profile||{};const gender=profile.gender;const equippedTheme=state.equipment?.theme||"dungeon-theme";const themeName=equippedTheme==="orthodox-theme"?"Orthodox Christianity":equippedTheme==="academy-theme"?"Academy":equippedTheme==="adventure-theme"?"Adventure":equippedTheme==="social-interactions-theme"?"Social Interactions":equippedTheme==="relationships-theme"?"Relationships":"Dungeon";const genderLabel=gender==="male"?"Male "+themeName:gender==="female"?"Female "+themeName:"Starting adventurer";const artwork=document.getElementById("characterArtwork");if(artwork){const female=gender==="female";artwork.src=equippedTheme==="orthodox-theme"?(female?"./assets/female-orthodox.png":"./assets/male-orthodox.png"):equippedTheme==="relationships-theme"?(female?"./assets/female-relationships.jpg":"./assets/male-relationships.jpg"):equippedTheme==="social-interactions-theme"?(female?"./assets/female-social.png":"./assets/male-social.png"):equippedTheme==="academy-theme"?(female?"./assets/female-academy.jpg":"./assets/male-academy.jpg"):equippedTheme==="adventure-theme"?(female?"./assets/female-adventurer.jpg":"./assets/male-adventurer.jpg"):(female?"./assets/female-dungeon.png":"./assets/male-dungeon.png");artwork.alt=(female?"Female":"Male")+" "+themeName+" character portrait";}const nameEl=document.getElementById("characterNameLabel");if(nameEl)nameEl.textContent=String(wayfarerSignedInUsername||cloudUser?.user_metadata?.wayfarer_username||((cloudUser?.email||"").split("@")[0])||"Wayfarer").trim()||"Wayfarer";const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));renderCharacterInventory();}
+function renderCharacterOverview(){if(ensureDungeonThemeState())save(true);const profile=state.profile||{};const gender=profile.gender;const equippedTheme=state.equipment?.theme||"dungeon-theme";const themeName=equippedTheme==="orthodox-theme"?"Orthodox Christianity":equippedTheme==="academy-theme"?"Academy":equippedTheme==="adventure-theme"?"Adventure":equippedTheme==="social-interactions-theme"?"Social Interactions":equippedTheme==="relationships-theme"?"Relationships":"Dungeon";const genderLabel=gender==="male"?"Male "+themeName:gender==="female"?"Female "+themeName:"Starting adventurer";const artwork=document.getElementById("characterArtwork");if(artwork){const female=gender==="female";artwork.src=equippedTheme==="orthodox-theme"?(female?"./assets/images/female-orthodox.webp":"./assets/images/male-orthodox.webp"):equippedTheme==="relationships-theme"?(female?"./assets/images/female-relationships.webp":"./assets/images/male-relationships.webp"):equippedTheme==="social-interactions-theme"?(female?"./assets/images/female-social.webp":"./assets/images/male-social.webp"):equippedTheme==="academy-theme"?(female?"./assets/images/female-academy.webp":"./assets/images/male-academy.webp"):equippedTheme==="adventure-theme"?(female?"./assets/images/female-adventurer.webp":"./assets/images/male-adventurer.webp"):(female?"./assets/images/female-dungeon.webp":"./assets/images/male-dungeon.webp");artwork.alt=(female?"Female":"Male")+" "+themeName+" character portrait";}const nameEl=document.getElementById("characterNameLabel");if(nameEl)nameEl.textContent=String(wayfarerSignedInUsername||cloudUser?.user_metadata?.wayfarer_username||((cloudUser?.email||"").split("@")[0])||"Wayfarer").trim()||"Wayfarer";const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));renderCharacterInventory();}
 
 // v0.14.5 demo b1: Dungeon-only original ambient loop. Playback waits for user interaction on mobile browsers.
 function syncDungeonMusic(){
@@ -1775,6 +1802,6 @@ loadWayfarerChangelog();
 render();
 enforceAccountGate();
 </script>
-<audio id="dungeonThemeMusic" src="./assets/dungeon-ambient-original.mp3" loop preload="none" aria-hidden="true"></audio>
+<audio id="dungeonThemeMusic" src="./assets/sound/dungeon-ambient-original.mp3" loop preload="none" aria-hidden="true"></audio>
 </body>
 </html>

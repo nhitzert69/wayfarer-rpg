@@ -35,3 +35,9 @@ V47 CHANGES
 - Added five Master quest templates for each of the seven skills (35 new templates).
 - The username + PIN authentication code and Supabase schema are unchanged.
 - IMPORTANT: this distributable ZIP uses placeholders for the Supabase project URL and public key. Before replacing your live repository files, copy the two WAYFARER_SUPABASE_URL and WAYFARER_SUPABASE_ANON_KEY values from your currently working GitHub index.html into this version. Do not change any other authentication code, and never use a service_role key.
+
+
+Current demo build: **v0.14.5 demo b2** — theme-specific immersive backgrounds and organized image/sound asset folders.
+
+
+Asset optimization: image assets are stored as WebP in `assets/images/`; audio assets are stored in `assets/sound/`.

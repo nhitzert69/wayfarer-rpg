@@ -257,3 +257,16 @@ When making the next update, copy this template to the top of the log and descri
 ## v0.13.4 — Relationships App Icon Fix
 - The top-left app crest now switches to the Relationships theme icon when Relationships is equipped.
 - Updated the Relationships icon asset to the transparent-background version.
+
+
+## v0.14.5 demo b2
+- Added immersive full-screen background artwork for Dungeon, Adventure, Academy, Social Interactions, and Relationships; retained and integrated the existing Orthodox Christianity background.
+- Added theme-specific dark overlays and responsive mobile background behaviour for readability.
+- Organized static assets into `assets/images/` and `assets/sound/`, updating app references and service-worker precache entries.
+- Preserved the Dungeon-only looping music demo.
+
+
+## v0.14.5 demo b3 — compressed assets
+- Converted project image assets to optimized WebP files to reduce repository size while retaining transparency where present.
+- Updated application, service-worker, and theme-rule asset references.
+- Preserved the Dungeon looping music and existing app behaviour.
