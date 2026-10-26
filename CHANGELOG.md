@@ -158,3 +158,8 @@ When making the next update, copy this template to the top of the log and descri
 - Added a local save timestamp fallback: if a cloud upload was interrupted, newer local progress is restored and synced on next sign-in/refresh.
 - Stopped clearing active quests solely because the calendar date changed; quests and the 8-hour generation cooldown now remain available across refreshes.
 - Preserved the existing username/PIN authentication and account-specific cloud save structure.
+
+
+## v0.14.6 — Navigation and Store price
+- Fixed selected-tab persistence so refreshing returns to the page the player last selected instead of unexpectedly switching to Settings.
+- Changed the Adventure theme price from 30 to 100 coins, including the Store label and insufficient-funds message.
