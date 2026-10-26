@@ -1,3 +1,13 @@
+# Changelog
+
+## v0.14.5 demo b1 — Dungeon music test
+- Added an original, procedurally composed dark ambient loop for the Dungeon theme.
+- The track loops continuously and is only allowed to play while the Dungeon theme is equipped.
+- Playback begins after user interaction to accommodate mobile browser autoplay restrictions.
+- Switching to another theme stops the Dungeon track; switching back allows it to start again.
+- Added the audio file to the service-worker asset cache and bumped the cache version.
+- This demo does not add music for any other theme and does not add music controls or settings.
+
 ## v0.14.2 — Orthodox theme inventory equip fix
 - Fixed the Inventory theme click handler so the Orthodox Christianity theme is accepted as an equipable theme.
 - Added the correct Orthodox Christianity label when equipping the theme.
