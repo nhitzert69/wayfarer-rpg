@@ -1,3 +1,6 @@
+## v0.15.51
+- Added an Admin Debug control to remove a specified amount of character XP and gold, with a confirmation prompt, non-negative balance protection, status reporting, and Debug log entry. Works in live mode or Sandbox, consistent with the existing resource-grant tool.
+
 ## v0.15.5
 - Replaced six existing theme backgrounds (leaving Fitness untouched) with optimized 1672×940 WebP assets.
 - Corrected theme checks: Dungeon is treated as starter equipment, and empty artifact/pet slots are not expected to be theme-styled.
