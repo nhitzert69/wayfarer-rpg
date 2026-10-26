@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.13.2 — Debug sandbox visual indicator
+- Added a persistent 4px red frame around the viewport while Debug sandbox mode is active.
+- The frame appears immediately when the sandbox starts and disappears when the sandbox is exited.
+- The frame does not intercept clicks or affect the layout, and is synchronized with sandbox state when the Debug panel refreshes.
+- Preserved the existing sandbox isolation and account/login behavior.
+
 ## v0.13.1 — Social Interactions theme
 - Added Social Interactions as a Store theme, unlocked at Social Interactions skill level 3 for 100 coins.
 - Added the burgundy-and-gold theme palette and handshake medallion icon.
