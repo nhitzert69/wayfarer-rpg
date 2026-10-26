@@ -1,3 +1,11 @@
+# Changelog
+
+## v0.12.5
+- Replaced the male Dungeon character artwork with the updated realistic medieval linen outfit.
+- Replaced the female Dungeon character artwork with the updated realistic medieval linen outfit.
+- Kept the existing Dungeon asset paths and included the permanent `theme creation rules.md` reference.
+- Updated the service-worker cache version.
+
 ## v0.12.3 — Theme perks and generation notice
 - Added an Inventory notice explaining that XP and Gold bonuses activate on the next quest generation and do not change rewards on already-generated quests.
 - Added clear perk descriptions to Store theme cards, including locked themes: Adventure grants +5 Adventure XP per quest generated while equipped; Academy grants +5 Reading XP per quest generated while equipped.
