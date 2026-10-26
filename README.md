@@ -1,6 +1,6 @@
-# Wayfarer v0.14
+# Wayfarer v0.14.5
 
-WAYFARER v0.14 — REAL-LIFE RPG
+WAYFARER v0.14.5 — REAL-LIFE RPG
 
 The app is still a static GitHub Pages website. Cross-device cloud saves require a Supabase project that you own. This ZIP includes the account UI, Supabase client integration, and SQL schema, but it is NOT connected to a live database until you configure your project below.
 

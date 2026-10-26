@@ -151,3 +151,10 @@ When making the next update, copy this template to the top of the log and descri
 - **Fixed:**
 - **Removed:**
 - **Notes / migration:**
+
+## v0.14.5 — Persistence hotfix
+- Fixed selected skill changes so they sync to the signed-in account's cloud save.
+- Prevented overlapping cloud-save requests from overwriting newer state with older snapshots.
+- Added a local save timestamp fallback: if a cloud upload was interrupted, newer local progress is restored and synced on next sign-in/refresh.
+- Stopped clearing active quests solely because the calendar date changed; quests and the 8-hour generation cooldown now remain available across refreshes.
+- Preserved the existing username/PIN authentication and account-specific cloud save structure.
