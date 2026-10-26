@@ -1,3 +1,11 @@
+## v0.15.53 — Behavior-based Debug fault injection and theme-lock detection
+- Debug feature locks now force the actual Dungeon background, palette, character/theme images, and soundtrack source in Sandbox; the music lock selects the Dungeon track rather than muting audio.
+- Academy fault injection now alters the actual Academy unlock decision, purchase handler, and quest-generation bonus calculation, gated to Admin Sandbox.
+- Store tests exercise the same unlock/purchase decision helpers using isolated level/gold values; they do not spend gold or mutate inventory.
+- Quest tests inspect generated Academy Reading quests against their stored base XP and bonus metadata instead of manufacturing a failure based on the checkbox.
+- Theme integration tests inspect rendered background, palette, character image, and active music source to detect when a Dungeon lock overrides a non-Dungeon equipped theme.
+- Updated service-worker cache version and corrected its asset-list separator.
+
 ## v0.15.51
 - Added an Admin Debug control to remove a specified amount of character XP and gold, with a confirmation prompt, non-negative balance protection, status reporting, and Debug log entry. Works in live mode or Sandbox, consistent with the existing resource-grant tool.
 
