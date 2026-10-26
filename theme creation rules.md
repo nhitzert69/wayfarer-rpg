@@ -23,11 +23,15 @@ Every new theme must follow these rules unless explicitly changed.
 - Example: a quest containing Reading and Adventure receives both bonuses if both corresponding themes are equipped when it is generated.
 - Apply every eligible bonus exactly once.
 
-## 3. Theme Artwork
-- Every theme has a personalized theme icon and character artwork.
+## 3. Theme Artwork and Asset Storage
+- Every new theme requires all three image asset files to function: (1) a personalized theme icon, (2) a male character asset, and (3) a female character asset.
+- Store all new theme image files in the project's existing `assets/` folder.
+- Use clear, consistent filenames that identify the theme and asset type (for example, `relationships-theme.png`, `male-relationships.jpg`, and `female-relationships.jpg`).
+- The male and female character assets may use the exact same image only when explicitly requested; do not crop, zoom, or otherwise alter shared artwork when the user asks for the exact same image.
 - Artwork fits the theme and follows Wayfarer’s established visual style unless specified otherwise.
 - Shared artwork between themes is allowed only when explicitly requested.
-- Assets must load correctly on mobile and desktop.
+- Reference assets using correct relative paths and update the service-worker asset cache when appropriate.
+- Verify every referenced asset exists and loads correctly on mobile and desktop.
 
 ## 4. Themed Interface
 - Equipping a theme changes the top-left application icon to its personalized icon.

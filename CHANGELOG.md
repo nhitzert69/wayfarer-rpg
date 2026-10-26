@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.13.3 — Relationships theme
+- Added Relationships to the Store and shared unlockable-item registry, unlocked at Relationships skill level 3 for 100 coins.
+- Added warm oak and amber theme styling and a gold-framed tankard-toast icon.
+- Added the exact same full tavern conversation photo as both male and female character assets, without cropping, zooming or resizing.
+- Added +5 Relationships XP to eligible Relationships quests generated while equipped; the bonus is saved at quest generation.
+- Registered the theme with Inventory, equipment, character appearance, Debug “Unlock All Items” and service-worker caching.
+- Updated theme creation rules to require a theme icon, male character asset and female character asset in `assets/` for every new theme.
+
+
 ## v0.13.2 — Debug sandbox visual indicator
 - Added a persistent 4px red frame around the viewport while Debug sandbox mode is active.
 - The frame appears immediately when the sandbox starts and disappears when the sandbox is exited.
