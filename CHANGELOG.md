@@ -1,3 +1,9 @@
+## v0.14.5 — Music default and Dungeon icon fix
+- Music is enabled by default for new and existing users on first load of this update; users can still pause it in Settings.
+- Fixed the Dungeon theme icon in Inventory by resolving theme icons from the canonical theme registry instead of potentially stale saved item paths.
+- Migrated the saved Dungeon inventory icon to the current optimized WebP path.
+- Bumped the service-worker cache version.
+
 ## v0.14.5 — Theme Music System
 - Added Settings controls for music enable/pause, independent volume, and explicit mobile-friendly playback.
 - Added looping soundtracks for all six current themes and reserved soundtracks for future Fitness, Cardio, and Piano themes.
