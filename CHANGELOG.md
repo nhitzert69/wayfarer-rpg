@@ -2,6 +2,29 @@
 
 This file is the release history for Wayfarer. Add a new dated/versioned section whenever the project changes. Keep older entries intact; append new releases at the top.
 
+## v0.12 — 2026-10-26
+
+### Added: Quest generation cooldown and safer completion
+- Added an eight-hour cooldown after a full quest generation. The remaining time is shown on the Generate quests button and survives refreshes and account session restoration through saved app state.
+- During the cooldown, generating quests for newly selected skills adds quests only for those new skills and preserves existing quests, their completion state, and the original cooldown timer.
+- During the cooldown, quest generation is disabled when there are no newly selected skills. Once the cooldown expires, generating quests creates a fresh set for the currently selected skills and starts a new eight-hour cooldown.
+- Removed the redundant checkbox from quest cards; the Complete button is the single completion control.
+- Added a confirmation prompt before a quest is completed and XP is awarded.
+
+### Added: Optional sandbox overrides for testing
+- Added an Admin Debug Workshop checkbox, disabled unless the isolated sandbox is active, to override quest safeguards on demand.
+- When enabled, the sandbox can bypass the eight-hour quest-generation cooldown and skip the quest-completion confirmation prompt for rapid testing.
+- The override is off by default, is reset when the sandbox starts or exits, and never changes normal account behavior.
+
+### Fixed: Admin Debug session restoration
+- Normalized the username restoration path and added an auth-state listener so the Admin Debug tab is recalculated when Supabase restores or changes the session, without requiring a manual re-login.
+- Preserved the username/PIN login, Supabase project configuration, existing saved account data, Pets, and prior changelog entries.
+
+### Notes
+- The cooldown is enforced in the client app state. It discourages ordinary repeat clicks, but a tamper-resistant anti-cheat rule would require server-side enforcement.
+
+---
+
 ## v0.11 — 2026-10-26
 
 ### Added: Pet equipment and inventory

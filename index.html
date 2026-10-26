@@ -246,7 +246,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 
 
 <style id="wayfarer-character-slots-v0-11">
-/* v0.11: compact theme/artifact/pet slots; equipped icons fill their preview frames. */
+/* v0.12: compact theme/artifact/pet slots; equipped icons fill their preview frames. */
 .characterOptionsCard{padding:10px!important;margin-top:8px!important}
 .characterOptionsCard>h3{font-size:clamp(19px,4.5vw,23px)!important;line-height:1.15!important;margin:0 0 3px!important}
 .characterOptionsCard>.sub{font-size:12px!important;line-height:1.35!important;margin:0 0 8px!important}
@@ -454,7 +454,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 </section>
 <section class="section" id="section-debug">
   <div class="sectionHead"><div><h2>Debug Workshop</h2><p>Admin-only testing tools. Sandbox changes never write to your real character.</p></div></div>
-  <div class="debugSandboxBanner"><strong id="debugSandboxStatus">Sandbox inactive</strong><p class="sub">Start a sandbox to test XP, quests, dates, and planner behavior against a temporary copy. Exiting discards sandbox changes.</p><div class="debugTools"><button class="btn" id="debugStartSandbox">Start isolated sandbox</button><button class="btn secondary" id="debugExitSandbox">Exit sandbox</button></div><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugAllowThemeUnequip" type="checkbox" style="margin-top:3px" disabled><span><strong>Allow unequipped theme</strong><small style="display:block;color:var(--muted)">Sandbox testing only. Allows the required theme to be temporarily removed.</small></span></label></div>
+  <div class="debugSandboxBanner"><strong id="debugSandboxStatus">Sandbox inactive</strong><p class="sub">Start a sandbox to test XP, quests, dates, and planner behavior against a temporary copy. Exiting discards sandbox changes.</p><div class="debugTools"><button class="btn" id="debugStartSandbox">Start isolated sandbox</button><button class="btn secondary" id="debugExitSandbox">Exit sandbox</button></div><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugAllowThemeUnequip" type="checkbox" style="margin-top:3px" disabled><span><strong>Allow unequipped theme</strong><small style="display:block;color:var(--muted)">Sandbox testing only. Allows the required theme to be temporarily removed.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugOverrideQuestRules" type="checkbox" style="margin-top:3px" disabled><span><strong>Override quest safeguards</strong><small style="display:block;color:var(--muted)">Sandbox only. Bypass the 8-hour quest-generation cooldown and skip quest-completion confirmations for testing.</small></span></label></div>
   <div class="card"><h3>Time Machine</h3><p class="sub">Shift the active campaign date in the sandbox only.</p><div class="debugTools"><button class="btn secondary" data-debug-days="1">+1 day</button><button class="btn secondary" data-debug-days="7">+7 days</button><button class="btn secondary" data-debug-days="30">+30 days</button><button class="btn secondary" data-debug-days="365">+365 days</button></div><div class="debugMetric"><span>Active date</span><strong id="debugActiveDate">—</strong></div></div>
   <div class="card"><h3>XP & Level Lab</h3><p class="sub">Set overall XP or a skill's XP while sandbox mode is active.</p><div class="debugTools"><input id="debugOverallXp" type="number" min="0" placeholder="Overall XP"><button class="btn secondary" id="debugSetOverallXp">Set overall XP</button><select id="debugSkillSelect"><option value="">Choose skill…</option></select><input id="debugSkillXp" type="number" min="0" placeholder="Skill XP"><button class="btn secondary" id="debugSetSkillXp">Set skill XP</button></div><div class="debugMetric"><span>Calculated overall level</span><strong id="debugLevel">—</strong></div><div class="debugMetric"><span>Skill progression thresholds</span><strong>60 / 90 / 120 / 150 / 180 / 225 / 270 / 300 XP per level band</strong></div></div>
   <div class="card"><h3>Quest Lab</h3><p class="sub">Inspect current quests, inject a disposable test quest, or test the completion animation in the sandbox.</p><div class="debugTools"><button class="btn secondary" id="debugAddQuest">Add test quest</button><button class="btn secondary" id="debugRefreshQuests">Refresh inspection</button></div><div id="debugQuestList" class="debugLog">Start sandbox to inspect quests.</div></div>
@@ -560,7 +560,7 @@ function questForSkill(skill){
 }
 
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
-function freshState(){return {xp:0,completedTotal:0,quests:[],journal:[],todo:[],groceries:[],selectedSkills:[],skillPriorities:{},skillXp:{},questHistory:{},questDays:[],profile:{gender:null},inventory:[],equipment:{},gold:0,settings:{...defaultSettings},activeDate:today(),lastDay:today()};}
+function freshState(){return {xp:0,completedTotal:0,quests:[],questGenerationCooldownUntil:0,lastGeneratedSkills:[],journal:[],todo:[],groceries:[],selectedSkills:[],skillPriorities:{},skillXp:{},questHistory:{},questDays:[],profile:{gender:null},inventory:[],equipment:{},gold:0,settings:{...defaultSettings},activeDate:today(),lastDay:today()};}
 let state=load()||freshState();
 if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};
 if(!Array.isArray(state.inventory))state.inventory=[];
@@ -570,6 +570,8 @@ if(!state.settings)state.settings={...defaultSettings};
 delete state.settings.difficulty;
 if(Array.isArray(state.quests)) state.quests.forEach(q=>{if(!q.done)q.xp=15;});
 if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
+if(!Number.isFinite(Number(state.questGenerationCooldownUntil)))state.questGenerationCooldownUntil=0;
+if(!Array.isArray(state.lastGeneratedSkills))state.lastGeneratedSkills=[];
 if(!Array.isArray(state.todo))state.todo=[];
 if(!Array.isArray(state.groceries))state.groceries=[];
 if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
@@ -714,7 +716,7 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  wayfarerSignedInUsername="";
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
-if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=restoreWayfarerUsername(data.session.user);cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Object.prototype.hasOwnProperty.call(state.equipment,"pet"))state.equipment.pet=null;if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};repairProfileGender(cloudUser);localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;await syncCurrentState();document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();}else{enforceAccountGate();}});}
+if(cloudClient){cloudClient.auth.onAuthStateChange((event,session)=>{if(session?.user){cloudUser=session.user;wayfarerSignedInUsername=restoreWayfarerUsername(session.user);}else if(event==="SIGNED_OUT"){cloudUser=null;wayfarerSignedInUsername="";}if(typeof renderDebugPanel==="function")renderDebugPanel();});cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=restoreWayfarerUsername(data.session.user);cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Object.prototype.hasOwnProperty.call(state.equipment,"pet"))state.equipment.pet=null;if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};repairProfileGender(cloudUser);localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;await syncCurrentState();document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();}else{enforceAccountGate();}});}
 function save(skipRender=false){localStorage.setItem(KEY,JSON.stringify(state));if(!skipRender)render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
@@ -773,15 +775,15 @@ function render(){
  const mainQuests=activeQuests.filter(q=>getSkillPriority(q.skill)==="priority");
  const sideQuests=activeQuests.filter(q=>getSkillPriority(q.skill)!=="priority");
  function questCard(q){return `<article class="card questActive" data-quest-card="${esc(q.id)}">
-  <div class="questTop"><input class="check" type="checkbox" aria-label="Complete ${esc(q.title)}" data-complete="${q.id}">
-   <div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP</span></div>
+  <div class="questTop"><div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP</span></div>
    <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span>${q.estimatedMinutes?`<span class="tag">~${q.estimatedMinutes} min</span>`:""}<button class="btn small" data-complete-btn="${q.id}">Complete</button></div></div></div>
  </article>`;}
  const mainGrid=document.getElementById("mainQuestGrid"),sideGrid=document.getElementById("sideQuestGrid");
  if(mainGrid)mainGrid.innerHTML=mainQuests.length?mainQuests.map(questCard).join(""):'<div class="empty">No main quests yet. Mark one or more selected skills as Priority in the Skills tab, then generate quests.</div>';
  if(sideGrid)sideGrid.innerHTML=sideQuests.length?sideQuests.map(questCard).join(""):'<div class="empty">No side quests right now. Select secondary skills and generate quests, or enjoy your clear board.</div>';
  const gridRoots=[mainGrid,sideGrid].filter(Boolean);
- gridRoots.forEach(grid=>grid.querySelectorAll("[data-complete],[data-complete-btn]").forEach(el=>el.addEventListener(el.type==="checkbox"?"change":"click",()=>completeQuest(el.dataset.complete||el.dataset.completeBtn,el.type==="checkbox"?el.checked:true))));
+ gridRoots.forEach(grid=>grid.querySelectorAll("[data-complete-btn]").forEach(el=>el.addEventListener("click",()=>completeQuest(el.dataset.completeBtn,true))));
+ updateGenerateButtonStatus();
  ensureSelectedSkills();
  renderSkillProgress();
  renderSkillCatalog();
@@ -819,6 +821,7 @@ function completeQuest(id,done=true){
  const q=state.quests.find(q=>String(q.id)===String(id));
  if(!q||q.done===done)return;
  if(!done){toast("Earned XP is never removed. Your completed quest stays recorded.");return;}
+ if(!debugQuestRulesOverridden()&&!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP?`))return;
  // Record completion and award XP immediately, before the visual card animation.
  q.done=true;
  state.xp+=Number(q.xp);
@@ -829,16 +832,15 @@ function completeQuest(id,done=true){
  if(!state.questDays.includes(today()))state.questDays.push(today());
  toast(`Quest complete! +${q.xp} XP`);
  const grids=[document.getElementById("mainQuestGrid"),document.getElementById("sideQuestGrid")].filter(Boolean);
- const trigger=grids.flatMap(grid=>[...grid.querySelectorAll("[data-complete],[data-complete-btn]")]).find(el=>String(el.dataset.complete||el.dataset.completeBtn)===String(id));
+ const trigger=grids.flatMap(grid=>[...grid.querySelectorAll("[data-complete-btn]")]).find(el=>String(el.dataset.completeBtn)===String(id));
  const card=trigger?trigger.closest("article"):null;
  // Save immediately without rerendering, so the user can see the checked/complete state slide away.
  save(true);
  if(!card){render();return;}
  card.classList.add("questDone","questLeaving");
- card.querySelectorAll("button,input").forEach(el=>{el.disabled=true;});
+ card.querySelectorAll("button").forEach(el=>{el.disabled=true;});
  const title=card.querySelector("h3");if(title)title.setAttribute("aria-label","Completed: "+q.title);
  const completeButton=card.querySelector("[data-complete-btn]");if(completeButton){completeButton.textContent="Completed ✓";completeButton.setAttribute("aria-label","Quest completed");}
- const checkbox=card.querySelector("[data-complete]");if(checkbox)checkbox.checked=true;
  window.setTimeout(()=>render(),340);
 }
 
@@ -1450,10 +1452,28 @@ function pickCampaignQuest(skill,opts,usedTitles,availableMinutes){
  const shortlist=candidates.slice(0,Math.min(6,candidates.length));
  return shortlist[Math.floor(Math.random()*shortlist.length)];
 }
+const QUEST_GENERATION_COOLDOWN_MS=8*60*60*1000;
+function getNewlySelectedQuestSkills(){
+ ensureSelectedSkills();
+ const previouslyGenerated=new Set(Array.isArray(state.lastGeneratedSkills)?state.lastGeneratedSkills:[]);
+ const alreadyHasQuest=new Set((state.quests||[]).filter(q=>q&&q.source==="generated").map(q=>q.skill));
+ return state.selectedSkills.filter(skill=>!previouslyGenerated.has(skill)&&!alreadyHasQuest.has(skill));
+}
+function formatCooldown(ms){const total=Math.max(0,Math.ceil(ms/1000));const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),sec=total%60;return `${h}h ${String(m).padStart(2,"0")}m ${String(sec).padStart(2,"0")}s`;}
+function updateGenerateButtonStatus(){
+ const button=document.getElementById("generateBtn");if(!button)return;
+ const remaining=debugQuestRulesOverridden()?0:Number(state.questGenerationCooldownUntil||0)-Date.now();
+ if(remaining>0){const newSkills=getNewlySelectedQuestSkills();button.textContent=newSkills.length?`✦ Generate quests for ${newSkills.length} new skill${newSkills.length===1?"":"s"}`:`✦ Generate quests · ${formatCooldown(remaining)}`;button.disabled=!newSkills.length;button.title=newSkills.length?"Generate quests only for newly selected skills; existing quests will remain.":"New quests available when the 8-hour cooldown ends.";}
+ else{button.textContent="✦ Generate quests";button.disabled=false;button.title="Generate a fresh set of quests for your selected skills.";}
+}
+setInterval(updateGenerateButtonStatus,1000);
 function generateQuests(opts){
   ensureSelectedSkills();
-  const skills=[...state.selectedSkills];
-  if(!skills.length){openCampaignPlanner(false);toast("Choose at least one skill in the Skills tab first.");return;}
+  const now=Date.now();
+  const cooldownActive=!debugQuestRulesOverridden()&&Number(state.questGenerationCooldownUntil||0)>now;
+  const skills=cooldownActive?getNewlySelectedQuestSkills():[...state.selectedSkills];
+  if(!skills.length){openCampaignPlanner(false);if(cooldownActive)toast("Quest generation is cooling down. Existing quests are kept; newly selected skills can still receive quests.");else toast("Choose at least one skill in the Skills tab first.");updateGenerateButtonStatus();return;}
+  const preserveExisting=cooldownActive;
   if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
   const settings=opts||{
     time:Number(document.getElementById("campaignTime")?.value||60),
@@ -1488,16 +1508,26 @@ function generateQuests(opts){
     if(settings.focus==="social"&&support.some(q=>/Adventure|Walking & Hiking|Photography|Geography/.test(q.skill)))lead.description += " If it feels practical, choose a public place or activity that gives you a natural shared topic to talk about.";
     if(settings.focus==="balanced")lead.description += " Use this as the anchor for today's session; fit the supporting quests around it where practical.";
   }
-  state.quests=chosen;
+  if(!chosen.length){openCampaignPlanner(false);toast("No quests fit that time and location combination. Try more time or choose a different location. Existing quests were kept.");updateGenerateButtonStatus();return;}
+  if(preserveExisting){
+    const existingIds=new Set((state.quests||[]).map(q=>String(q.id)));
+    state.quests=[...(state.quests||[]),...chosen.filter(q=>!existingIds.has(String(q.id)))];
+    state.lastGeneratedSkills=[...new Set([...(state.lastGeneratedSkills||[]),...skills])];
+  }else{
+    state.quests=chosen;
+    state.lastGeneratedSkills=[...state.selectedSkills];
+    state.questGenerationCooldownUntil=Date.now()+QUEST_GENERATION_COOLDOWN_MS;
+  }
   state.activeDate=today();
   save();
+  updateGenerateButtonStatus();
   openCampaignPlanner(false);
   if(!chosen.length){toast("No quests fit that time and location combination. Try more time or choose a different location.");return;}
   const total=chosen.reduce((sum,q)=>sum+(q.estimatedMinutes||10),0);
-  toast(`Campaign ready: ${chosen.length} quests, about ${total} minutes planned, with time left to breathe.`);
+  toast(preserveExisting?`Added ${chosen.length} quest${chosen.length===1?"":"s"} for newly selected skills. Existing quests and cooldown preserved.`:`Campaign ready: ${chosen.length} quests, about ${total} minutes planned. Next full refresh in 8 hours.`);
 }
 const generateQuestsButton=document.getElementById("generateBtn");
-if(generateQuestsButton)generateQuestsButton.addEventListener("click",()=>{updateCampaignPreview();openCampaignPlanner(true);});
+if(generateQuestsButton)generateQuestsButton.addEventListener("click",()=>{if(!debugQuestRulesOverridden()&&Number(state.questGenerationCooldownUntil||0)>Date.now()&&!getNewlySelectedQuestSkills().length){updateGenerateButtonStatus();toast("The 8-hour quest cooldown is active. Existing quests are preserved.");return;}updateCampaignPreview();openCampaignPlanner(true);});
 ["campaignTime","campaignEnergy"].forEach(id=>document.getElementById(id)?.addEventListener("change",updateCampaignPreview));
 document.getElementById("buildCampaignBtn")?.addEventListener("click",()=>generateQuests());
 document.getElementById("closeCampaignPlanner")?.addEventListener("click",()=>openCampaignPlanner(false));
@@ -1511,17 +1541,20 @@ ensureSelectedSkills();
 
 // Admin Debug Workshop (front-end convenience gate; not security for privileged backend operations).
 let debugSandboxActive=false, debugLiveStateBackup=null, debugSandboxState=null, debugLogEntries=[];
+let debugOverrideQuestRules=false;
+function debugQuestRulesOverridden(){return debugSandboxActive&&debugOverrideQuestRules;}
 function debugLog(message){debugLogEntries.unshift(new Date().toLocaleTimeString()+" · "+message);debugLogEntries=debugLogEntries.slice(0,80);const el=document.getElementById("debugEventLog");if(el)el.textContent=debugLogEntries.join("\n");}
-function restoreWayfarerUsername(user){const metadataName=String(user?.user_metadata?.wayfarer_username||"").trim();if(metadataName)return metadataName;const email=String(user?.email||"").trim();const localPart=email.includes("@")?email.slice(0,email.indexOf("@")):email;return localPart.replace(/@wayfarer\\.example$/i,"").trim();} function debugIsAdmin(){return String(wayfarerSignedInUsername||"").trim().toLowerCase()==="admin";}
+function restoreWayfarerUsername(user){const metadataName=String(user?.user_metadata?.wayfarer_username||"").trim();if(metadataName)return metadataName;const email=String(user?.email||"").trim();const localPart=email.includes("@")?email.slice(0,email.indexOf("@")):email;return localPart.trim();} function debugIsAdmin(){return String(wayfarerSignedInUsername||"").trim().toLowerCase()==="admin";}
 function debugRequireSandbox(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated sandbox first.");return false;}return true;}
-function renderDebugPanel(){const btn=document.getElementById("debugTabButton");if(!btn)return;const themeToggle=document.getElementById("debugAllowThemeUnequip");if(themeToggle){themeToggle.disabled=!debugSandboxActive;themeToggle.checked=!!debugAllowThemeUnequip;}btn.style.display=debugIsAdmin()?"inline-flex":"none";if(!debugIsAdmin()&&document.getElementById("section-debug")?.classList.contains("active")){document.querySelector('[data-tab="quests"]')?.click();return;}const status=document.getElementById("debugSandboxStatus");if(status)status.textContent=debugSandboxActive?"Sandbox active · changes are temporary":"Sandbox inactive";const data=debugSandboxActive?state:(debugLiveStateBackup||state);const date=document.getElementById("debugActiveDate");if(date)date.textContent=data.activeDate||"—";const level=document.getElementById("debugLevel");if(level)level.textContent=String(Math.floor((Number(data.xp)||0)/100)+1);const skillSel=document.getElementById("debugSkillSelect");if(skillSel){const previous=skillSel.value;const names=[...new Set([...(data.selectedSkills||[]),...skillCatalog.flatMap(c=>c.skills.map(x=>x[0]))])];skillSel.innerHTML='<option value="">Choose skill…</option>'+names.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join("");if(names.includes(previous))skillSel.value=previous;}if(debugSandboxActive)debugRenderQuests();}
+function renderDebugPanel(){const btn=document.getElementById("debugTabButton");if(!btn)return;const themeToggle=document.getElementById("debugAllowThemeUnequip");if(themeToggle){themeToggle.disabled=!debugSandboxActive;themeToggle.checked=!!debugAllowThemeUnequip;}const questOverrideToggle=document.getElementById("debugOverrideQuestRules");if(questOverrideToggle){questOverrideToggle.disabled=!debugSandboxActive;questOverrideToggle.checked=!!debugOverrideQuestRules;}btn.style.display=debugIsAdmin()?"inline-flex":"none";if(!debugIsAdmin()&&document.getElementById("section-debug")?.classList.contains("active")){document.querySelector('[data-tab="quests"]')?.click();return;}const status=document.getElementById("debugSandboxStatus");if(status)status.textContent=debugSandboxActive?"Sandbox active · changes are temporary":"Sandbox inactive";const data=debugSandboxActive?state:(debugLiveStateBackup||state);const date=document.getElementById("debugActiveDate");if(date)date.textContent=data.activeDate||"—";const level=document.getElementById("debugLevel");if(level)level.textContent=String(Math.floor((Number(data.xp)||0)/100)+1);const skillSel=document.getElementById("debugSkillSelect");if(skillSel){const previous=skillSel.value;const names=[...new Set([...(data.selectedSkills||[]),...skillCatalog.flatMap(c=>c.skills.map(x=>x[0]))])];skillSel.innerHTML='<option value="">Choose skill…</option>'+names.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join("");if(names.includes(previous))skillSel.value=previous;}if(debugSandboxActive)debugRenderQuests();}
 function debugRenderQuests(){const el=document.getElementById("debugQuestList");if(!el)return;const qs=Array.isArray(state.quests)?state.quests:[];el.textContent=qs.length?qs.map((q,i)=>`${i+1}. ${q.done?'[DONE]':'[OPEN]'} ${q.title||'(untitled)'} · skill=${q.skill||'—'} · xp=${q.xp??'—'} · source=${q.source||'—'} · id=${q.id||'—'}`).join("\n"):"No quests in sandbox.";}
 function debugInspect(){const el=document.getElementById("debugSaveInspector");if(!el)return;const d=debugSandboxActive?state:(debugLiveStateBackup||state);el.textContent=JSON.stringify({mode:debugSandboxActive?"sandbox":"read-only live snapshot",xp:d.xp,calculatedLevel:Math.floor((Number(d.xp)||0)/100)+1,completedTotal:d.completedTotal,questCount:(d.quests||[]).length,openQuests:(d.quests||[]).filter(q=>!q.done).length,completedQuests:(d.quests||[]).filter(q=>q.done).length,selectedSkills:d.selectedSkills,skillXp:d.skillXp,activeDate:d.activeDate,lastDay:d.lastDay,journalEntries:(d.journal||[]).length,todoItems:(d.todo||[]).length,questHistoryKeys:Object.keys(d.questHistory||{}).length},null,2);}
 document.getElementById("themeInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;if(itemId!=="dungeon-theme")return;if(state.equipment?.theme==="dungeon-theme") {if(debugSandboxActive&&debugAllowThemeUnequip){state.equipment.theme=null;debugLog("Unequipped Dungeon theme in sandbox test mode.");toast("Dungeon theme unequipped (sandbox only).");}else{toast("A theme must always be equipped. Enable the sandbox exception to test unequipped state.");return;}}else{state.equipment.theme="dungeon-theme";debugLog(debugSandboxActive?"Equipped Dungeon theme in sandbox.":"Equipped Dungeon theme.");toast("Dungeon theme equipped.");}save();renderDebugPanel();});
 document.getElementById("petInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;const pet=(state.inventory||[]).find(item=>item&&String(item.id)===String(itemId)&&(item.type==="pet"||String(item.category||"").toLowerCase()==="pet"));if(!pet)return;if(state.equipment?.pet===itemId){state.equipment.pet=null;toast((pet.name||"Pet")+" unequipped.");}else{state.equipment.pet=itemId;toast((pet.name||"Pet")+" equipped.");}save();renderDebugPanel();});
 document.getElementById("debugAllowThemeUnequip")?.addEventListener("change",event=>{if(!debugRequireSandbox()){event.target.checked=false;return;}debugAllowThemeUnequip=!!event.target.checked;if(!debugAllowThemeUnequip&&state.equipment?.theme==null){state.equipment.theme="dungeon-theme";save();}render();renderDebugPanel();debugLog(debugAllowThemeUnequip?"Sandbox-only unequipped theme exception enabled.":"Sandbox-only unequipped theme exception disabled.");toast(debugAllowThemeUnequip?"Sandbox can test no-theme state.":"Theme required again.");});
-document.getElementById("debugStartSandbox")?.addEventListener("click",()=>{if(!debugIsAdmin()){toast("Sign in using the exact username Admin.");return;}if(debugSandboxActive){toast("Sandbox is already active.");return;}debugLiveStateBackup=JSON.parse(JSON.stringify(state));debugSandboxState=JSON.parse(JSON.stringify(state));state=debugSandboxState;debugSandboxActive=true;debugAllowThemeUnequip=false;debugLog("Sandbox started from a copy of the current character.");render();renderDebugPanel();debugInspect();toast("Isolated sandbox started.");});
-document.getElementById("debugExitSandbox")?.addEventListener("click",()=>{if(!debugSandboxActive){toast("Sandbox is not active.");return;}state=debugLiveStateBackup;debugLiveStateBackup=null;debugSandboxState=null;debugSandboxActive=false;debugAllowThemeUnequip=false;render();renderDebugPanel();debugInspect();debugLog("Sandbox discarded; original in-memory character restored.");toast("Sandbox discarded. Real progress restored.");});
+document.getElementById("debugOverrideQuestRules")?.addEventListener("change",event=>{if(!debugRequireSandbox()){event.target.checked=false;return;}debugOverrideQuestRules=!!event.target.checked;updateGenerateButtonStatus();renderDebugPanel();debugLog(debugOverrideQuestRules?"Sandbox-only quest safeguards override enabled: cooldown and completion confirmation bypassed.":"Sandbox-only quest safeguards restored.");toast(debugOverrideQuestRules?"Quest safeguards overridden in sandbox only.":"Quest safeguards restored.");});
+document.getElementById("debugStartSandbox")?.addEventListener("click",()=>{if(!debugIsAdmin()){toast("Sign in using the exact username Admin.");return;}if(debugSandboxActive){toast("Sandbox is already active.");return;}debugLiveStateBackup=JSON.parse(JSON.stringify(state));debugSandboxState=JSON.parse(JSON.stringify(state));state=debugSandboxState;debugSandboxActive=true;debugAllowThemeUnequip=false;debugOverrideQuestRules=false;debugLog("Sandbox started from a copy of the current character.");render();renderDebugPanel();debugInspect();toast("Isolated sandbox started.");});
+document.getElementById("debugExitSandbox")?.addEventListener("click",()=>{if(!debugSandboxActive){toast("Sandbox is not active.");return;}state=debugLiveStateBackup;debugLiveStateBackup=null;debugSandboxState=null;debugSandboxActive=false;debugAllowThemeUnequip=false;debugOverrideQuestRules=false;render();renderDebugPanel();debugInspect();debugLog("Sandbox discarded; original in-memory character restored.");toast("Sandbox discarded. Real progress restored.");});
 document.querySelectorAll("[data-debug-days]").forEach(b=>b.addEventListener("click",()=>{if(!debugRequireSandbox())return;const d=Number(b.dataset.debugDays)||1;const date=new Date((state.activeDate||today())+"T12:00:00");date.setDate(date.getDate()+d);state.activeDate=date.toLocaleDateString("en-CA");debugLog(`Time Machine shifted sandbox date by +${d} days to ${state.activeDate}.`);renderDebugPanel();debugInspect();}));
 document.getElementById("debugSetOverallXp")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;state.xp=Math.max(0,Number(document.getElementById("debugOverallXp").value)||0);debugLog("Set sandbox overall XP to "+state.xp+".");renderDebugPanel();});
 document.getElementById("debugSetSkillXp")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;const skill=document.getElementById("debugSkillSelect").value;if(!skill){toast("Choose a skill first.");return;}if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};state.skillXp[skill]=Math.max(0,Number(document.getElementById("debugSkillXp").value)||0);debugLog("Set sandbox XP for "+skill+" to "+state.skillXp[skill]+".");renderDebugPanel();});
