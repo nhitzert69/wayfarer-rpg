@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-v0.10";
+const CACHE = "wayfarer-v0.11";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./CHANGELOG.md", "./assets/male-dungeon.png", "./assets/female-dungeon.png", "./assets/dungeon-theme.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));

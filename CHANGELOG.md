@@ -2,6 +2,20 @@
 
 This file is the release history for Wayfarer. Add a new dated/versioned section whenever the project changes. Keep older entries intact; append new releases at the top.
 
+## v0.11 — 2026-10-26
+
+### Added: Pet equipment and inventory
+- Added a Pets equipment slot to Character Details, alongside Theme and Artifacts.
+- Added a Pets category to the Character Inventory, with an empty state until pets are owned.
+- Pet items in saved inventory (with `type: "pet"` or `category: "Pet"`) can be equipped and unequipped by tapping them; the equipped pet is tracked in `state.equipment.pet`.
+- Equipped pet name and icon are reflected in the Character Details slot. Pets are cosmetic only in this release; no XP or gameplay bonuses are applied.
+- Preserved the existing username/PIN login, Supabase cloud-save flow, existing equipment, and v0.10 changelog history.
+
+### Notes
+- No pets are granted by default; the Pets inventory displays “No pets yet.” until pet items are added by a future store/unlock feature.
+
+---
+
 ## v0.10 — 2026-10-26
 
 First release using the new `v0.10` version-numbering scheme. This entry documents the feature set present in the v0.10 project baseline.
