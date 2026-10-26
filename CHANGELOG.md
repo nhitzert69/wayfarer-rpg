@@ -1,3 +1,11 @@
+## v0.14.1 — Orthodox Christianity theme
+- Added Orthodox Christianity as a Store theme, unlocked at Orthodox Christianity skill level 3 for 100 coins.
+- Added the Imperial palette with purple, crimson, antique gold and marble-ivory accents, plus the Orthodox church background.
+- Added dedicated male and female kneeling-prayer character artwork and the transparent Orthodox inventory/theme medallion.
+- Registered the theme for Store listings, Inventory, equipment, top-left app icon switching, character appearance and Debug “Unlock All Items”.
+- Added +5 Orthodox Christianity XP to eligible quests generated while the theme is equipped; the bonus is saved at quest generation and does not change existing quests.
+- Preserved the existing skill catalog, login, Supabase configuration, account isolation and saved progress.
+
 # Changelog
 
 ## v0.13.3 — Relationships theme
