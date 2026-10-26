@@ -1,3 +1,8 @@
+## v0.15.2 — Roman Fitness equip fix
+- Fixed Inventory theme click handling to accept every theme in the shared registry, including Roman Fitness.
+- Theme equipped notifications now use the registered theme name.
+- Generated quest reward metadata now records the registered theme name, including Roman Fitness.
+
 # Wayfarer v0.15.1 — Roman Fitness
 
 - Added the Roman Fitness theme to the shared theme registry, Store and Inventory.
