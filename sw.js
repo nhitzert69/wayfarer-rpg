@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-v0.13.3-relationships-theme";
+const CACHE = "wayfarer-v0.13.4-relationships-theme";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./CHANGELOG.md", "./assets/male-dungeon.png", "./assets/female-dungeon.png", "./assets/dungeon-theme.png", "./assets/adventure-theme.png", "./assets/male-adventurer.jpg", "./assets/female-adventurer.jpg", "./assets/academy-theme.png", "./assets/female-academy.jpg", "./assets/male-academy.jpg", "./assets/social-interactions-theme.png", "./assets/male-social.png", "./assets/female-social.png", "./assets/relationships-theme.png", "./assets/male-relationships.jpg", "./assets/female-relationships.jpg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));

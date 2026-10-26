@@ -229,3 +229,7 @@ When making the next update, copy this template to the top of the log and descri
 ## v0.14.6 — Navigation and Store price
 - Fixed selected-tab persistence so refreshing returns to the page the player last selected instead of unexpectedly switching to Settings.
 - Changed the Adventure theme price from 30 to 100 coins, including the Store label and insufficient-funds message.
+
+## v0.13.4 — Relationships App Icon Fix
+- The top-left app crest now switches to the Relationships theme icon when Relationships is equipped.
+- Updated the Relationships icon asset to the transparent-background version.
