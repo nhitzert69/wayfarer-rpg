@@ -1,3 +1,13 @@
+## v0.15.1 — Debug XP and coin tools
+- Added a sandbox-only Coin Lab with a configurable coin amount and immediate balance/UI refresh.
+- Fixed overall XP and skill XP debug setters so all XP-dependent UI updates immediately without requiring a quest completion.
+- Added immediate refreshes for the character display, skill progression, debug metrics, and save inspector after debug changes.
+- Preserved sandbox isolation: debug changes are discarded when exiting and do not write to the real character or cloud save.
+
+## v0.15 hotfix — Restore Unlock All Items debug
+- Restored the missing `applyUnlockAllItems` handler used by the Debug sandbox checkbox.
+- The handler uses the shared unlockable registry, including the Academy theme, and keeps temporary unlocks sandbox-only.
+
 # Wayfarer Changelog
 
 ## v0.15 — Academy theme
