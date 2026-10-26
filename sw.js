@@ -1,5 +1,5 @@
-const CACHE = "wayfarer-v69-lowpoly";
-const ASSETS = ["./", "./index.html", "./manifest.json", "./assets/male-dungeon.png", "./assets/female-dungeon.png"];
+const CACHE = "wayfarer-v70-lowpoly";
+const ASSETS = ["./", "./index.html", "./manifest.json", "./assets/male-dungeon.png", "./assets/female-dungeon.png", "./assets/dungeon-theme.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
   self.skipWaiting();
