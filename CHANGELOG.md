@@ -1,6 +1,8 @@
 # Wayfarer Changelog
 
 ## v0.14 — Adventure theme, coins and unlock testing
+- Polish follow-up: quest cards now show both XP and the +5 coin reward before completion.
+- Adventure theme now recolors cool gray panels, cards, stat tiles, navigation, form fields, borders and secondary buttons into warm leather, umber and bronze tones; Dungeon retains its original stone palette.
 - Every completed quest now awards 5 coins in addition to its existing XP reward.
 - Added the Adventure theme as a Store item, initially locked until Adventure reaches level 3; then it costs 30 coins. After purchase it moves to Inventory.
 - Added Adventure theme equipment behavior: the theme icon, female/male adventurer portraits, and warm explorer palette switch together. Dungeon remains the default owned theme.

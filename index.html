@@ -117,13 +117,23 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 }
 @media(prefers-reduced-motion:reduce){#questGrid .questLeaving,#mainQuestGrid .questLeaving,#sideQuestGrid .questLeaving{animation-duration:1ms}}
 
-/* v0.14 Adventure theme palette: preserve layout, change only the atmosphere. */
-body.adventureTheme{--bg:#20150f;--panel:#2b1d17;--panel2:#38241b;--line:#785039;--gold:#f0c16f;--gold2:#c57b38;--cream:#fff0d7;--muted:#c7ad8c;--green:#a6c58a;--red:#d47c61;background:linear-gradient(180deg,#36231a 0%,#1b1512 42%,#0d0b0a 100%)}
-body.adventureTheme .card,body.adventureTheme .hero,body.adventureTheme .equipmentSlot,body.adventureTheme .inventoryCategory{background-color:rgba(49,32,23,.92)}
-body.adventureTheme .tab{background:linear-gradient(#3c2a20,#211713);border-color:#775037}
-body.adventureTheme .tab.active{background:linear-gradient(#9b4d2c,#6c2e20);border-color:#f0c16f;color:#fff0d7}
-body.adventureTheme .btn{background:linear-gradient(#a95730,#71351f);border-color:#d99a51}
-body.adventureTheme .btn.secondary{background:linear-gradient(#38281f,#241914);border-color:#93633d}
+/* v0.14 Adventure theme palette: preserve layout, change the atmosphere across all UI surfaces. */
+body.adventureTheme{--bg:#20150f;--panel:#2b1d17;--panel2:#38241b;--line:#8a6041;--gold:#f0c16f;--gold2:#c57b38;--cream:#fff0d7;--muted:#c7ad8c;--green:#a6c58a;--red:#d47c61;background:linear-gradient(180deg,#3a271c 0%,#241710 42%,#100b08 100%)!important}
+body.adventureTheme .pill{background:linear-gradient(145deg,#38271e,#20140f)!important;border-color:#8a6041!important;color:#d7bb95!important}
+body.adventureTheme .hero{background:linear-gradient(130deg,rgba(66,43,29,.99),rgba(42,27,19,.99) 58%,rgba(35,22,16,.99))!important;border-color:#956744!important;box-shadow:inset 0 0 0 3px #1b100b,inset 0 0 0 4px #67452e,0 12px 28px #000b!important}
+body.adventureTheme .stat{background:linear-gradient(145deg,#3a281e,#21150f)!important;border-color:#8a6041!important;box-shadow:inset 0 0 0 2px #21140d,0 4px 10px #0007!important}
+body.adventureTheme .tabs{background:linear-gradient(180deg,rgba(48,31,22,.99),rgba(20,12,8,.99))!important;border-bottom-color:#805738!important}
+body.adventureTheme .tab{background:linear-gradient(180deg,#4a3224,#261810)!important;border-color:#8a6041!important;color:#e2c8a5!important}
+body.adventureTheme .tab.active{background:linear-gradient(180deg,#a9472b,#5c2118)!important;border-color:#edbd75!important;color:#fff0d3!important}
+body.adventureTheme .card,body.adventureTheme .equipmentSlot,body.adventureTheme .inventoryCategory,body.adventureTheme .characterPortraitCard,body.adventureTheme .characterInventoryCard{background:linear-gradient(145deg,#3a281e,#241710 72%,#302017)!important;border-color:#805738!important;box-shadow:inset 0 0 0 2px #21140e,0 8px 18px #0009!important}
+body.adventureTheme .btn{background:linear-gradient(180deg,#ad512f,#612417)!important;border-color:#dca45f!important}
+body.adventureTheme .btn.secondary{background:linear-gradient(180deg,#4a3224,#291a11)!important;border-color:#956744!important;color:#fff0d7!important}
+body.adventureTheme .btn.ghost{background:#21140ff5!important;border-color:#956744!important;color:#e0c5a1!important}
+body.adventureTheme .progress,body.adventureTheme .miniBar{background:#170e09!important;border-color:#805738!important}
+body.adventureTheme .field input,body.adventureTheme .field select,body.adventureTheme .field textarea,body.adventureTheme #difficulty,body.adventureTheme #questDialog input,body.adventureTheme #questDialog select,body.adventureTheme #questDialog textarea{background:#21150f!important;border-color:#805738!important;color:#fff0d7!important}
+body.adventureTheme .skillChoice{background:linear-gradient(145deg,#3a281e,#261810)!important;border-color:#805738!important}
+body.adventureTheme .empty,body.adventureTheme .notice{border-color:#805738!important;background:rgba(61,39,25,.7)!important}
+body.adventureTheme .logItem{border-bottom-color:#805738!important}
 body.adventureTheme .crest{background:linear-gradient(145deg,#6c3822,#21130e)!important;border-color:#e5a94f!important;box-shadow:inset 0 0 0 3px #170e0a,0 0 18px #d8792a22!important}
 .storeThemeCard{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;align-items:center;margin-top:12px}.storeThemeCard img{width:92px;height:92px;object-fit:contain;border-radius:12px}.storeThemeCard.locked{opacity:.62;filter:grayscale(1)}.storeThemeCard .themePrice{font-weight:800;color:var(--gold);white-space:nowrap}.storeThemeCard .themeRequirement{font-size:12px;color:var(--muted)}
 </style>
@@ -458,7 +468,7 @@ body.adventureTheme .crest{background:linear-gradient(145deg,#6c3822,#21130e)!im
   </div>
   <div class="card" style="margin-top:12px">
     <h3>Quest rewards</h3>
-    <p>Every quest awards <strong>15 XP</strong>. Reading quests ask for 10 pages, and piano quests ask for 10 minutes of practice.</p>
+    <p>Every completed quest awards <strong>15 XP + 5 coins</strong>. Reading quests ask for 10 pages, and piano quests ask for 10 minutes of practice.</p>
     <p class="sub">Choose your skills and generate quests whenever you're ready. There are no difficulty settings or difficulty-based rewards.</p>
   </div>
 </section>
@@ -800,7 +810,7 @@ function render(){
  const mainQuests=activeQuests.filter(q=>getSkillPriority(q.skill)==="priority");
  const sideQuests=activeQuests.filter(q=>getSkillPriority(q.skill)!=="priority");
  function questCard(q){return `<article class="card questActive" data-quest-card="${esc(q.id)}">
-  <div class="questTop"><div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP</span></div>
+  <div class="questTop"><div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP · +5 coins</span></div>
    <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span>${q.estimatedMinutes?`<span class="tag">~${q.estimatedMinutes} min</span>`:""}<button class="btn small" data-complete-btn="${q.id}">Complete</button></div></div></div>
  </article>`;}
  const mainGrid=document.getElementById("mainQuestGrid"),sideGrid=document.getElementById("sideQuestGrid");
