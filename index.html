@@ -640,7 +640,7 @@ if(!state.equipment||typeof state.equipment!=="object")state.equipment={};
 if(!Number.isFinite(Number(state.gold)))state.gold=0;
 if(!state.settings)state.settings={...defaultSettings};
 delete state.settings.difficulty;
-if(Array.isArray(state.quests)) state.quests.forEach(q=>{if(!q.done)q.xp=15;});
+if(Array.isArray(state.quests)) state.quests.forEach(q=>{if(!Number.isFinite(Number(q.xp)))q.xp=15;if(!Number.isFinite(Number(q.baseXp)))q.baseXp=Number(q.xp)||15;});
 if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
 if(!Number.isFinite(Number(state.questGenerationCooldownUntil)))state.questGenerationCooldownUntil=0;
 if(!Array.isArray(state.lastGeneratedSkills))state.lastGeneratedSkills=[];
@@ -881,7 +881,7 @@ function render(){
  const mainQuests=activeQuests.filter(q=>getSkillPriority(q.skill)==="priority");
  const sideQuests=activeQuests.filter(q=>getSkillPriority(q.skill)!=="priority");
  function questCard(q){return `<article class="card questActive" data-quest-card="${esc(q.id)}">
-  <div class="questTop"><div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP · +5 coins</span></div>
+  <div class="questTop"><div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP · +5 coins${q.perkBonusXp?` <small style="display:block;font-size:11px;opacity:.85">Includes ${q.perkBonusXp} ${esc(q.perkThemeName||"theme")} bonus XP</small>`:""}</span></div>
    <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span>${q.estimatedMinutes?`<span class="tag">~${q.estimatedMinutes} min</span>`:""}<button class="btn small" data-complete-btn="${q.id}">Complete</button></div></div></div>
  </article>`;}
  const mainGrid=document.getElementById("mainQuestGrid"),sideGrid=document.getElementById("sideQuestGrid");
@@ -927,7 +927,7 @@ function completeQuest(id,done=true){
  const q=state.quests.find(q=>String(q.id)===String(id));
  if(!q||q.done===done)return;
  if(!done){toast("Earned XP is never removed. Your completed quest stays recorded.");return;}
- if(!debugQuestRulesOverridden()&&!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP + 5 coins${state.equipment?.theme==="adventure-theme"?" + 5 Adventure skill XP":state.equipment?.theme==="academy-theme"?" + 5 Reading skill XP":""}?`))return;
+ if(!debugQuestRulesOverridden()&&!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP + 5 coins${q.perkBonusXp?` (includes ${q.perkBonusXp} ${q.perkThemeName||"theme"} bonus XP)`:""}?`))return;
  // Record completion and award XP immediately, before the visual card animation.
  q.done=true;
  state.xp+=Number(q.xp);
@@ -935,13 +935,11 @@ function completeQuest(id,done=true){
  if(!state.skillXp)state.skillXp={};
  const skill=q.skill||({"Social":"Social Interactions","Adventure":"Adventure","Skill":"Creativity","Knowledge":"Knowledge","Relationships":"Relationships","Daily":"Discipline","Side quest":"Discipline","Boss quest":"Adventure"})[q.category]||"Discipline";
  state.skillXp[skill]=(Number(state.skillXp[skill])||0)+Number(q.xp);
- const adventureThemeEquipped=state.equipment?.theme==="adventure-theme";
- const academyThemeEquipped=state.equipment?.theme==="academy-theme";
- if(adventureThemeEquipped)state.skillXp["Adventure"]=(Number(state.skillXp["Adventure"])||0)+5;
- if(academyThemeEquipped)state.skillXp["Reading"]=(Number(state.skillXp["Reading"])||0)+5;
+ const perkSkill=q.skill||"";
+ const perkThemeName=q.perkThemeName||"";
  state.completedTotal++;
  if(!state.questDays.includes(today()))state.questDays.push(today());
- toast(`Quest complete! +${q.xp} XP · +5 coins${adventureThemeEquipped?" · +5 Adventure XP":academyThemeEquipped?" · +5 Reading XP":""}`);
+ toast(`Quest complete! +${q.xp} XP · +5 coins${q.perkBonusXp?` · includes +${q.perkBonusXp} ${perkThemeName} bonus`:""}`);
  const grids=[document.getElementById("mainQuestGrid"),document.getElementById("sideQuestGrid")].filter(Boolean);
  const trigger=grids.flatMap(grid=>[...grid.querySelectorAll("[data-complete-btn]")]).find(el=>String(el.dataset.completeBtn)===String(id));
  const card=trigger?trigger.closest("article"):null;
@@ -1609,7 +1607,11 @@ function generateQuests(opts){
     if(!quest)continue;
     const minutes=quest._minutes;
     delete quest._minutes;delete quest._score;
-    chosen.push({...quest,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:settings.place,done:false,source:"generated",generatedForLevel:getSkillLevel(skill),id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2)});
+    const equippedThemeAtGeneration=state.equipment?.theme||"dungeon-theme";
+    const themeBonusXp=(equippedThemeAtGeneration==="academy-theme"&&skill==="Reading")||(equippedThemeAtGeneration==="adventure-theme"&&skill==="Adventure")?5:0;
+    const themeNameAtGeneration=equippedThemeAtGeneration==="academy-theme"?"Academy":equippedThemeAtGeneration==="adventure-theme"?"Adventure":"";
+    const baseXp=Number(quest.xp)||15;
+    chosen.push({...quest,baseXp,xp:baseXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:settings.place,done:false,source:"generated",generatedForLevel:getSkillLevel(skill),id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2)});
     usedTitles.add(quest.title);usedMinutes+=minutes;
     state.questHistory[skill]=[quest.title,...(state.questHistory[skill]||[]).filter(t=>t!==quest.title)].slice(0,8);
   }

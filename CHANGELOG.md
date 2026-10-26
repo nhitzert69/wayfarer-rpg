@@ -1,3 +1,9 @@
+## v0.15.2 — Quest-generation perk snapshots
+- Theme XP bonuses are now captured when each quest is generated, so later equipment changes cannot alter existing quests.
+- Academy adds +5 XP to Reading quests generated while equipped; Adventure adds +5 XP to Adventure quests generated while equipped. The quest card displays the full XP reward (for example, +20 XP) and identifies the included theme bonus.
+- Completion awards the saved quest XP and no longer checks the currently equipped theme, preventing mid-session swaps from changing rewards or double-counting the bonus.
+- Preserved the username/PIN Supabase login, save structure, and existing account progress.
+
 ## v0.15.1 — Debug XP and coin tools
 - Added a sandbox-only Coin Lab with a configurable coin amount and immediate balance/UI refresh.
 - Fixed overall XP and skill XP debug setters so all XP-dependent UI updates immediately without requiring a quest completion.
