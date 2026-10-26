@@ -1,3 +1,21 @@
+## v0.15.57 — Direct quest generation and 4-hour cooldown
+- The Generate Quests button now generates a connected, balanced set immediately; it no longer opens the Plan Your Campaign panel.
+- Preserved the existing campaign quest-selection logic and its balanced focus, normal-energy, mixed home/outside defaults so generated quests continue to complement one another.
+- Reduced the full quest-generation cooldown from 8 hours to 4 hours and updated user-facing cooldown messages.
+- Kept the planner functions and Debug planner test bench in the project for compatibility; the main Generate Quests action no longer depends on the planner UI.
+- Updated the Debug build identifier and service-worker cache version.
+
+## v0.15.56 — Corrected color and character-image lock detection
+- Fixed the theme integration test so the color-lock check compares the actual rendered palette across all core theme CSS variables against the same equipped theme with only the Dungeon lock removed. A forced Dungeon palette now fails for a non-Dungeon equipped theme.
+- Fixed the character/theme-image lock check to compare the actual rendered character image filename (and theme icon when present) against the expected asset for the equipped theme, rather than merely checking a checkbox.
+- Unknown/unmapped theme character assets are reported as a failed image integration check when a non-Dungeon theme is equipped, so adding a theme without registering its image mapping cannot silently pass.
+- Updated the Debug report version and service-worker cache version to `v0.15.56`.
+
+## v0.15.55 — Changelog latest-release correction and release rule
+- Added this release entry at the very top of `CHANGELOG.md` so the latest update is immediately visible in Debug Version History.
+- Added a permanent update rule requiring every project update to prepend a dated/versioned entry at the top of `CHANGELOG.md`, preserve all prior entries, and verify the top entry matches the delivered project version before packaging.
+- Updated Debug's reported build version and service-worker cache version to `v0.15.55` so the build can be distinguished from older deployed versions.
+
 ## v0.15.53 — Behavior-based Debug fault injection and theme-lock detection
 - Debug feature locks now force the actual Dungeon background, palette, character/theme images, and soundtrack source in Sandbox; the music lock selects the Dungeon track rather than muting audio.
 - Academy fault injection now alters the actual Academy unlock decision, purchase handler, and quest-generation bonus calculation, gated to Admin Sandbox.
