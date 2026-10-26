@@ -1,3 +1,9 @@
+## v0.14.2 — Orthodox theme inventory equip fix
+- Fixed the Inventory theme click handler so the Orthodox Christianity theme is accepted as an equipable theme.
+- Added the correct Orthodox Christianity label when equipping the theme.
+- Preserved the existing theme unlock, purchase, reward-locking and character artwork behavior.
+- Updated the service-worker cache version to ensure the fix is refreshed after deployment.
+
 ## v0.14.1 — Orthodox Christianity theme
 - Added Orthodox Christianity as a Store theme, unlocked at Orthodox Christianity skill level 3 for 100 coins.
 - Added the Imperial palette with purple, crimson, antique gold and marble-ivory accents, plus the Orthodox church background.

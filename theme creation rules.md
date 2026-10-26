@@ -53,6 +53,14 @@ Every new theme must follow these rules unless explicitly changed.
 - Equipping updates the relevant appearance and prepares perks for future quest generation.
 - Equipment changes never modify rewards saved on existing quests.
 
+### Mandatory Equipment Integration Checks
+- Every new theme ID must be added to every relevant equipment selection, click-handler allowlist, validation condition, and theme-switching branch.
+- Do not assume that registering a theme in the shared unlockable registry automatically makes it equipable.
+- Trace the complete flow: Store purchase → Inventory ownership → Inventory interaction → equipment state update → save/persistence → visual theme and character update.
+- Verify that tapping the theme actually equips it, updates its equipped indicator, saves the change, and remains equipped after refresh.
+- Prefer deriving available themes and valid equipment IDs from the shared registry instead of maintaining separate hard-coded allowlists where practical.
+- Include a specific test that equips each newly added theme from Inventory on mobile and desktop.
+
 ## 7. Debug Compatibility
 - Every theme integrates with the existing Debug system.
 - “Unlock All Items” correctly unlocks the new theme and makes it available in the appropriate Store/Inventory states.
