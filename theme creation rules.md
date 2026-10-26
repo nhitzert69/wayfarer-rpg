@@ -120,3 +120,10 @@ Every new theme must follow these rules unless explicitly changed.
 Every theme must have a dedicated, registered full-screen background and a complete theme-specific color system—not merely an icon and character artwork. The theme stylesheet must define its own palette and apply it to active tabs, buttons, cards/panels, progress bars, form controls, borders, and character portrait framing as appropriate. The background must be layered behind the app with a readability overlay on desktop and mobile.
 
 The Debug Theme Integration Tests must verify: (1) theme registry entry; (2) icon/background asset references; (3) theme-specific body class; (4) theme-specific background CSS; (5) distinct color rules for key UI components; (6) Store visibility and unlock requirement; (7) Inventory ownership and equip action; (8) character art selection; (9) soundtrack mapping; and (10) perk/reward-locking rules. A theme must fail testing if it inherits Dungeon colors or background unintentionally. Report each failure with test ID, expected behavior, actual behavior, and suggested investigation.
+
+
+## Theme display identity and visual regression enforcement
+- Display names may be changed without changing stable internal theme IDs, skill names, unlock keys, saved equipment IDs, or quest reward keys.
+- Debug theme compliance tests must verify actual browser-computed styles and the lower interface (including Inventory and equipment surfaces), not merely the existence of CSS text.
+- Test theme background and icon HTTP responses and image decoding. Report each failure individually with expected/actual details and suggested investigation. Never report a theme as passed solely because its asset path or selector exists.
+- When checking non-active themes, use temporary in-memory class changes only and restore the original body classes immediately; never mutate saved user progress during visual tests.

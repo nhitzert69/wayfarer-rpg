@@ -11,3 +11,10 @@
 - Every theme must include its own optimized full-screen app background, registered to the theme and displayed behind the interface with a legibility overlay.
 
 Every new theme must be tested for its complete visual identity: dedicated background with overlay, theme-specific palette applied to major UI components, active body class, icon, character art, soundtrack, Store/Inventory/equip integration, and Debug test coverage.
+
+
+## Theme display identity and visual regression enforcement
+- Display names may be changed without changing stable internal theme IDs, skill names, unlock keys, saved equipment IDs, or quest reward keys.
+- Debug theme compliance tests must verify actual browser-computed styles and the lower interface (including Inventory and equipment surfaces), not merely the existence of CSS text.
+- Test theme background and icon HTTP responses and image decoding. Report each failure individually with expected/actual details and suggested investigation. Never report a theme as passed solely because its asset path or selector exists.
+- When checking non-active themes, use temporary in-memory class changes only and restore the original body classes immediately; never mutate saved user progress during visual tests.

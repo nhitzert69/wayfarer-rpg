@@ -1,3 +1,8 @@
+## v0.15.4
+- Renamed theme display labels to Adventurer, Social Butterfly, Faith, Heartkeeper, and Fitness without changing stable theme IDs or skill names.
+- Expanded Debug theme integration checks to verify registry names, HTTP asset availability, image decoding, background application, computed UI surfaces, and lower Inventory/Store styling.
+- Expanded theme CSS coverage so equipped palettes style lower panels, Inventory, equipment slots, Store cards, and controls, including the Faith theme.
+
 ## v0.15.3 — Roman Fitness visual integration and Debug tests
 - Completed Roman crimson/gold/bronze/charcoal styling for major UI components.
 - Ensured Fitness background rules apply on mobile and desktop.
