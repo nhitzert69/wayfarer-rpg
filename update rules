@@ -18,3 +18,12 @@ Every new theme must be tested for its complete visual identity: dedicated backg
 - Debug theme compliance tests must verify actual browser-computed styles and the lower interface (including Inventory and equipment surfaces), not merely the existence of CSS text.
 - Test theme background and icon HTTP responses and image decoding. Report each failure individually with expected/actual details and suggested investigation. Never report a theme as passed solely because its asset path or selector exists.
 - When checking non-active themes, use temporary in-memory class changes only and restore the original body classes immediately; never mutate saved user progress during visual tests.
+
+
+## Debug and recovery safeguards (v0.15.5)
+- Theme/quest/store diagnostic tests and feature-isolation switches must be restricted to Admin while Sandbox mode is active.
+- Dungeon is the starter theme and must not be expected in the unlockable Store catalog. Only the theme equipment slot is required to show theme-specific changes; empty artifact/pet slots may remain blank.
+- Debug must clearly distinguish PASS, FAIL, and INCONCLUSIVE. A catalog/style presence check is not proof of end-to-end behavior.
+- Character reset must require explicit confirmation, preserve Journal, To Do, and Groceries, and offer one-step restoration from a snapshot. Explain which character fields are reset before confirmation.
+- XP/gold grant tools are Admin-only, can run in live or Sandbox, and must clearly state which environment is being changed.
+- Store and quest tests must not alter real progress; simulated purchase/reward flows should run only against isolated sandbox state.

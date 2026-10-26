@@ -1,3 +1,9 @@
+## v0.15.5
+- Replaced six existing theme backgrounds (leaving Fitness untouched) with optimized 1672×940 WebP assets.
+- Corrected theme checks: Dungeon is treated as starter equipment, and empty artifact/pet slots are not expected to be theme-styled.
+- Added Sandbox-only feature isolation switches, quest checks, and Store catalog checks.
+- Added Admin character recovery tools: confirmed reset, snapshot restore, and XP/gold grants in live or Sandbox mode. Journal, To Do, and Groceries are preserved during reset.
+
 ## v0.15.4
 - Renamed theme display labels to Adventurer, Social Butterfly, Faith, Heartkeeper, and Fitness without changing stable theme IDs or skill names.
 - Expanded Debug theme integration checks to verify registry names, HTTP asset availability, image decoding, background application, computed UI surfaces, and lower Inventory/Store styling.

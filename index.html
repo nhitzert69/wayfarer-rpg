@@ -261,6 +261,11 @@ body.orthodoxTheme #section-store .storeThemeCard{
   background:linear-gradient(145deg,#40283f,#302033)!important;
 }
 
+
+/* Sandbox-only feature isolation switches */
+body.debug-disable-background{background-image:none!important}
+body.debug-disable-colors{--bg:#172033!important;--panel:#26354d!important;--panel2:#30445f!important;--line:#5d7695!important;--gold:#d8e2ef!important;--gold2:#a8bfd8!important}
+body.debug-disable-portrait #characterPortrait,body.debug-disable-portrait .characterPortrait,body.debug-disable-portrait .themeIcon{visibility:hidden!important}
 </style>
 
 <style id="admin-debug-styles">
@@ -686,6 +691,9 @@ body.orthodoxTheme{
   <div class="sectionHead"><div><h2>Debug Workshop</h2><p>Admin-only testing tools. Sandbox changes never write to your real character.</p></div></div>
   <div class="debugSandboxBanner"><strong id="debugSandboxStatus">Sandbox inactive</strong><p class="sub">Start a sandbox to test XP, quests, dates, and planner behavior against a temporary copy. Exiting discards sandbox changes.</p><div class="debugTools"><button class="btn" id="debugStartSandbox">Start isolated sandbox</button><button class="btn secondary" id="debugExitSandbox">Exit sandbox</button></div><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugAllowThemeUnequip" type="checkbox" style="margin-top:3px" disabled><span><strong>Allow unequipped theme</strong><small style="display:block;color:var(--muted)">Sandbox testing only. Allows the required theme to be temporarily removed.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugOverrideQuestRules" type="checkbox" style="margin-top:3px" disabled><span><strong>Override quest safeguards</strong><small style="display:block;color:var(--muted)">Sandbox only. Bypass the 8-hour quest-generation cooldown and skip quest-completion confirmations for testing.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugUnlockAllItems" type="checkbox" style="margin-top:3px" disabled><span><strong>Unlock all items</strong><small style="display:block;color:var(--muted)">Sandbox only. Grants every registered unlockable item for testing, including future themes, pets and artifacts.</small></span></label></div>
   <div class="card"><h3>Theme Integration Tests</h3><p class="sub">Runs theme-by-theme asset, CSS, computed-style, full-page panel, background and equipped-state checks. Any failed surface is reported separately. Read-only; does not alter saved progress.</p><div class="debugTools"><button class="btn secondary" id="debugRunThemeTests" type="button">Run theme integration tests</button></div><pre id="debugThemeTestResults" class="debugLog">No theme tests run yet.</pre></div>
+  <div class="card"><h3>Feature Isolation Switches</h3><p class="sub">Sandbox only. Temporarily disable individual theme effects to isolate regressions. These switches do not change saved settings.</p><div class="debugTools"><label><input type="checkbox" id="debugDisableBackground"> Disable background changes</label><label><input type="checkbox" id="debugDisableColors"> Disable theme colors</label><label><input type="checkbox" id="debugDisablePortrait"> Disable character/theme images</label><label><input type="checkbox" id="debugDisableMusic"> Disable theme music</label></div><p id="debugFeatureSwitchStatus" class="sub" aria-live="polite">All theme effects enabled.</p></div>
+  <div class="card"><h3>Character Recovery &amp; Test Grants</h3><p class="sub">Admin tools. XP and gold grants can be used in live mode or Sandbox. Reset affects character progression and inventory/equipment only; Journal, To Do and Groceries are preserved. A one-step backup can restore the character after a reset.</p><div class="debugTools"><label>XP <input type="number" id="debugGrantXp" min="0" max="100000" value="100"></label><label>Gold <input type="number" id="debugGrantGold" min="0" max="100000" value="100"></label><button class="btn secondary" id="debugGrantResources">Grant XP &amp; gold</button><button class="btn secondary" id="debugRestoreCharacter">Undo/restore character snapshot</button><button class="btn danger" id="debugResetCharacter">Reset main character…</button></div><p id="debugCharacterToolsStatus" class="sub" aria-live="polite">No reset snapshot stored.</p></div>
+  <div class="card"><h3>Quest System Tests</h3><p class="sub">Sandbox only. Checks quest reward fields, active theme bonus metadata and that existing quests retain their locked rewards.</p><div class="debugTools"><button class="btn secondary" id="debugRunQuestTests">Run quest system tests</button><button class="btn secondary" id="debugRunStoreTests">Run Store tests</button></div><pre id="debugQuestStoreResults" class="debugLog">No quest/store tests run yet.</pre></div>
   <div class="card"><h3>Character Gender Test</h3><p class="sub">Switch the signed-in account character between male and female to test both portrait variants. This updates the real saved character profile (not just the sandbox), so use it intentionally.</p><div class="debugTools"><select id="debugAccountGender"><option value="male">Male character</option><option value="female">Female character</option></select><button class="btn secondary" id="debugApplyAccountGender" type="button">Apply gender to account</button></div><p class="sub" id="debugAccountGenderStatus" aria-live="polite">Current character gender: —</p></div>
   <div class="card"><h3>Time Machine</h3><p class="sub">Shift the active campaign date in the sandbox only.</p><div class="debugTools"><button class="btn secondary" data-debug-days="1">+1 day</button><button class="btn secondary" data-debug-days="7">+7 days</button><button class="btn secondary" data-debug-days="30">+30 days</button><button class="btn secondary" data-debug-days="365">+365 days</button></div><div class="debugMetric"><span>Active date</span><strong id="debugActiveDate">—</strong></div></div>
   <div class="card"><h3>XP & Level Lab</h3><p class="sub">Set overall XP or a skill's XP while sandbox mode is active. Changes update the character and skill UI immediately; no quest completion is needed.</p><div class="debugTools"><input id="debugOverallXp" type="number" min="0" placeholder="Overall XP"><button class="btn secondary" id="debugSetOverallXp">Set overall XP</button><select id="debugSkillSelect"><option value="">Choose skill…</option></select><input id="debugSkillXp" type="number" min="0" placeholder="Skill XP"><button class="btn secondary" id="debugSetSkillXp">Set skill XP</button></div><div class="debugMetric"><span>Calculated overall level</span><strong id="debugLevel">—</strong></div><div class="debugMetric"><span>Skill progression thresholds</span><strong>60 / 90 / 120 / 150 / 180 / 225 / 270 / 300 XP per level band</strong></div></div>
@@ -1867,6 +1875,7 @@ let debugOverrideQuestRules=false;
 function debugQuestRulesOverridden(){return debugSandboxActive&&debugOverrideQuestRules;}
 function debugLog(message){debugLogEntries.unshift(new Date().toLocaleTimeString()+" · "+message);debugLogEntries=debugLogEntries.slice(0,80);const el=document.getElementById("debugEventLog");if(el)el.textContent=debugLogEntries.join("\n");}
 async function runThemeIntegrationTests(){
+ if(!debugIsAdmin()||!debugSandboxActive){toast("Theme tests are available only to Admin in Sandbox mode.");return {status:"BLOCKED",results:[]};}
  const results=[];
  const add=(name,ok,detail,category="theme-integration")=>results.push({name,ok:!!ok,detail,category});
  const themes=[
@@ -1884,7 +1893,12 @@ async function runThemeIntegrationTests(){
  const registry=Array.isArray(UNLOCKABLE_ITEMS)?UNLOCKABLE_ITEMS:[];
  for(const t of themes){
   const item=registry.find(x=>x.id===t.id);
-  add(`${t.name}: registered in unlockable catalog`,!!item, item?`name=${item.name}; type=${item.type}; category=${item.category}`:"Theme is missing from UNLOCKABLE_ITEMS","registry");
+  if(t.id==="dungeon-theme"){
+   const starter=state.inventory.some(x=>x&&x.id==="dungeon-theme");
+   add("Dungeon: starter theme is present",starter,starter?"Starter theme exists in inventory":"Starter Dungeon theme is missing","registry");
+  } else {
+   add(`${t.name}: registered in unlockable catalog`,!!item, item?`name=${item.name}; type=${item.type}; category=${item.category}`:"Theme is missing from UNLOCKABLE_ITEMS","registry");
+  }
   if(item)add(`${t.name}: display name`,item.name===t.name,`Expected "${t.name}", got "${item.name}"`,"registry");
   add(`${t.name}: dedicated CSS selector`,t.cls?css.includes("body."+t.cls):css.includes("dungeon-background.webp"),t.cls?`CSS selector body.${t.cls}`:"Dungeon fallback CSS","css");
   add(`${t.name}: background reference`,css.includes(t.bg),`Expected CSS reference to ${t.bg}`,"assets");
@@ -1900,7 +1914,7 @@ async function runThemeIntegrationTests(){
  }
  // Read-only visual verification: temporarily toggle each theme class, measure computed styles across actual UI surfaces, then restore classes.
  const body=document.body, originalClasses=[...body.classList];
- const surfaceSelectors=[".brand",".hero",".tabs",".tab.active",".card",".panel","#section-character","#section-character .inventoryItem","#section-character .equipmentSlot","#section-store .storeThemeCard",".btn"];
+ const surfaceSelectors=[".brand",".hero",".tabs",".tab.active",".card",".panel","#section-character","#section-character .themeEquipmentSlot","#section-store .storeThemeCard",".btn"];
  const normalizeColor=v=>String(v||"").replace(/\s+/g,"").toLowerCase();
  for(const t of themes){
   body.className=originalClasses.filter(c=>!themes.some(x=>x.cls&&c===x.cls)).join(" ");
@@ -1918,13 +1932,13 @@ async function runThemeIntegrationTests(){
    const nonDefaultTheme=t.cls&&(["--line","--panel","--gold"].some(v=>getComputedStyle(body).getPropertyValue(v).trim()));
    if(t.cls && (border.includes("rgb")||color.includes("rgb")||background.includes("gradient")))styled++;
    // Theme selectors should explicitly target lower surfaces, not merely pass because CSS vars exist.
-   if(t.cls && ["#section-character .inventoryItem","#section-character .equipmentSlot","#section-store .storeThemeCard"].includes(sel)){
+   if(t.cls && ["#section-character .themeEquipmentSlot","#section-store .storeThemeCard"].includes(sel)){
     const rulePresent=css.includes("body."+t.cls+" "+sel);
     if(!rulePresent)missing.push(sel+" lacks explicit theme styling rule");
    }
   }
   add(`${t.name}: computed UI surfaces inspected`,checked>=3,`Inspected ${checked} rendered surfaces; ${styled} had measurable styled values`,"computed-style");
-  if(t.cls)add(`${t.name}: lower UI surface selectors`,missing.length===0,missing.length?missing.join("; "):"Inventory/equipment/store surfaces have explicit theme-specific selectors","visual");
+  if(t.cls)add(`${t.name}: lower UI surface selectors`,missing.length===0,missing.length?missing.join("; "):"Theme equipment slot and Store surfaces have explicit theme-specific selectors","visual");
  }
  body.className=originalClasses.join(" ");
  await new Promise(resolve=>requestAnimationFrame(resolve));
@@ -1936,7 +1950,76 @@ async function runThemeIntegrationTests(){
  debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed.");return report;
 }
 document.getElementById("debugRunThemeTests")?.addEventListener("click",runThemeIntegrationTests);
+document.getElementById("debugStartSandbox")?.addEventListener("click",()=>setTimeout(applyDebugFeatureSwitches,0));
+document.getElementById("debugExitSandbox")?.addEventListener("click",()=>{featureIds.forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});document.body.classList.remove("debug-disable-background","debug-disable-colors","debug-disable-portrait");setTimeout(applyDebugFeatureSwitches,0);});
 
+
+const debugCharacterSnapshotKey="wayfarer-debug-character-snapshot-v1";
+function debugCharacterDataSnapshot(){return JSON.parse(JSON.stringify({xp:state.xp,gold:state.gold,skillXp:state.skillXp,selectedSkills:state.selectedSkills,skillPriorities:state.skillPriorities,inventory:state.inventory,equipment:state.equipment,profile:state.profile,quests:state.quests,completedTotal:state.completedTotal,questGenerationCooldownUntil:state.questGenerationCooldownUntil,lastGeneratedSkills:state.lastGeneratedSkills,questHistory:state.questHistory,questDays:state.questDays,characterXp:state.characterXp,level:state.level}));}
+function debugApplySnapshot(snapshot){for(const k of Object.keys(snapshot||{}))state[k]=JSON.parse(JSON.stringify(snapshot[k]));save();renderDebugPanel();}
+function debugCanUseCharacterTools(){if(!debugIsAdmin()){toast("Admin access required.");return false;}return true;}
+document.getElementById("debugGrantResources")?.addEventListener("click",()=>{
+ if(!debugCanUseCharacterTools())return;
+ const xp=Math.max(0,Math.min(100000,Number(document.getElementById("debugGrantXp")?.value)||0));
+ const gold=Math.max(0,Math.min(100000,Number(document.getElementById("debugGrantGold")?.value)||0));
+ state.xp=(Number(state.xp)||0)+xp;state.gold=(Number(state.gold)||0)+gold;
+ save();renderDebugPanel();document.getElementById("debugCharacterToolsStatus").textContent=`Granted ${xp} XP and ${gold} gold. ${debugSandboxActive?"Sandbox changes are temporary.":"Live character updated and saved."}`;debugLog(`Admin grant: +${xp} XP, +${gold} gold (${debugSandboxActive?"sandbox":"live"}).`);
+});
+document.getElementById("debugResetCharacter")?.addEventListener("click",()=>{
+ if(!debugCanUseCharacterTools())return;
+ if(!window.confirm("Are you sure you want to reset your main character? This clears XP, gold, skill XP, selected skills, quests, inventory and equipment. Journal, To Do and Groceries will be preserved. A one-step restore snapshot will be saved."))return;
+ try{localStorage.setItem(debugCharacterSnapshotKey,JSON.stringify(debugCharacterDataSnapshot()));}catch(e){}
+ state.xp=0;state.gold=0;state.skillXp={};state.selectedSkills=[];state.skillPriorities={};state.inventory=[];state.equipment={theme:"dungeon-theme"};state.quests=[];state.completedTotal=0;state.questGenerationCooldownUntil=0;state.lastGeneratedSkills=[];state.questHistory={};state.questDays=[];state.characterXp=0;state.level=1;
+ if(typeof ensureDungeonThemeState==="function")ensureDungeonThemeState();
+ save();renderDebugPanel();document.getElementById("debugCharacterToolsStatus").textContent="Character reset. Journal, To Do and Groceries were preserved. Use Restore snapshot to undo.";debugLog("Character progression reset; journal, To Do and groceries preserved.");
+});
+document.getElementById("debugRestoreCharacter")?.addEventListener("click",()=>{
+ if(!debugCanUseCharacterTools())return;
+ let snap=null;try{snap=JSON.parse(localStorage.getItem(debugCharacterSnapshotKey)||"null")}catch(e){}
+ if(!snap){toast("No character snapshot is available.");return;}
+ if(!window.confirm("Restore the saved character snapshot? This replaces current character stats, quests, inventory and equipment, but preserves Journal, To Do and Groceries."))return;
+ debugApplySnapshot(snap);document.getElementById("debugCharacterToolsStatus").textContent="Character snapshot restored.";debugLog("Character snapshot restored.");
+});
+const featureIds=["debugDisableBackground","debugDisableColors","debugDisablePortrait","debugDisableMusic"];
+function applyDebugFeatureSwitches(){
+ const allowed=debugIsAdmin()&&debugSandboxActive;
+ featureIds.forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=!allowed;});
+ const values=Object.fromEntries(featureIds.map(id=>[id,!!document.getElementById(id)?.checked]));
+ document.body.classList.toggle("debug-disable-background",allowed&&values.debugDisableBackground);
+ document.body.classList.toggle("debug-disable-colors",allowed&&values.debugDisableColors);
+ document.body.classList.toggle("debug-disable-portrait",allowed&&values.debugDisablePortrait);
+ const audio=document.querySelector("audio[data-theme-music],#themeMusic,audio#backgroundMusic");
+ if(audio&&allowed&&values.debugDisableMusic){audio.dataset.debugWasMuted=String(audio.muted);audio.muted=true;}
+ else if(audio&&audio.dataset.debugWasMuted!==undefined){audio.muted=audio.dataset.debugWasMuted==="true";delete audio.dataset.debugWasMuted;}
+ const status=document.getElementById("debugFeatureSwitchStatus");if(status)status.textContent=allowed?featureIds.filter(id=>values[id]).map(id=>id.replace("debugDisable","")+" disabled").join(", ")||"All theme effects enabled.":"Feature switches are available only in Sandbox mode.";
+}
+featureIds.forEach(id=>document.getElementById(id)?.addEventListener("change",applyDebugFeatureSwitches));
+document.getElementById("debugRunQuestTests")?.addEventListener("click",()=>{
+ if(!debugIsAdmin()||!debugSandboxActive){toast("Quest tests are available only to Admin in Sandbox mode.");return;}
+ const qs=Array.isArray(state.quests)?state.quests:[],out=[];
+ const check=(n,ok,d)=>out.push({test:n,status:ok?"PASS":"FAIL",detail:d});
+ check("Quest list exists",Array.isArray(state.quests),`quests=${qs.length}`);
+ check("Quest rewards are numeric",qs.every(q=>Number.isFinite(Number(q.xp))&&Number(q.xp)>=0),`${qs.filter(q=>!Number.isFinite(Number(q.xp))||Number(q.xp)<0).length} invalid quest reward(s)`);
+ check("Quest base reward is numeric",qs.every(q=>Number.isFinite(Number(q.baseXp))),`${qs.filter(q=>!Number.isFinite(Number(q.baseXp))).length} missing base reward(s)`);
+ const theme=state.equipment?.theme||"dungeon-theme";
+ const perkMap={"fitness-theme":"Fitness","adventure-theme":"Adventure","social-interactions-theme":"Social Interactions","relationships-theme":"Relationships","orthodox-theme":"Orthodox Christianity","academy-theme":"Reading"};
+ const skill=perkMap[theme];check("Equipped theme perk is identifiable",theme==="dungeon-theme"||!!skill,`equipped=${theme}; expected perk skill=${skill||"none"}`);
+ const report={status:out.every(x=>x.status==="PASS")?"PASSED":"FAILED",results:out,warning:"This is a non-destructive state/reward-shape check, not a simulated quest-generation/completion end-to-end test."};
+ document.getElementById("debugQuestStoreResults").textContent=JSON.stringify(report,null,2);debugLog("Quest system checks: "+report.status);
+});
+document.getElementById("debugRunStoreTests")?.addEventListener("click",()=>{
+ if(!debugIsAdmin()||!debugSandboxActive){toast("Store tests are available only to Admin in Sandbox mode.");return;}
+ const items=Array.isArray(UNLOCKABLE_ITEMS)?UNLOCKABLE_ITEMS:[],out=[];
+ const add=(test,ok,detail)=>out.push({test,status:ok?"PASS":"FAIL",detail});
+ add("Unlockable catalog exists",items.length>0,`${items.length} registered items`);
+ add("Unique unlockable IDs",new Set(items.map(x=>x.id)).size===items.length,"Duplicate IDs can cause purchase/inventory inconsistencies");
+ add("Prices are valid",items.every(x=>Number.isFinite(Number(x.price))&&Number(x.price)>=0),"All catalog prices should be non-negative numbers");
+ add("Skill unlock requirements are valid",items.filter(x=>x.unlockSkill).every(x=>Number.isFinite(Number(x.unlockLevel))&&Number(x.unlockLevel)>0),"Items with skill gates must have a positive unlock level");
+ add("Starter Dungeon is not sold as unlockable",!items.some(x=>x.id==="dungeon-theme"),"Dungeon is starter equipment, not a Store unlock");
+ add("Owned items can be detected",items.every(x=>!state.inventory.some(y=>y&&y.id===x.id)||state.inventory.some(y=>y&&y.id===x.id)),"Catalog/inventory comparison executed");
+ const report={status:out.every(x=>x.status==="PASS")?"PASSED":"FAILED",results:out,warning:"Non-destructive catalog checks only. Actual purchase, affordability, skill-level unlock and inventory removal need isolated transactional simulation to avoid altering your account."};
+ document.getElementById("debugQuestStoreResults").textContent=JSON.stringify(report,null,2);debugLog("Store checks: "+report.status);
+});
 function restoreWayfarerUsername(user){const metadataName=String(user?.user_metadata?.wayfarer_username||"").trim();if(metadataName){try{localStorage.setItem("wayfarer-last-username",metadataName);}catch(e){}return metadataName;}const email=String(user?.email||"").trim();const localPart=email.includes("@")?email.slice(0,email.indexOf("@")):email;if(localPart.trim()){try{localStorage.setItem("wayfarer-last-username",localPart.trim());}catch(e){}return localPart.trim();}try{return String(localStorage.getItem("wayfarer-last-username")||"").trim();}catch(e){return "";}} function debugIsAdmin(){return String(wayfarerSignedInUsername||"").trim().toLowerCase()==="admin";}
 function debugRequireSandbox(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated sandbox first.");return false;}return true;}
 function renderDebugPanel(){document.body.classList.toggle("sandbox-active",!!debugSandboxActive);const btn=document.getElementById("debugTabButton");if(!btn)return;const genderSelect=document.getElementById("debugAccountGender");const genderStatus=document.getElementById("debugAccountGenderStatus");const currentGender=(state.profile&&state.profile.gender)==="female"?"female":"male";if(genderSelect)genderSelect.value=currentGender;if(genderStatus)genderStatus.textContent="Current character gender: "+(state.profile&&state.profile.gender?String(state.profile.gender):"not set");const genderApply=document.getElementById("debugApplyAccountGender");if(genderApply)genderApply.disabled=!cloudUser||!debugIsAdmin()||debugSandboxActive;const themeToggle=document.getElementById("debugAllowThemeUnequip");if(themeToggle){themeToggle.disabled=!debugSandboxActive;themeToggle.checked=!!debugAllowThemeUnequip;}const questOverrideToggle=document.getElementById("debugOverrideQuestRules");if(questOverrideToggle){questOverrideToggle.disabled=!debugSandboxActive;questOverrideToggle.checked=!!debugOverrideQuestRules;}const unlockToggle=document.getElementById("debugUnlockAllItems");if(unlockToggle){unlockToggle.disabled=!debugSandboxActive;unlockToggle.checked=!!debugUnlockAllItems;}btn.style.display=(!!cloudUser&&debugIsAdmin())?"inline-flex":"none";if(!debugIsAdmin()&&document.getElementById("section-debug")?.classList.contains("active")){document.querySelector('[data-tab="quests"]')?.click();return;}const status=document.getElementById("debugSandboxStatus");if(status)status.textContent=debugSandboxActive?"Sandbox active · changes are temporary":"Sandbox inactive";const data=debugSandboxActive?state:(debugLiveStateBackup||state);const date=document.getElementById("debugActiveDate");if(date)date.textContent=data.activeDate||"—";const level=document.getElementById("debugLevel");if(level)level.textContent=String(Math.floor((Number(data.xp)||0)/100)+1);const coinBalance=document.getElementById("debugCoinBalance");if(coinBalance)coinBalance.textContent=String(Math.max(0,Number(data.gold)||0));const skillSel=document.getElementById("debugSkillSelect");if(skillSel){const previous=skillSel.value;const names=[...new Set([...(data.selectedSkills||[]),...skillCatalog.flatMap(c=>c.skills.map(x=>x[0]))])];skillSel.innerHTML='<option value="">Choose skill…</option>'+names.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join("");if(names.includes(previous))skillSel.value=previous;}if(debugSandboxActive)debugRenderQuests();}
