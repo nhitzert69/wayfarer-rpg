@@ -190,7 +190,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 @media(max-width:650px){.equipmentSlot{grid-template-columns:58px minmax(0,1fr) 68px!important}.equipmentSlot .equipmentArt{width:52px!important;height:64px!important;}}
 </style>
 
-<style id="wayfarer-character-dungeon-v70">
+<style id="wayfarer-character-dungeon-v0-10">
 /* CSS-only dungeon frame: no extra frame images are required. */
 .dungeonCrest{padding:3px;overflow:hidden}
 .dungeonCrest svg{display:block;width:100%;height:100%;filter:drop-shadow(0 1px 3px #000)}
@@ -214,8 +214,8 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 </style>
 
 
-<style id="wayfarer-character-inventory-v71">
-/* v70: compact character details and split, tappable inventory */
+<style id="wayfarer-character-inventory-v0-10">
+/* v0.10: compact character details and split, tappable inventory */
 .characterOptionsCard{padding:10px!important;margin-top:8px!important}
 .characterOptionsCard>h3{font-size:19px!important;line-height:1.15!important;margin:0 0 3px!important}
 .characterOptionsCard>.sub{font-size:12px!important;line-height:1.35!important;margin:0 0 6px!important}
@@ -245,8 +245,8 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 </style>
 
 
-<style id="wayfarer-character-slots-v71">
-/* v71: compact, readable theme/artifact slots; the equipped icon fills its preview frame. */
+<style id="wayfarer-character-slots-v0-10">
+/* v0.10: compact, readable theme/artifact slots; the equipped icon fills its preview frame. */
 .characterOptionsCard{padding:10px!important;margin-top:8px!important}
 .characterOptionsCard>h3{font-size:clamp(19px,4.5vw,23px)!important;line-height:1.15!important;margin:0 0 3px!important}
 .characterOptionsCard>.sub{font-size:12px!important;line-height:1.35!important;margin:0 0 8px!important}
@@ -420,10 +420,7 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
       <div class="field"><label for="entryType">Entry type</label><select id="entryType">
         <option>Lifestyle &amp; personal growth</option>
         <option>Instruments &amp; music</option>
-        <option>Sports &amp; movement</option>
-        <option>Creativity &amp; making</option>
-        <option>Social &amp; community</option>
-        <option>Knowledge &amp; practical skills</option>
+        <option>Fitness &amp; movement</option>
         <option>Faith</option>
       </select></div>
       <div class="field wide"><label for="entryText">What happened? What did you learn?</label><textarea id="entryText" placeholder="Even ordinary days count."></textarea></div>
@@ -628,7 +625,7 @@ async function syncCurrentState(){
 let wayfarerSignedInUsername="";
 hideGenderChoice();
 async function finishSignIn(username,pin,create,gender=null){
- if(!cloudConfigured){setCloudStatus("Cloud accounts need setup first. Follow the Supabase instructions in README.txt and add your project URL and anon key to index.html.");toast("Cloud accounts are not configured yet.");return;}
+ if(!cloudConfigured){setCloudStatus("Cloud accounts need setup first. Follow the Supabase instructions in README.md and add your project URL and anon key to index.html.");toast("Cloud accounts are not configured yet.");return;}
  const email=usernameEmail(username);
  setCloudStatus(create?"Creating your account…":"Signing in…");
  const authResult=create
@@ -715,7 +712,7 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  wayfarerSignedInUsername="";
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
-if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=String(data.session.user.user_metadata?.wayfarer_username||"");cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};repairProfileGender(cloudUser);localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;await syncCurrentState();document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();}else{enforceAccountGate();}});}
+if(cloudClient){cloudClient.auth.getSession().then(async({data})=>{if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=restoreWayfarerUsername(data.session.user);cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){state=row.app_state;if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};repairProfileGender(cloudUser);localStorage.setItem(KEY,JSON.stringify(state));render();setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;await syncCurrentState();document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();}else{enforceAccountGate();}});}
 function save(skipRender=false){localStorage.setItem(KEY,JSON.stringify(state));if(!skipRender)render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
@@ -1508,7 +1505,7 @@ ensureSelectedSkills();
 // Admin Debug Workshop (front-end convenience gate; not security for privileged backend operations).
 let debugSandboxActive=false, debugLiveStateBackup=null, debugSandboxState=null, debugLogEntries=[];
 function debugLog(message){debugLogEntries.unshift(new Date().toLocaleTimeString()+" · "+message);debugLogEntries=debugLogEntries.slice(0,80);const el=document.getElementById("debugEventLog");if(el)el.textContent=debugLogEntries.join("\n");}
-function debugIsAdmin(){return wayfarerSignedInUsername==="Admin";}
+function restoreWayfarerUsername(user){const metadataName=String(user?.user_metadata?.wayfarer_username||"").trim();if(metadataName)return metadataName;const email=String(user?.email||"").trim();const localPart=email.includes("@")?email.slice(0,email.indexOf("@")):email;return localPart.replace(/@wayfarer\\.example$/i,"").trim();} function debugIsAdmin(){return String(wayfarerSignedInUsername||"").trim().toLowerCase()==="admin";}
 function debugRequireSandbox(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated sandbox first.");return false;}return true;}
 function renderDebugPanel(){const btn=document.getElementById("debugTabButton");if(!btn)return;const themeToggle=document.getElementById("debugAllowThemeUnequip");if(themeToggle){themeToggle.disabled=!debugSandboxActive;themeToggle.checked=!!debugAllowThemeUnequip;}btn.style.display=debugIsAdmin()?"inline-flex":"none";if(!debugIsAdmin()&&document.getElementById("section-debug")?.classList.contains("active")){document.querySelector('[data-tab="quests"]')?.click();return;}const status=document.getElementById("debugSandboxStatus");if(status)status.textContent=debugSandboxActive?"Sandbox active · changes are temporary":"Sandbox inactive";const data=debugSandboxActive?state:(debugLiveStateBackup||state);const date=document.getElementById("debugActiveDate");if(date)date.textContent=data.activeDate||"—";const level=document.getElementById("debugLevel");if(level)level.textContent=String(Math.floor((Number(data.xp)||0)/100)+1);const skillSel=document.getElementById("debugSkillSelect");if(skillSel){const previous=skillSel.value;const names=[...new Set([...(data.selectedSkills||[]),...skillCatalog.flatMap(c=>c.skills.map(x=>x[0]))])];skillSel.innerHTML='<option value="">Choose skill…</option>'+names.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join("");if(names.includes(previous))skillSel.value=previous;}if(debugSandboxActive)debugRenderQuests();}
 function debugRenderQuests(){const el=document.getElementById("debugQuestList");if(!el)return;const qs=Array.isArray(state.quests)?state.quests:[];el.textContent=qs.length?qs.map((q,i)=>`${i+1}. ${q.done?'[DONE]':'[OPEN]'} ${q.title||'(untitled)'} · skill=${q.skill||'—'} · xp=${q.xp??'—'} · source=${q.source||'—'} · id=${q.id||'—'}`).join("\n"):"No quests in sandbox.";}
