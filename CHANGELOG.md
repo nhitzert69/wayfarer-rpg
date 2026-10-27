@@ -1,3 +1,17 @@
+# Wayfarer v0.test.1 — Free Store access for Debug test theme (2026-10-27)
+
+- Kept `v0.test` in the Store as a normal registered theme, with no skill-level requirement and a price of 0 coins.
+- The Store labels the item “Free” and offers “Get for free”; it remains listed until added to Inventory.
+- Preserved the unique theme ID, duplicated Dungeon visuals, +5 Fitness XP perk, and the intentionally unchanged hardcoded Debug coverage lists so the auto-discovery test remains valid.
+- Updated the Debug report version and service-worker cache identifier to `v0.test.1`.
+
+## v0.test — Debug theme auto-discovery test
+- Added a unique `v0-test-theme` registry/equipment ID displayed as `v0.test`, unlocked at Fitness level 3 for 100 coins, with a +5 Fitness XP perk for newly generated eligible Fitness quests.
+- Intentionally reused Dungeon's icon, male/female character artwork, full-screen background, color palette, and soundtrack to isolate whether Debug discovers a new unique theme independently of its visual assets.
+- Registered the theme for Store/Inventory, equipping, save persistence, theme class, perk display and music selection.
+- Deliberately left the Debug Theme Integration Tests' theme list and character-image mapping unchanged so this test can reveal whether the existing hardcoded Debug checks automatically recognize the new theme.
+- This is a test build, not a production theme release. Preserved all prior changelog entries.
+
 # Wayfarer v1.16.2 — Mandatory changelog rule clarification (2026-10-27)
 
 - Strengthened `update rules` to explicitly require every single update—including small fixes, configuration changes, Debug-only changes, and documentation/rule edits—to receive its own entry at the top of `CHANGELOG.md` before packaging.
