@@ -1,3 +1,13 @@
+# Wayfarer v1.17.2 — Finance category and Business skill (2026-10-27)
+
+- Added a Finance skill category containing the new Business skill, with a description focused on developing and operating a business.
+- Added 22 foundational Business quest templates plus dedicated growth, advanced, and master templates covering focused work sessions, research, customers, offers, marketing, planning, operations, and review.
+- Updated campaign time estimation to respect explicit minute durations in quest titles/descriptions, so timed Business work sessions fit campaign planning more accurately.
+- Included Business in the campaign planner's productive-focus weighting.
+- Added Finance to Journal entry types.
+- Updated Debug report version identifiers and the service-worker cache to v1.17.2.
+- Static validation performed for JavaScript syntax, package integrity, required files, and asset references; no live-browser, Supabase, GitHub edit, or deployment test is claimed.
+
 # Wayfarer v1.17.1 — Stronger update and theme creation rules (2026-10-27)
 
 - Expanded `update rules` with mandatory real-behavior testing, shared gameplay paths, immediate UI refresh checks, Sandbox/normal-account isolation, regression coverage, release validation, and honest reporting of what was actually tested.
