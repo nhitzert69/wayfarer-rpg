@@ -1,3 +1,11 @@
+# Wayfarer v1.17.5 — Correct Mozart's Salon perk labels and Spartan icon asset (2026-10-27)
+
+- Corrected Mozart's Salon Store perk copy to show +5 Piano XP per eligible newly generated Piano quest while equipped.
+- Added the missing Piano +5 XP/quest label to Mozart's Salon in Inventory.
+- Preserved the uploaded corrected Spartan Endurance icon, optimized it to WebP, and aligned the registry and service-worker cache path with the actual asset.
+- Preserved theme IDs, skill targets, unlock/price rules, artwork, palette, soundtrack, Roman Discipline display rename, account configuration, and previous changelog history.
+- Validation performed: JavaScript syntax, targeted perk-label and theme-registry checks, asset reference checks, and ZIP integrity. No live browser, Supabase, or GitHub deployment test was performed.
+
 # Wayfarer v1.17.4 — Mozart's Salon theme and Roman Discipline rename (2026-10-27)
 
 - Added Mozart's Salon as a Piano theme, unlocked at Piano level 3 for 100 coins, with +5 Piano XP on eligible quests generated while equipped.
