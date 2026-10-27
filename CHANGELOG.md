@@ -1,3 +1,10 @@
+## v0.15.58 — Generate quests for every selected skill; remove campaign planner
+- Removed the Plan Your Campaign panel, its settings, its preview/build handlers, campaign time/location filters, and the Debug planner test bench. Normal quest generation no longer depends on planner code.
+- Generate Quests now creates one quest for every selected skill, with priority skills generated first as Main Quests and all remaining selected skills included as Side Quests. No time budget can silently stop generation halfway through the skill list.
+- Preserved anti-repetition history, the 4-hour cooldown, newly selected-skill additions during cooldown, theme bonus XP metadata, saved progress, and the shared quest generation entry point.
+- Kept connected-session guidance by adding a complementary note to the lead quest without limiting the number of generated quests. Estimated duration is informational only and does not filter quests.
+- Updated Debug build and service-worker cache versions. ZIP integrity and inline JavaScript syntax checks were run before packaging; live-browser behavior still requires deployment verification.
+
 ## v0.15.57 — Direct quest generation and 4-hour cooldown
 - The Generate Quests button now generates a connected, balanced set immediately; it no longer opens the Plan Your Campaign panel.
 - Preserved the existing campaign quest-selection logic and its balanced focus, normal-energy, mixed home/outside defaults so generated quests continue to complement one another.
