@@ -492,11 +492,11 @@ body.orthodoxTheme{
 }
 @media(max-width:650px){body,body.adventureTheme,body.academyTheme,body.socialInteractionsTheme,body.relationshipsTheme,body.orthodoxTheme,body.fitnessTheme{background-attachment:scroll!important;background-position:center top!important}}
 
-/* Spartan Endurance theme: crimson banners, bronze, laurel gold and obsidian. */
+/* Spartan Endurance: crimson, bronze, laurel gold and obsidian. */
 body.spartanEnduranceTheme{
  --bg:#241719;--panel:#342124;--panel2:#472b2a;--line:#9a6a37;--gold:#D9A441;--gold2:#b9802e;
  --cream:#F1E4CC;--muted:#d2bda2;--green:#8a9b76;--red:#8F1424;
- background-image:linear-gradient(180deg,rgba(20,12,12,.74) 0%,rgba(20,12,12,.84) 48%,rgba(12,9,9,.93) 100%),url("./assets/images/spartan-endurance-background.webp")!important;
+ background-image:linear-gradient(180deg,rgba(20,12,12,.70) 0%,rgba(20,12,12,.82) 48%,rgba(12,9,9,.92) 100%),url("./assets/images/spartan-endurance-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#F1E4CC!important
 }
 body.spartanEnduranceTheme .pill{background:linear-gradient(145deg,#472b2a,#241719)!important;border-color:#D9A441!important;color:#F1E4CC!important}
@@ -506,7 +506,6 @@ body.spartanEnduranceTheme .tabs{background:linear-gradient(180deg,rgba(37,37,37
 body.spartanEnduranceTheme .tab{background:linear-gradient(180deg,#472b2a,#252525)!important;border-color:#79502F!important;color:#F1E4CC!important}
 body.spartanEnduranceTheme .tab.active,body.spartanEnduranceTheme .btn.primary{background:linear-gradient(180deg,#D9A441,#8F1424)!important;color:#fff4df!important;border-color:#D9A441!important}
 body.spartanEnduranceTheme input,body.spartanEnduranceTheme select,body.spartanEnduranceTheme textarea{accent-color:#D9A441}
-body.spartanEnduranceTheme .progress,body.spartanEnduranceTheme progress{accent-color:#D9A441}
 
 </style>
 
@@ -1024,8 +1023,8 @@ const RELATIONSHIPS_THEME_ITEM={id:"relationships-theme",name:"Heartkeeper",cate
 const ORTHODOX_THEME_ITEM={id:"orthodox-theme",name:"Faith",category:"Theme",type:"theme",icon:"./assets/images/orthodox-theme.webp",description:"Deepen your faith, cultivate prayer and discipline, and grow in wisdom through the Orthodox Christian tradition.",unlockSkill:"Orthodox Christianity",unlockLevel:3,price:100,perkSkill:"Orthodox Christianity",debugThemeClass:"orthodoxTheme",debugBackground:"orthodox-theme-background.webp",debugCharacter:{male:"male-orthodox.webp",female:"female-orthodox.webp"},debugMusic:"./assets/sound/orthodox-theme.mp3"};
 const FITNESS_THEME_ITEM={id:"fitness-theme",name:"Fitness",category:"Theme",type:"theme",icon:"./assets/images/fitness-theme.webp",description:"Train with Roman discipline, build strength and conditioning, and earn bonus Fitness XP.",unlockSkill:"Fitness",unlockLevel:3,price:100,perkSkill:"Fitness",debugThemeClass:"fitnessTheme",debugBackground:"fitness-background.webp",debugCharacter:{male:"male-fitness.webp",female:"female-fitness.webp"},debugMusic:"./assets/sound/fitness-theme.mp3"};
 // v0.test: deliberately unique registry/equipment ID, while reusing Dungeon visuals to test Debug's discovery coverage.
-const SPARTAN_ENDURANCE_THEME_ITEM={id:"spartan-endurance-theme",name:"Spartan Endurance",category:"Theme",type:"theme",icon:"./assets/images/spartan-endurance-theme.webp",description:"Train with Spartan discipline, build endurance, and earn bonus Cardio XP.",unlockSkill:"Cardio",unlockLevel:3,price:100,perkSkill:"Cardio",debugThemeClass:"spartanEnduranceTheme",debugBackground:"spartan-endurance-background.webp",debugCharacter:{male:"male-spartan-endurance.webp",female:"female-spartan-endurance.webp"},debugMusic:"./assets/sound/cardio-theme.mp3"};
-// v0.test: deliberately unique registry/equipment ID, const V0_TEST_THEME_ITEM={id:"v0-test-theme",name:"Test",category:"Theme",type:"theme",icon:"./assets/images/dungeon-theme.webp",description:"Sandbox-only test theme for end-to-end item lifecycle diagnostics.",unlockSkill:"Test",unlockLevel:3,price:100,perkSkill:"Test",debugThemeClass:"v0TestTheme",debugBackground:"dungeon-background.webp",debugCharacter:{male:"male-dungeon.webp",female:"female-dungeon.webp"},debugMusic:"./assets/sound/dungeon-theme.mp3",sandboxOnly:true,equipable:true};
+const SPARTAN_ENDURANCE_THEME_ITEM={id:"spartan-endurance-theme",name:"Spartan Endurance",category:"Theme",type:"theme",icon:"./assets/images/spartan-endurance-theme.webp",description:"Train with Spartan discipline and build cardiovascular endurance.",unlockSkill:"Cardio",unlockLevel:3,price:100,perkSkill:"Cardio",debugThemeClass:"spartanEnduranceTheme",debugBackground:"spartan-endurance-background.webp",debugCharacter:{male:"male-spartan-endurance.webp",female:"female-spartan-endurance.webp"},debugMusic:"./assets/sound/cardio-theme.mp3",equipable:true};
+const V0_TEST_THEME_ITEM={id:"v0-test-theme",name:"Test",category:"Theme",type:"theme",icon:"./assets/images/dungeon-theme.webp",description:"Sandbox-only test theme for end-to-end item lifecycle diagnostics.",unlockSkill:"Test",unlockLevel:3,price:100,perkSkill:"Test",debugThemeClass:"v0TestTheme",debugBackground:"dungeon-background.webp",debugCharacter:{male:"male-dungeon.webp",female:"female-dungeon.webp"},debugMusic:"./assets/sound/dungeon-theme.mp3",sandboxOnly:true,equipable:true};
 // Add future unlockables here; the Debug sandbox's Unlock all items uses this shared registry.
 const UNLOCKABLE_ITEMS=[ADVENTURE_THEME_ITEM,ACADEMY_THEME_ITEM,SOCIAL_INTERACTIONS_THEME_ITEM,RELATIONSHIPS_THEME_ITEM,ORTHODOX_THEME_ITEM,FITNESS_THEME_ITEM,SPARTAN_ENDURANCE_THEME_ITEM,V0_TEST_THEME_ITEM];
 let debugUnlockAllItems=false;

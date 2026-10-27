@@ -1,11 +1,12 @@
-# Wayfarer v1.17.3 — Spartan Endurance theme (2026-10-27)
+# Wayfarer v1.17.3 — Spartan Endurance theme, rebuilt safely from v1.17.2 (2026-10-27)
 
-- Added the Spartan Endurance theme for the Cardio skill: unlock at Cardio level 3 for 100 coins.
-- Added a +5 Cardio XP perk for eligible newly generated Cardio quests while equipped; rewards continue to use the shared theme-bonus and quest reward-locking logic.
-- Added optimized WebP theme assets: Spartan arena background (1672×940), male and female low-poly character artwork (1024×1536 each), and theme inventory icon (512×512).
-- Registered the theme in the shared unlockable catalog, theme palette/Debug metadata, character artwork selection, Inventory perk display, Store description, and equip label.
-- Reuses the existing cardio-theme.mp3 soundtrack and registers all new images in the service-worker precache.
-- Static syntax/package/asset checks performed. No live-browser, live-Supabase, GitHub edit, or GitHub Pages deployment is claimed.
+- Rebuilt from the known v1.17.2 project baseline after the previous v1.17.3 package introduced a startup-breaking theme declaration edit.
+- Added Spartan Endurance as an unlockable Cardio theme: unlock at Cardio level 3 for 100 coins, with +5 Cardio XP on eligible Cardio quests generated while equipped.
+- Preserved the existing V0_TEST_THEME_ITEM declaration and inserted Spartan Endurance as a separate registry entry.
+- Added optimized WebP background (1672×940), male and female portraits (1024×1536), and theme icon (512×512).
+- Registered the theme in Store/Inventory labels, theme visual palette, top-left icon, character portrait selection, Debug baseline metadata, and the existing Cardio soundtrack mapping.
+- Added the new image assets to the service-worker cache and synchronized app Debug version, cache version, changelog and ZIP filename.
+- Validation performed: JavaScript syntax, theme/registry invariants, literal asset references, required rule files, and ZIP integrity. No live browser, Supabase, GitHub edit, or GitHub Pages deployment is claimed.
 
 # Wayfarer v1.17.2 — Finance category and Business skill (2026-10-27)
 
