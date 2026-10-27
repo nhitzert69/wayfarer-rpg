@@ -1,3 +1,12 @@
+# Wayfarer v1.17.6 — CEO theme (2026-10-27)
+
+- Added CEO as an unlockable Business theme at Business level 3 for 100 coins, with +5 Business XP on eligible newly generated Business quests while equipped.
+- Added an optimized dedicated VOC-inspired background, male/female merchant portraits, theme icon, and navy/antique-gold/ivory/Dutch-red palette.
+- Registered CEO across Store, Inventory perk label, theme equipment/class rendering, character artwork, soundtrack crossfade mapping, service-worker assets, and independent Debug theme baseline.
+- Added the selected “Sailing Adventures” soundtrack as `assets/sound/ceo-theme.mp3`.
+- Preserved previous theme IDs, account/login configuration, saved progress behavior, project rules, and full changelog history.
+- Validation performed: JavaScript syntax, static theme registration/baseline/asset checks, image/audio existence, and ZIP integrity. Browser rendering, real purchase/equip flow, mobile playback, Supabase/account isolation, and deployed-app behavior were not live-tested.
+
 # Wayfarer v1.17.5 — Correct Mozart's Salon perk labels and Spartan icon asset (2026-10-27)
 
 - Corrected Mozart's Salon Store perk copy to show +5 Piano XP per eligible newly generated Piano quest while equipped.
