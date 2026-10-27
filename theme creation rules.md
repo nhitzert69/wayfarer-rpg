@@ -136,3 +136,15 @@ The Debug Theme Integration Tests must verify: (1) theme registry entry; (2) ico
 - Character reset must require explicit confirmation, preserve Journal, To Do, and Groceries, and offer one-step restoration from a snapshot. Explain which character fields are reset before confirmation.
 - XP/gold grant tools are Admin-only, can run in live or Sandbox, and must clearly state which environment is being changed.
 - Store and quest tests must not alter real progress; simulated purchase/reward flows should run only against isolated sandbox state.
+
+## 10. Shared gameplay paths and observed test results (added v1.17.1)
+- Theme availability/unlock, purchase, equip/unequip, and perk/reward calculations must use the same shared decision or transaction functions as normal gameplay wherever practical. Avoid separate Debug-only implementations that can disagree with the real UI.
+- Theme lifecycle tests must perform operations against isolated state, inspect the actual resulting ownership, currency, equipment, computed appearance, and saved reward values as applicable, and independently determine PASS/FAIL. An enabled injector is not by itself evidence of failure. Report INCONCLUSIVE when the result cannot be established.
+- For every applicable integration, test both valid behavior and failure conditions (for example unmet level, failed purchase, blocked equip, or missing/incorrect perk). Confirm the operation is genuinely blocked or altered and that disabling the injector restores normal behavior.
+
+## 11. Immediate refresh, Sandbox isolation, and regression (added v1.17.1)
+- Changes to unlock requirements, levels, ownership, equipment, theme selection, perks, or Debug fault injectors must immediately refresh all affected theme-dependent UI and calculations, including Store, Inventory/equipment indicators, character overview, and Debug results as relevant. Enabling and disabling a condition must both work without a full page refresh unless explicitly intended.
+- Fault injectors must be restricted to the authorized Admin Sandbox context, change real shared gameplay paths, and never leak into ordinary gameplay or saved user progress.
+- All theme tests and simulated transactions must use isolated temporary state. They must not modify real ownership, currency, XP, skills, quests, equipment, account data, or cloud saves. Test Sandbox entry, refresh/session restoration where supported, explicit exit, and return to normal-account state.
+- Before marking a theme complete, run theme-specific tests plus relevant regression checks for existing themes, Store, Inventory/equipment, rewards, quest generation, persistence, mobile/desktop presentation, and Debug. Syntax checks or presence of assets/selectors alone are not proof of successful integration. Distinguish browser-verified results from static checks and mark untested behavior INCONCLUSIVE.
+- Updates to theme state, UI refreshes, or persistence must inspect all related event handlers and save/render paths to ensure none bypass shared logic or Sandbox isolation.

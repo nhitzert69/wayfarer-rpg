@@ -1,3 +1,10 @@
+# Wayfarer v1.17.1 — Stronger update and theme creation rules (2026-10-27)
+
+- Expanded `update rules` with mandatory real-behavior testing, shared gameplay paths, immediate UI refresh checks, Sandbox/normal-account isolation, regression coverage, release validation, and honest reporting of what was actually tested.
+- Expanded `theme creation rules.md` with observed lifecycle testing, shared unlock/purchase/equip/reward logic, injector verification, immediate refresh requirements, Sandbox isolation, and theme regression checks.
+- Aligned visible Debug report version strings and the service-worker cache with v1.17.1. No unrelated gameplay behavior was intentionally changed.
+- Based on the approved v0.test.12 project. Static validation and ZIP integrity are checked for this rules-focused release; no live-browser test or deployment is claimed.
+
 # Wayfarer v0.test.12 — Live theme refresh and persistent Sandbox session (2026-10-27)
 
 - Changed lifecycle fault-injection toggles to refresh the rendered theme, Store, Inventory, character overview, and Debug panel immediately, without requiring a full page reload.
