@@ -1,3 +1,18 @@
+# Wayfarer v1.17.9 — Correct Test theme perk label (2026-10-27)
+
+- Corrected the Test theme's Inventory/equipment perk label from “Fitness +5 XP/quest” to “Test +5 XP/quest”.
+- Kept the actual Test XP reward logic unchanged; this is a display-text correction only. Roman Discipline continues to display its Fitness skill bonus.
+- Updated app Debug report versions and the service-worker cache version to v1.17.9.
+- Validation performed: targeted label assertions, JavaScript syntax, required rule files, release-version consistency, and ZIP integrity. Live browser behavior and deployment were not tested.
+
+# Wayfarer v1.17.8 — Fix equipped-theme background switching (2026-10-27)
+
+- Fixed the default Dungeon background selector so it no longer overrides CEO, Mozart's Salon, or Spartan Endurance theme backgrounds due to higher CSS selector specificity.
+- Added the missing newer theme classes to the mobile background positioning rule so their dedicated backgrounds remain responsive on smaller screens.
+- Preserved Roman Discipline's existing dedicated `fitness-background.webp` mapping and its theme palette; no gameplay, login, saved progress, or music behavior changed.
+- Updated app/Debug version identifiers and the service-worker cache version to v1.17.8.
+- Validation performed: JavaScript syntax, targeted CSS selector/background registration checks, referenced asset existence, changelog/version consistency, and ZIP integrity. Live browser rendering and deployment were not tested.
+
 # Wayfarer v1.17.7 — CEO icon and immediate soundtrack switching (2026-10-27)
 
 - Replaced the CEO theme icon with the supplied transparent-edged artwork, optimized as WebP while preserving transparency.

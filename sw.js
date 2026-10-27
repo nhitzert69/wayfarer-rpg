@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-v1.17.7";
+const CACHE = "wayfarer-v1.17.9";
 const ASSETS = [
   "./assets/images/ceo-background.webp", "./assets/images/male-ceo.webp", "./assets/images/female-ceo.webp", "./assets/images/ceo-theme.webp", "./assets/sound/ceo-theme.mp3",
   "./assets/images/piano-background.webp",
