@@ -1,3 +1,9 @@
+# Wayfarer v1.16.2 — Mandatory changelog rule clarification (2026-10-27)
+
+- Strengthened `update rules` to explicitly require every single update—including small fixes, configuration changes, Debug-only changes, and documentation/rule edits—to receive its own entry at the top of `CHANGELOG.md` before packaging.
+- Preserved the existing update rules and all prior changelog history.
+- Updated Debug build identifier and service-worker cache version to v1.16.2.
+
 # Wayfarer v1.16.1 — Live Generate Quests cooldown reset (2026-10-27)
 
 - Added an Admin-only Debug control to reset the live account's four-hour Generate Quests cooldown without entering Sandbox.

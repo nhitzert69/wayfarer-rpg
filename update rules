@@ -6,6 +6,7 @@
 - Validate each lock with a non-Dungeon theme equipped: run with the lock off, enable it and confirm the relevant test detects the real override, then turn it off and confirm the expected result returns. Record whether this was syntax-only or live-browser verified.
 
 ## Release changelog/version verification (mandatory)
+- Every single update, including small fixes, configuration changes, Debug-only changes, and rule/documentation changes, must be recorded as a new entry at the very top of `CHANGELOG.md` before packaging. Never ship an update without its own changelog entry.
 - Every update must add a new release entry to the very top of `CHANGELOG.md` before packaging. The top entry must describe the changes made in that specific update and must match the delivered project version; never leave an older release as the first entry.
 - Preserve all previous changelog entries and history. Do not rewrite or remove older entries just to make the newest release appear current.
 - Before delivery, verify the first changelog heading, the app's Debug/build version, the service-worker cache version, and the ZIP filename all identify the same release version. If a version string is intentionally different for a technical reason, document that explicitly in the changelog.
