@@ -1,3 +1,11 @@
+# Wayfarer v1.17.4 — Mozart's Salon theme and Roman Discipline rename (2026-10-27)
+
+- Added Mozart's Salon as a Piano theme, unlocked at Piano level 3 for 100 coins, with +5 Piano XP on eligible quests generated while equipped.
+- Added optimized dedicated background, male/female 18th-century portraits, and theme icon; registered the sapphire/ivory/antique-gold palette, soundtrack, Store/Inventory/equipment, character display, and independent Debug theme baseline.
+- Renamed the Fitness theme's display label to Roman Discipline while preserving its stable `fitness-theme` ID, Fitness skill/perk, saved ownership, and progression.
+- Updated Debug/build version and service-worker cache; preserved prior changelog history and project rule files.
+- Validation performed: JavaScript syntax, theme registry/baseline checks, referenced asset checks, and ZIP integrity. No live browser, Supabase, or GitHub deployment test was performed.
+
 # Wayfarer v1.17.3 — Spartan Endurance theme, rebuilt safely from v1.17.2 (2026-10-27)
 
 - Rebuilt from the known v1.17.2 project baseline after the previous v1.17.3 package introduced a startup-breaking theme declaration edit.

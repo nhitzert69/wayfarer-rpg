@@ -1,5 +1,9 @@
-const CACHE = "wayfarer-v1.17.3";
+const CACHE = "wayfarer-v1.17.4";
 const ASSETS = [
+  "./assets/images/piano-background.webp",
+  "./assets/images/male-mozart-salon.webp",
+  "./assets/images/female-mozart-salon.webp",
+  "./assets/images/mozart-salon-theme.webp",
   "./assets/images/female-spartan-endurance.webp",
   "./assets/images/male-spartan-endurance.webp",
   "./assets/images/spartan-endurance-theme.webp",
