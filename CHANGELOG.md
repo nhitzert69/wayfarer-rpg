@@ -1,3 +1,33 @@
+# Wayfarer v0.test.5 — Registry-driven equipment lifecycle diagnostics (2026-10-27)
+
+- Added a Test skill with a sandbox-only quest template and hid the skill outside Sandbox mode.
+- Changed the sandbox-only Test theme to require Test skill level 3 and cost 100 coins.
+- Added an Admin Sandbox equipment lifecycle test suite that discovers registered themes and other declared equipable item types, then checks unlock eligibility, purchase/acquisition, Inventory presence, equip integration, related quest generation, and declared theme XP-perk behavior.
+- Added four Test-theme fault injectors for unlock requirement, purchase, equip, and XP bonus failures.
+- Test results explicitly note that registry discovery cannot detect items omitted from every registry and that this version uses isolated state/shared helper simulation rather than live browser click-through.
+- Updated service-worker cache to `wayfarer-v0.test.5`; preserved prior changelog history, authentication, Supabase configuration, account isolation, and saved progress paths.
+- Validation performed: JavaScript syntax, version/cache/changelog alignment, and ZIP integrity. No live-browser test was performed.
+
+# Wayfarer v0.test.4 — Remove Debug test panels and feature isolation switches (2026-10-27)
+
+- Removed the Quest System Tests panel, including quest/store test runners, fault-injection controls, and its report area.
+- Removed the Theme Integration Tests panel and its independent theme-compliance test runner/baseline.
+- Removed the Feature Isolation Switches panel and the Dungeon-lock overrides for background, colors, character/theme imagery, and music.
+- Removed test-only fault injection from shared theme unlock, purchase, and bonus-XP decision paths; normal gameplay eligibility and rewards remain active.
+- Preserved all other visible Debug tools, Sandbox controls, character recovery tools, quest/planner labs, authentication, Supabase configuration, account isolation, and saved progress behavior.
+- Updated service-worker cache to `wayfarer-v0.test.4`; retained previous changelog history and required project rules.
+- Validation performed: JavaScript syntax, removed-control reference scan, version/cache/changelog alignment, and ZIP integrity. No live-browser test was performed.
+
+# Wayfarer v0.test.3 — Independent theme compliance baseline (2026-10-27)
+
+- Added a separate `THEME_DEBUG_BASELINE`, maintained independently of `UNLOCKABLE_ITEMS`, for every currently registered theme including Dungeon and `v0.test`.
+- Debug now compares each theme's registered display name, body class, icon, background, male/female artwork, and soundtrack against the independent baseline. A newly registered theme without a baseline is reported as INCONCLUSIVE rather than being assumed correct.
+- Debug checks computed palette variables (`--bg`, `--panel`, `--panel2`, `--line`, `--gold`, `--gold2`, `--cream`, `--muted`, `--green`, `--red`) against the independent expected palette while temporarily applying each theme class.
+- Added a palette identity check to catch unintended Dungeon palette reuse; the intentional `v0.test` Dungeon visual reuse is explicitly documented in the baseline.
+- Tightened rendered-surface coverage so inspecting surfaces without measurable styling no longer automatically passes.
+- Updated Debug report version and service-worker cache to `v0.test.3`; preserved previous changelog history, project rules, login/configuration, account isolation, and saved-progress paths.
+- Validation performed: JavaScript syntax, baseline-to-registry consistency checks, asset existence, changelog/version/cache agreement, and ZIP integrity. No live-browser run was performed.
+
 # Wayfarer v0.test.2 — Registry-driven Debug theme discovery (2026-10-27)
 
 - Reworked Theme Integration Tests to discover Dungeon plus every registered theme in `UNLOCKABLE_ITEMS`, instead of a hardcoded list of seven themes.
