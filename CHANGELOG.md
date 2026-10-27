@@ -1,3 +1,18 @@
+# Wayfarer v1.16.1 — Live Generate Quests cooldown reset (2026-10-27)
+
+- Added an Admin-only Debug control to reset the live account's four-hour Generate Quests cooldown without entering Sandbox.
+- The control refuses to run while Sandbox is active, confirms before changing state, clears only `questGenerationCooldownUntil`, saves the live state, and refreshes the Generate Quests button.
+- Existing quests, skills, XP, coins, inventory, and other progress are not changed by this control.
+- Updated the Debug build identifier and service-worker cache version to v1.16.1.
+
+# Wayfarer v0.15.60 — Generate every selected skill (2026-10-27)
+
+- The campaign time window prioritizes Main Quests but does not suppress Side Quests. Generate one quest for every selected skill whenever its quest library has an eligible entry.
+- Removed the time-budget cutoff from quest selection; estimated duration is informative, not a cap on skill coverage.
+- If a selected skill has no quest matching the chosen location, fall back to a suitable quest for that skill rather than silently omitting it.
+- Updated the campaign preview to explain that Side Quests can be completed later.
+- Preserved the campaign planner, theme XP calculation, four-hour full-refresh cooldown, and existing quest state handling.
+
 ## v0.15.59 — Restored campaign planner entry point
 - Restored the Plan Your Campaign panel as the action opened by the main Generate Quests button.
 - Kept the existing campaign planner controls, connected quest-selection logic, 4-hour cooldown, and quest-generation behavior intact; quest generation occurs when the user confirms the plan.

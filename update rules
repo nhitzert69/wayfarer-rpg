@@ -52,3 +52,11 @@ Every new theme must be tested for its complete visual identity: dedicated backg
 - The main Generate Quests button should generate immediately without opening an intermediate campaign-planning panel unless the user explicitly requests that workflow.
 - Preserve the shared quest-selection, anti-repetition, priority ordering, connected-session notes, theme-bonus, and cooldown logic when changing the quest-generation UI. Do not duplicate or bypass the core generation function.
 - When changing quest cooldown duration, update the single source-of-truth constant and every user-facing cooldown message, Debug description, changelog entry, and relevant test.
+
+Quest generation coverage rule (permanent): The campaign time selection is a prioritization window, not a generation cap. Generate one eligible quest for every selected skill: priority skills appear as Main Quests, secondary skills appear as Side Quests. Never stop the skill loop because a time budget is exhausted. If the preferred location has no matching quest for a selected skill, fall back to another suitable quest for that skill. Test 1-hour selection with multiple priority and secondary skills and verify every selected skill is represented.
+
+
+## Live quest cooldown reset control
+- If a Debug control resets Generate Quests outside Sandbox, it must be Admin-only, explicitly labelled as a live-account action, and refuse to run while Sandbox is active.
+- It may clear only the quest-generation cooldown timestamp; it must not delete or replace quests or alter skills, XP, coins, inventory, or other progress. Require confirmation, save the change, refresh button status, and log the action.
+- Test both allowed live mode and denied Sandbox mode.
