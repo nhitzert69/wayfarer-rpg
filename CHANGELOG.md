@@ -1,22 +1,18 @@
-# Wayfarer v0.test.5 — Registry-driven equipment lifecycle diagnostics (2026-10-27)
+# Wayfarer v0.test.7 — Hide legacy Debug panels without deleting their code (2026-10-27)
 
-- Added a Test skill with a sandbox-only quest template and hid the skill outside Sandbox mode.
-- Changed the sandbox-only Test theme to require Test skill level 3 and cost 100 coins.
-- Added an Admin Sandbox equipment lifecycle test suite that discovers registered themes and other declared equipable item types, then checks unlock eligibility, purchase/acquisition, Inventory presence, equip integration, related quest generation, and declared theme XP-perk behavior.
-- Added four Test-theme fault injectors for unlock requirement, purchase, equip, and XP bonus failures.
-- Test results explicitly note that registry discovery cannot detect items omitted from every registry and that this version uses isolated state/shared helper simulation rather than live browser click-through.
-- Updated service-worker cache to `wayfarer-v0.test.5`; preserved prior changelog history, authentication, Supabase configuration, account isolation, and saved progress paths.
-- Validation performed: JavaScript syntax, version/cache/changelog alignment, and ZIP integrity. No live-browser test was performed.
+- Hid the legacy Quest System Tests, Theme Integration Tests, and Feature Isolation Switches panels from the Debug interface.
+- Preserved their markup, JavaScript functions, event handlers, and feature-switch plumbing in the project for recovery and compatibility; this is a presentation-only hide, not code deletion.
+- Kept the Equipment Lifecycle Test Suite as the visible new Debug test system, including its four Test-theme fault injectors.
+- Updated lifecycle/theme diagnostic report version strings and service-worker cache version to `v0.test.7`.
+- Validation performed: JavaScript syntax, required project files, changelog/version/cache alignment, and ZIP integrity. No live-browser test or GitHub edit performed.
 
-# Wayfarer v0.test.4 — Remove Debug test panels and feature isolation switches (2026-10-27)
+# Wayfarer v0.test.6 — Merged legacy diagnostics and equipment lifecycle suite (2026-10-27)
 
-- Removed the Quest System Tests panel, including quest/store test runners, fault-injection controls, and its report area.
-- Removed the Theme Integration Tests panel and its independent theme-compliance test runner/baseline.
-- Removed the Feature Isolation Switches panel and the Dungeon-lock overrides for background, colors, character/theme imagery, and music.
-- Removed test-only fault injection from shared theme unlock, purchase, and bonus-XP decision paths; normal gameplay eligibility and rewards remain active.
-- Preserved all other visible Debug tools, Sandbox controls, character recovery tools, quest/planner labs, authentication, Supabase configuration, account isolation, and saved progress behavior.
-- Updated service-worker cache to `wayfarer-v0.test.4`; retained previous changelog history and required project rules.
-- Validation performed: JavaScript syntax, removed-control reference scan, version/cache/changelog alignment, and ZIP integrity. No live-browser test was performed.
+- Restored the v0.test.3 Debug panels and feature-isolation switches as the base; did not remove the legacy Quest System Tests or Theme Integration Tests.
+- Added the Equipment Lifecycle Test Suite and four Test-theme fault injectors alongside the legacy system.
+- Added the Sandbox-only Test skill and Test theme configuration (Test skill level 3, 100 coins), plus a Test quest template.
+- Retained the existing theme test baseline and legacy debug fault-injection plumbing.
+- Validation performed: JavaScript syntax and ZIP integrity checks; no live-browser testing performed.
 
 # Wayfarer v0.test.3 — Independent theme compliance baseline (2026-10-27)
 
