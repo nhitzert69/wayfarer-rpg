@@ -1,3 +1,13 @@
+# Wayfarer v0.test.2 — Registry-driven Debug theme discovery (2026-10-27)
+
+- Reworked Theme Integration Tests to discover Dungeon plus every registered theme in `UNLOCKABLE_ITEMS`, instead of a hardcoded list of seven themes.
+- Added explicit Debug metadata to registered themes for their theme body class, background asset, male/female character assets, and soundtrack. Missing metadata now fails or reports INCONCLUSIVE rather than silently skipping coverage.
+- Each discovered theme is checked for registry/display name, icon/background HTTP response and image decoding, both character assets, soundtrack response, CSS class/surface selectors, and computed background/UI surfaces.
+- Updated feature-lock image/music expectations to use registered metadata, including `v0.test` despite its intentional reuse of Dungeon assets.
+- Kept the v0.test Store offer free and without a level requirement. Preserved account/authentication, saved progress, theme perks, and previous changelog history.
+- Updated the Debug report version and service-worker cache identifier to v0.test.2.
+- Validation performed: JavaScript syntax, referenced asset existence, and ZIP integrity. No live-browser run was performed.
+
 # Wayfarer v0.test.1 — Free Store access for Debug test theme (2026-10-27)
 
 - Kept `v0.test` in the Store as a normal registered theme, with no skill-level requirement and a price of 0 coins.

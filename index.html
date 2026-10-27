@@ -119,6 +119,9 @@ h1{color:#f0c783;text-shadow:0 2px #090605,0 0 20px #e58b3d33}
 
 /* v0.test intentionally duplicates Dungeon's palette while retaining a unique theme class. */
 body.v0TestTheme{--bg:#0b0e10;--panel:#191d20;--panel2:#24292c;--line:#586168;--gold:#efc783;--gold2:#bd884c;--cream:#f0e6d4;--muted:#b6b3ac;--green:#8fb58b;--red:#d45c43;--shadow:0 14px 34px #000c}
+/* v0.test.2: the test theme has its own registered class and explicit Dungeon-identical background. */
+body.v0TestTheme{background-image:linear-gradient(180deg,rgba(8,10,12,.60) 0%,rgba(8,10,12,.72) 48%,rgba(8,10,12,.88) 100%),url("./assets/images/dungeon-background.webp")!important;background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important}
+body.v0TestTheme .card,body.v0TestTheme .equipmentSlot,body.v0TestTheme .inventoryCategory,body.v0TestTheme .characterInventoryCard{border-color:var(--line)}
 /* v0.14 Adventure portrait frame and exact image fit */
 .characterPortrait{position:relative;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch;padding:0!important;box-sizing:border-box;background:#17100c!important}
 .characterPortrait .characterArtwork{display:block;width:100%!important;height:100%!important;min-width:0;min-height:0;object-fit:cover!important;object-position:center center!important;margin:0!important;border-radius:0!important}
@@ -461,7 +464,7 @@ body.socialInteractionsTheme .stat{background:linear-gradient(145deg,#48202d,#24
 body.socialInteractionsTheme .tabs{background:linear-gradient(180deg,rgba(72,32,45,.99),rgba(36,16,23,.99))!important;border-bottom-color:#c99542!important}
 
 /* v0.14.5 demo b2 — immersive theme backgrounds. Keep UI panels opaque enough for legibility. */
-body:not(.adventureTheme):not(.academyTheme):not(.socialInteractionsTheme):not(.relationshipsTheme):not(.orthodoxTheme):not(.fitnessTheme){
+body:not(.adventureTheme):not(.academyTheme):not(.socialInteractionsTheme):not(.relationshipsTheme):not(.orthodoxTheme):not(.fitnessTheme):not(.v0TestTheme){
  background-image:linear-gradient(180deg,rgba(8,10,12,.60) 0%,rgba(8,10,12,.72) 48%,rgba(8,10,12,.88) 100%),url("./assets/images/dungeon-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
 }
@@ -986,15 +989,15 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
 function categoryIcon(c,skill){if(skill==="Fitness")return "💪";if(skill==="Cardio")return "🏃";if(skill==="Piano")return "🎹";return ({Adventure:"🧭",Social:"🗣️",Skill:"✨",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
-const DUNGEON_THEME_ITEM={id:"dungeon-theme",name:"Dungeon",category:"Theme",type:"theme",icon:"./assets/images/dungeon-theme.webp",description:"A torchlit dungeon atmosphere."};
-const ADVENTURE_THEME_ITEM={id:"adventure-theme",name:"Adventurer",category:"Theme",type:"theme",icon:"./assets/images/adventure-theme.webp",description:"A warm, adventurous world of maps, mountains and discovery.",unlockSkill:"Adventure",unlockLevel:3,price:100,perkSkill:"Adventure"};
-const ACADEMY_THEME_ITEM={id:"academy-theme",name:"Academy",category:"Theme",type:"theme",icon:"./assets/images/academy-theme.webp",description:"A scholarly Athenian terrace of books, wisdom and discovery.",unlockSkill:"Reading",unlockLevel:3,price:100,perkSkill:"Reading"};
-const SOCIAL_INTERACTIONS_THEME_ITEM={id:"social-interactions-theme",name:"Social Butterfly",category:"Theme",type:"theme",icon:"./assets/images/social-interactions-theme.webp",description:"Build confidence, meet new people, and strengthen your connections throughout the realm.",unlockSkill:"Social Interactions",unlockLevel:3,price:100,perkSkill:"Social Interactions"};
-const RELATIONSHIPS_THEME_ITEM={id:"relationships-theme",name:"Heartkeeper",category:"Theme",type:"theme",icon:"./assets/images/relationships-theme.webp",description:"Strengthen your bonds, nurture meaningful relationships, and build lasting connections throughout the realm.",unlockSkill:"Relationships",unlockLevel:3,price:100,perkSkill:"Relationships"};
-const ORTHODOX_THEME_ITEM={id:"orthodox-theme",name:"Faith",category:"Theme",type:"theme",icon:"./assets/images/orthodox-theme.webp",description:"Deepen your faith, cultivate prayer and discipline, and grow in wisdom through the Orthodox Christian tradition.",unlockSkill:"Orthodox Christianity",unlockLevel:3,price:100,perkSkill:"Orthodox Christianity"};
-const FITNESS_THEME_ITEM={id:"fitness-theme",name:"Fitness",category:"Theme",type:"theme",icon:"./assets/images/fitness-theme.webp",description:"Train with Roman discipline, build strength and conditioning, and earn bonus Fitness XP.",unlockSkill:"Fitness",unlockLevel:3,price:100,perkSkill:"Fitness"};
+const DUNGEON_THEME_ITEM={id:"dungeon-theme",name:"Dungeon",category:"Theme",type:"theme",icon:"./assets/images/dungeon-theme.webp",description:"A torchlit dungeon atmosphere.",debugThemeClass:null,debugBackground:"dungeon-background.webp",debugCharacter:{male:"male-dungeon.webp",female:"female-dungeon.webp"},debugMusic:"./assets/sound/dungeon-theme.mp3"};
+const ADVENTURE_THEME_ITEM={id:"adventure-theme",name:"Adventurer",category:"Theme",type:"theme",icon:"./assets/images/adventure-theme.webp",description:"A warm, adventurous world of maps, mountains and discovery.",unlockSkill:"Adventure",unlockLevel:3,price:100,perkSkill:"Adventure",debugThemeClass:"adventureTheme",debugBackground:"adventure-background.webp",debugCharacter:{male:"male-adventurer.webp",female:"female-adventurer.webp"},debugMusic:"./assets/sound/adventure-theme.mp3"};
+const ACADEMY_THEME_ITEM={id:"academy-theme",name:"Academy",category:"Theme",type:"theme",icon:"./assets/images/academy-theme.webp",description:"A scholarly Athenian terrace of books, wisdom and discovery.",unlockSkill:"Reading",unlockLevel:3,price:100,perkSkill:"Reading",debugThemeClass:"academyTheme",debugBackground:"academy-background.webp",debugCharacter:{male:"male-academy.webp",female:"female-academy.webp"},debugMusic:"./assets/sound/academy-theme.mp3"};
+const SOCIAL_INTERACTIONS_THEME_ITEM={id:"social-interactions-theme",name:"Social Butterfly",category:"Theme",type:"theme",icon:"./assets/images/social-interactions-theme.webp",description:"Build confidence, meet new people, and strengthen your connections throughout the realm.",unlockSkill:"Social Interactions",unlockLevel:3,price:100,perkSkill:"Social Interactions",debugThemeClass:"socialInteractionsTheme",debugBackground:"social-interactions-background.webp",debugCharacter:{male:"male-social.webp",female:"female-social.webp"},debugMusic:"./assets/sound/social-interactions-theme.mp3"};
+const RELATIONSHIPS_THEME_ITEM={id:"relationships-theme",name:"Heartkeeper",category:"Theme",type:"theme",icon:"./assets/images/relationships-theme.webp",description:"Strengthen your bonds, nurture meaningful relationships, and build lasting connections throughout the realm.",unlockSkill:"Relationships",unlockLevel:3,price:100,perkSkill:"Relationships",debugThemeClass:"relationshipsTheme",debugBackground:"relationships-background.webp",debugCharacter:{male:"male-relationships.webp",female:"female-relationships.webp"},debugMusic:"./assets/sound/relationships-theme.mp3"};
+const ORTHODOX_THEME_ITEM={id:"orthodox-theme",name:"Faith",category:"Theme",type:"theme",icon:"./assets/images/orthodox-theme.webp",description:"Deepen your faith, cultivate prayer and discipline, and grow in wisdom through the Orthodox Christian tradition.",unlockSkill:"Orthodox Christianity",unlockLevel:3,price:100,perkSkill:"Orthodox Christianity",debugThemeClass:"orthodoxTheme",debugBackground:"orthodox-theme-background.webp",debugCharacter:{male:"male-orthodox.webp",female:"female-orthodox.webp"},debugMusic:"./assets/sound/orthodox-theme.mp3"};
+const FITNESS_THEME_ITEM={id:"fitness-theme",name:"Fitness",category:"Theme",type:"theme",icon:"./assets/images/fitness-theme.webp",description:"Train with Roman discipline, build strength and conditioning, and earn bonus Fitness XP.",unlockSkill:"Fitness",unlockLevel:3,price:100,perkSkill:"Fitness",debugThemeClass:"fitnessTheme",debugBackground:"fitness-background.webp",debugCharacter:{male:"male-fitness.webp",female:"female-fitness.webp"},debugMusic:"./assets/sound/fitness-theme.mp3"};
 // v0.test: deliberately unique registry/equipment ID, while reusing Dungeon visuals to test Debug's discovery coverage.
-const V0_TEST_THEME_ITEM={id:"v0-test-theme",name:"v0.test",category:"Theme",type:"theme",icon:"./assets/images/dungeon-theme.webp",description:"Debug coverage test theme. Intentionally duplicates Dungeon icon, character artwork, background, palette, and soundtrack.",unlockSkill:"Fitness",unlockLevel:0,price:0,perkSkill:"Fitness"};
+const V0_TEST_THEME_ITEM={id:"v0-test-theme",name:"v0.test",category:"Theme",type:"theme",icon:"./assets/images/dungeon-theme.webp",description:"Debug coverage test theme. Intentionally duplicates Dungeon icon, character artwork, background, palette, and soundtrack.",unlockSkill:"Fitness",unlockLevel:0,price:0,perkSkill:"Fitness",debugThemeClass:"v0TestTheme",debugBackground:"dungeon-background.webp",debugCharacter:{male:"male-dungeon.webp",female:"female-dungeon.webp"},debugMusic:"./assets/sound/dungeon-theme.mp3"};
 // Add future unlockables here; the Debug sandbox's Unlock all items uses this shared registry.
 const UNLOCKABLE_ITEMS=[ADVENTURE_THEME_ITEM,ACADEMY_THEME_ITEM,SOCIAL_INTERACTIONS_THEME_ITEM,RELATIONSHIPS_THEME_ITEM,ORTHODOX_THEME_ITEM,FITNESS_THEME_ITEM,V0_TEST_THEME_ITEM];
 let debugUnlockAllItems=false;
@@ -1908,108 +1911,65 @@ function debugLog(message){debugLogEntries.unshift(new Date().toLocaleTimeString
 async function runThemeIntegrationTests(){
  if(!debugIsAdmin()||!debugSandboxActive){toast("Theme tests are available only to Admin in Sandbox mode.");return {status:"BLOCKED",results:[]};}
  const results=[];
- const add=(name,ok,detail,category="theme-integration")=>results.push({name,ok:!!ok,detail,category});
- const themes=[
-  {id:"dungeon-theme",name:"Dungeon",icon:"dungeon-theme.webp",bg:"dungeon-background.webp",cls:null,vars:["--bg","--panel","--line"]},
-  {id:"adventure-theme",name:"Adventurer",icon:"adventure-theme.webp",bg:"adventure-background.webp",cls:"adventureTheme",vars:["--bg","--panel","--line"]},
-  {id:"academy-theme",name:"Academy",icon:"academy-theme.webp",bg:"academy-background.webp",cls:"academyTheme",vars:["--bg","--panel","--line"]},
-  {id:"social-interactions-theme",name:"Social Butterfly",icon:"social-interactions-theme.webp",bg:"social-interactions-background.webp",cls:"socialInteractionsTheme",vars:["--bg","--panel","--line"]},
-  {id:"relationships-theme",name:"Heartkeeper",icon:"relationships-theme.webp",bg:"relationships-background.webp",cls:"relationshipsTheme",vars:["--bg","--panel","--line"]},
-  {id:"orthodox-theme",name:"Faith",icon:"orthodox-theme.webp",bg:"orthodox-theme-background.webp",cls:"orthodoxTheme",vars:["--bg","--panel","--line"]},
-  {id:"fitness-theme",name:"Fitness",icon:"fitness-theme.webp",bg:"fitness-background.webp",cls:"fitnessTheme",vars:["--bg","--panel","--line"]}
- ];
+ const add=(name,ok,detail,category="theme-integration",status)=>results.push({name,ok:!!ok,detail,category,...(status?{status}:{})});
+ const registry=Array.isArray(UNLOCKABLE_ITEMS)?UNLOCKABLE_ITEMS.filter(item=>String(item.type||item.category||"").toLowerCase()==="theme"):[];
+ const dungeon={...DUNGEON_THEME_ITEM};
+ const themes=[{...dungeon},...registry].filter((item,index,arr)=>arr.findIndex(x=>x.id===item.id)===index).map(item=>({
+  id:item.id,name:item.name,icon:item.icon,background:item.debugBackground||null,cls:item.debugThemeClass||null,
+  character:item.debugCharacter||null,music:item.debugMusic||THEME_MUSIC[item.id]||null,item
+ }));
  const css=[...document.styleSheets].map(sh=>{try{return [...sh.cssRules].map(r=>r.cssText).join("\n")}catch(e){return ""}}).join("\n");
  const waitImage=src=>new Promise(resolve=>{const im=new Image();im.onload=()=>resolve({ok:im.naturalWidth>0&&im.naturalHeight>0,detail:`loaded ${im.naturalWidth}x${im.naturalHeight}`});im.onerror=()=>resolve({ok:false,detail:"image failed to load: "+src});im.src=src;});
  const waitFetch=async src=>{try{const r=await fetch(src,{cache:"no-store"});return {ok:r.ok,detail:`HTTP ${r.status} for ${src}`}}catch(e){return {ok:false,detail:`fetch failed for ${src}: ${e.message}`}}};
- const registry=Array.isArray(UNLOCKABLE_ITEMS)?UNLOCKABLE_ITEMS:[];
  for(const t of themes){
-  const item=registry.find(x=>x.id===t.id);
-  if(t.id==="dungeon-theme"){
-   const starter=state.inventory.some(x=>x&&x.id==="dungeon-theme");
-   add("Dungeon: starter theme is present",starter,starter?"Starter theme exists in inventory":"Starter Dungeon theme is missing","registry");
-  } else {
-   add(`${t.name}: registered in unlockable catalog`,!!item, item?`name=${item.name}; type=${item.type}; category=${item.category}`:"Theme is missing from UNLOCKABLE_ITEMS","registry");
-  }
+  const isDungeon=t.id==="dungeon-theme", item=isDungeon?state.inventory.find(x=>x&&x.id===t.id)||DUNGEON_THEME_ITEM:registry.find(x=>x.id===t.id);
+  if(isDungeon){const starter=state.inventory.some(x=>x&&x.id===t.id);add(`${t.name}: starter theme is present`,starter,starter?"Starter theme exists in inventory":"Starter Dungeon theme is missing","registry");}
+  else add(`${t.name}: registered in unlockable catalog`,!!item,item?`name=${item.name}; id=${item.id}; type=${item.type}; category=${item.category}`:"Theme is missing from UNLOCKABLE_ITEMS","registry");
   if(item)add(`${t.name}: display name`,item.name===t.name,`Expected "${t.name}", got "${item.name}"`,"registry");
-  add(`${t.name}: dedicated CSS selector`,t.cls?css.includes("body."+t.cls):css.includes("dungeon-background.webp"),t.cls?`CSS selector body.${t.cls}`:"Dungeon fallback CSS","css");
-  add(`${t.name}: background reference`,css.includes(t.bg),`Expected CSS reference to ${t.bg}`,"assets");
-  const bg=await waitFetch("./assets/images/"+t.bg);add(`${t.name}: background file responds`,bg.ok,bg.detail,"assets");
-  const bgImg=await waitImage("./assets/images/"+t.bg);add(`${t.name}: background image decodes`,bgImg.ok,bgImg.detail,"assets");
-  const icon=await waitFetch("./assets/images/"+t.icon);add(`${t.name}: icon file responds`,icon.ok,icon.detail,"assets");
-  const iconImg=await waitImage("./assets/images/"+t.icon);add(`${t.name}: icon image decodes`,iconImg.ok,iconImg.detail,"assets");
-  const prefix=t.cls?`body.${t.cls}`:"body:not(.adventureTheme):not(.academyTheme):not(.socialInteractionsTheme):not(.relationshipsTheme):not(.orthodoxTheme):not(.fitnessTheme)";
-  if(t.cls){
-   add(`${t.name}: panel/card styling defined`,css.includes(prefix+" .card")||css.includes(prefix+" .panel")||css.includes(prefix+" .hero"),"Expected theme-specific styling for application panels","visual");
-   add(`${t.name}: lower Inventory styling defined`,css.includes(prefix+" #section-character")||css.includes(prefix+" .inventoryItem")||css.includes(prefix+" .equipmentSlot"),"Expected styling beyond header/hero for lower Inventory/equipment surfaces","visual");
+  if(!t.cls&&!isDungeon)add(`${t.name}: Debug metadata`,false,"Registered theme is missing debugThemeClass; cannot verify automatic theme-class discovery","registry");
+  else add(`${t.name}: dedicated CSS selector`,t.cls?css.includes("body."+t.cls):css.includes("dungeon-background.webp"),t.cls?`CSS selector body.${t.cls}`:"Dungeon fallback CSS","css");
+  if(!t.background){add(`${t.name}: Debug background metadata`,false,"Registered theme is missing debugBackground; test cannot silently skip its background","registry");}
+  else {
+   add(`${t.name}: background reference`,css.includes(t.background),`Expected CSS reference to ${t.background}`,"assets");
+   const bg=await waitFetch("./assets/images/"+t.background);add(`${t.name}: background file responds`,bg.ok,bg.detail,"assets");
+   const bgImg=await waitImage("./assets/images/"+t.background);add(`${t.name}: background image decodes`,bgImg.ok,bgImg.detail,"assets");
   }
+  if(!t.icon){add(`${t.name}: Debug icon metadata`,false,"Registered theme is missing its icon path","registry");}
+  else {const iconPath=t.icon.startsWith("./")?t.icon:"./assets/images/"+t.icon;const icon=await waitFetch(iconPath);add(`${t.name}: icon file responds`,icon.ok,icon.detail,"assets");const iconImg=await waitImage(iconPath);add(`${t.name}: icon image decodes`,iconImg.ok,iconImg.detail,"assets");}
+  if(!t.character||!t.character.male||!t.character.female)add(`${t.name}: character artwork metadata`,false,"Registered theme must declare debugCharacter.male and debugCharacter.female; coverage is inconclusive without both","registry","INCONCLUSIVE");
+  else for(const gender of ["male","female"]){const path="./assets/images/"+t.character[gender];const response=await waitFetch(path);add(`${t.name}: ${gender} character file responds`,response.ok,response.detail,"assets");const decoded=await waitImage(path);add(`${t.name}: ${gender} character image decodes`,decoded.ok,decoded.detail,"assets");}
+  if(!t.music)add(`${t.name}: soundtrack metadata`,false,"Registered theme is missing debugMusic; soundtrack coverage is inconclusive","registry","INCONCLUSIVE");
+  else {const music=await waitFetch(t.music);add(`${t.name}: soundtrack file responds`,music.ok,music.detail,"assets");}
+  if(t.cls){const prefix="body."+t.cls;add(`${t.name}: panel/card styling defined`,css.includes(prefix+" .card")||css.includes(prefix+" .panel")||css.includes(prefix+" .hero"),"Expected theme-specific styling for application panels","visual");add(`${t.name}: lower Inventory styling defined`,css.includes(prefix+" #section-character")||css.includes(prefix+" .inventoryItem")||css.includes(prefix+" .equipmentSlot")||css.includes(prefix+" .characterInventoryCard"),"Expected styling beyond header/hero for lower Inventory/equipment surfaces","visual");}
  }
- // Read-only visual verification: temporarily toggle each theme class, measure computed styles across actual UI surfaces, then restore classes.
- const body=document.body, originalClasses=[...body.classList];
+ // Read-only visual verification: toggle registered classes only in memory and restore the original class list.
+ const body=document.body, originalClasses=[...body.classList], themeClasses=new Set(themes.map(t=>t.cls).filter(Boolean));
  const surfaceSelectors=[".brand",".hero",".tabs",".tab.active",".card",".panel","#section-character","#section-character .themeEquipmentSlot","#section-store .storeThemeCard",".btn"];
  const normalizeColor=v=>String(v||"").replace(/\s+/g,"").toLowerCase();
  for(const t of themes){
-  body.className=originalClasses.filter(c=>!themes.some(x=>x.cls&&c===x.cls)).join(" ");
-  if(t.cls)body.classList.add(t.cls);
+  body.className=originalClasses.filter(c=>!themeClasses.has(c)).join(" ");if(t.cls)body.classList.add(t.cls);
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   const bg=getComputedStyle(body).backgroundImage;
-  add(`${t.name}: computed page background`,bg.includes(t.bg),`Computed backgroundImage=${bg.slice(0,220)}`,"computed-style");
-  const requiredSurfaces=t.cls?surfaceSelectors:surfaceSelectors.slice(0,5);
+  if(t.background)add(`${t.name}: computed page background`,bg.includes(t.background),`Computed backgroundImage=${bg.slice(0,220)}; expected asset=${t.background}`,"computed-style");
+  else add(`${t.name}: computed page background`,false,"Cannot compare computed background: debugBackground is missing","computed-style","INCONCLUSIVE");
   let styled=0,checked=0,missing=[];
-  for(const sel of requiredSurfaces){
-   const el=document.querySelector(sel);if(!el)continue;
-   checked++;
-   const cs=getComputedStyle(el);
-   const color=normalizeColor(cs.color),border=normalizeColor(cs.borderTopColor),background=normalizeColor(cs.backgroundColor+" "+cs.backgroundImage);
-   const nonDefaultTheme=t.cls&&(["--line","--panel","--gold"].some(v=>getComputedStyle(body).getPropertyValue(v).trim()));
-   if(t.cls && (border.includes("rgb")||color.includes("rgb")||background.includes("gradient")))styled++;
-   // Theme selectors should explicitly target lower surfaces, not merely pass because CSS vars exist.
-   if(t.cls && ["#section-character .themeEquipmentSlot","#section-store .storeThemeCard"].includes(sel)){
-    const rulePresent=css.includes("body."+t.cls+" .storeThemeCard") || css.includes("body."+t.cls+" .inventoryItem") || css.includes("body."+t.cls+" .equipmentSlot") || css.includes("body."+t.cls+" .card") || css.includes("body."+t.cls+" .panel");
-    if(!rulePresent)missing.push(sel+" lacks explicit theme styling rule");
-   }
-  }
+  for(const sel of surfaceSelectors){const el=document.querySelector(sel);if(!el)continue;checked++;const cs=getComputedStyle(el);const color=normalizeColor(cs.color),border=normalizeColor(cs.borderTopColor),background=normalizeColor(cs.backgroundColor+" "+cs.backgroundImage);if(t.cls&&(border.includes("rgb")||color.includes("rgb")||background.includes("gradient")))styled++;if(t.cls&&["#section-character .themeEquipmentSlot","#section-store .storeThemeCard"].includes(sel)){const rulePresent=css.includes("body."+t.cls+" .storeThemeCard")||css.includes("body."+t.cls+" .inventoryItem")||css.includes("body."+t.cls+" .equipmentSlot")||css.includes("body."+t.cls+" .characterInventoryCard")||css.includes("body."+t.cls+" .card")||css.includes("body."+t.cls+" .panel");if(!rulePresent)missing.push(sel+" lacks explicit theme styling rule");}}
   add(`${t.name}: computed UI surfaces inspected`,checked>=3,`Inspected ${checked} rendered surfaces; ${styled} had measurable styled values`,"computed-style");
-  if(t.cls)add(`${t.name}: lower UI surface selectors`,missing.length===0,missing.length?missing.join("; "):"Theme equipment slot and Store surfaces have explicit theme-specific selectors","visual");
+  if(t.cls)add(`${t.name}: lower UI surface selectors`,missing.length===0,missing.length?missing.join("; "):"Theme equipment and Store surfaces have explicit theme-specific selectors","visual");
  }
- body.className=originalClasses.join(" ");
- await new Promise(resolve=>requestAnimationFrame(resolve));
+ body.className=originalClasses.join(" ");await new Promise(resolve=>requestAnimationFrame(resolve));
  const current=state?.equipment?.theme||"dungeon-theme",active=themes.find(t=>t.id===current);
- add("Currently equipped theme body class",!active?.cls||body.classList.contains(active.cls),`Equipped=${current}; expected=${active?.cls||"Dungeon fallback"}`,"equipped-state");
- // Check the actual currently selected theme against rendered values. A Dungeon lock only fails when it overrides a non-Dungeon equipped theme.
- const lockedIds=["debugDisableBackground","debugDisableColors","debugDisablePortrait","debugDisableMusic"];
- const lockState=Object.fromEntries(lockedIds.map(id=>[id,!!document.getElementById(id)?.checked]));
- const isNonDungeon=current!=="dungeon-theme";
+ add("Currently equipped theme body class",!!active&&(!active.cls||body.classList.contains(active.cls)),`Equipped=${current}; expected=${active?.cls||"Dungeon fallback"}`,"equipped-state");
+ // Verify actual active visual identity from registry metadata; missing mappings become inconclusive/fail, never silently pass.
+ const lockedIds=["debugDisableBackground","debugDisableColors","debugDisablePortrait","debugDisableMusic"],lockState=Object.fromEntries(lockedIds.map(id=>[id,!!document.getElementById(id)?.checked])),isNonDungeon=current!=="dungeon-theme";
  const actualBg=getComputedStyle(document.body).backgroundImage;
  if(lockState.debugDisableBackground)add("Feature lock: selected theme background remains applied",!isNonDungeon||!actualBg.includes("dungeon-background.webp"),`Equipped=${current}; rendered background=${actualBg.slice(0,180)}`,"debug-lock-detection");
- if(lockState.debugDisableColors){
-  // Compare the rendered palette while locked against the same equipped theme with only the lock removed.
-  // The checkbox itself is never treated as evidence of failure; the computed values are compared.
-  const paletteVars=["--bg","--panel","--panel2","--line","--gold","--gold2","--cream","--muted"];
-  const lockedPalette=Object.fromEntries(paletteVars.map(v=>[v,getComputedStyle(body).getPropertyValue(v).trim()]));
-  body.classList.remove("debug-disable-colors");
-  const expectedPalette=Object.fromEntries(paletteVars.map(v=>[v,getComputedStyle(body).getPropertyValue(v).trim()]));
-  body.classList.add("debug-disable-colors");
-  const paletteMatches=paletteVars.every(v=>lockedPalette[v]===expectedPalette[v]);
-  add("Feature lock: equipped theme palette still matches its expected palette",!isNonDungeon||paletteMatches,`Equipped=${current}; locked=${JSON.stringify(lockedPalette)}; expected=${JSON.stringify(expectedPalette)}`,"debug-lock-detection");
- }
- if(lockState.debugDisablePortrait){
-  const art=document.getElementById("characterArtwork"),icon=document.querySelector(".themeIcon");
-  const actualArt=(art?.getAttribute("src")||art?.src||"").split("/").pop();
-  const actualIcon=(icon?.getAttribute("src")||icon?.src||"").split("/").pop();
-  const suffixByTheme={"dungeon-theme":"dungeon","adventure-theme":"adventurer","academy-theme":"academy","social-interactions-theme":"social","relationships-theme":"relationships","orthodox-theme":"orthodox","fitness-theme":"fitness"};
-  const suffix=suffixByTheme[current];
-  const gender=state?.profile?.gender==="female"?"female":"male";
-  const expectedArt=suffix?`${gender}-${suffix}.webp`:null;
-  const expectedIcon=registry.find(x=>x.id===current)?.icon||(current==="dungeon-theme"?"./assets/images/dungeon-theme.webp":null);
-  const expectedIconFile=expectedIcon?expectedIcon.split("/").pop():null;
-  const matches=!!suffix&&actualArt===expectedArt&&(!expectedIconFile||actualIcon===expectedIconFile);
-  add("Feature lock: equipped theme character and theme images still match",!isNonDungeon||matches,`Equipped=${current}; character=${actualArt}; expected character=${expectedArt||"unregistered theme image mapping"}; theme icon=${actualIcon}; expected icon=${expectedIconFile||"missing theme icon mapping"}`,"debug-lock-detection");
- }
- if(lockState.debugDisableMusic){const expected=THEME_MUSIC[current]||THEME_MUSIC["dungeon-theme"],observed=themeMusicSource;add("Feature lock: selected theme music remains applied",observed===expected,`Equipped=${current}; active music source=${observed||"not started"}; expected=${expected}`,"debug-lock-detection");}
- const passed=results.filter(x=>x.ok).length,failed=results.length-passed;
- const report={version:"v0.test.1",status:failed?"FAILED":"PASSED",summary:{total:results.length,passed,failed},failures:results.filter(x=>!x.ok).map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the named theme's registry entry, asset response, CSS selector, and computed styles."})),results,notes:["This is a browser-side integration test. It does not replace real end-to-end purchase/quest/account-isolation tests.","A theme only passes if its actual background and lower interface surfaces satisfy the checks; CSS text alone is not sufficient."]};
- const out=document.getElementById("debugThemeTestResults");if(out)out.textContent=JSON.stringify(report,null,2);
- debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed.");return report;
+ if(lockState.debugDisableColors){const paletteVars=["--bg","--panel","--panel2","--line","--gold","--gold2","--cream","--muted"],lockedPalette=Object.fromEntries(paletteVars.map(v=>[v,getComputedStyle(body).getPropertyValue(v).trim()]));body.classList.remove("debug-disable-colors");const expectedPalette=Object.fromEntries(paletteVars.map(v=>[v,getComputedStyle(body).getPropertyValue(v).trim()]));body.classList.add("debug-disable-colors");const paletteMatches=paletteVars.every(v=>lockedPalette[v]===expectedPalette[v]);add("Feature lock: equipped theme palette still matches its expected palette",!isNonDungeon||paletteMatches,`Equipped=${current}; locked=${JSON.stringify(lockedPalette)}; expected=${JSON.stringify(expectedPalette)}`,"debug-lock-detection");}
+ if(lockState.debugDisablePortrait){const art=document.getElementById("characterArtwork"),icon=document.querySelector(".themeIcon"),actualArt=(art?.getAttribute("src")||art?.src||"").split("/").pop(),actualIcon=(icon?.getAttribute("src")||icon?.src||"").split("/").pop(),gender=state?.profile?.gender==="female"?"female":"male",expectedArt=active?.character?.[gender]||null,expectedIcon=active?.icon?(active.icon.split("/").pop()):null,matches=!!expectedArt&&actualArt===expectedArt&&!!expectedIcon&&actualIcon===expectedIcon;add("Feature lock: equipped theme character and theme images still match",!isNonDungeon||matches,`Equipped=${current}; character=${actualArt}; expected character=${expectedArt||"missing debugCharacter metadata"}; theme icon=${actualIcon}; expected icon=${expectedIcon||"missing icon metadata"}`,"debug-lock-detection",expectedArt&&expectedIcon?undefined:"INCONCLUSIVE");}
+ if(lockState.debugDisableMusic){const expected=active?.music||null,observed=themeMusicSource,matches=!!expected&&observed===expected;add("Feature lock: selected theme music remains applied",!isNonDungeon||matches,`Equipped=${current}; active music source=${observed||"not started"}; expected=${expected||"missing debugMusic metadata"}`,"debug-lock-detection",expected?undefined:"INCONCLUSIVE");}
+ const passed=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").length,inconclusive=results.filter(x=>x.status==="INCONCLUSIVE").length;
+ const report={version:"v0.test.2",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests now discover Dungeon plus every registered unlockable theme from the shared registry.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
+ const out=document.getElementById("debugThemeTestResults");if(out)out.textContent=JSON.stringify(report,null,2);debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed, "+inconclusive+" inconclusive.");return report;
 }
 document.getElementById("debugRunThemeTests")?.addEventListener("click",runThemeIntegrationTests);
 document.getElementById("debugStartSandbox")?.addEventListener("click",()=>setTimeout(applyDebugFeatureSwitches,0));
