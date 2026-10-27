@@ -1,3 +1,12 @@
+# Wayfarer v0.test.8 — Show Test skill in Sandbox and correct Test quest/perk (2026-10-27)
+
+- Added the Test skill to the actual skill catalog under Sandbox testing; the existing catalog filter keeps it hidden outside Sandbox mode.
+- Renamed the Test skill's generated quest to exactly “Test” and updated its description.
+- Corrected the Test theme's Inventory and Store perk text to show +5 Test XP for eligible newly generated Test quests, instead of incorrectly displaying Fitness XP.
+- Updated the independent theme baseline's display name and Debug report version to “Test” / `v0.test.8`.
+- Updated the service-worker cache version to `wayfarer-v0.test.8`; prior changelog history preserved.
+- Validation performed: JavaScript syntax, targeted Test skill/theme/quest labels, cache/changelog version alignment, and ZIP integrity. No live-browser test or GitHub edit performed.
+
 # Wayfarer v0.test.7 — Hide legacy Debug panels without deleting their code (2026-10-27)
 
 - Hid the legacy Quest System Tests, Theme Integration Tests, and Feature Isolation Switches panels from the Debug interface.
