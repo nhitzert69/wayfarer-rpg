@@ -1,3 +1,16 @@
+# Wayfarer v0.test.12 — Live theme refresh and persistent Sandbox session (2026-10-27)
+
+- Changed lifecycle fault-injection toggles to refresh the rendered theme, Store, Inventory, character overview, and Debug panel immediately, without requiring a full page reload.
+- Added same-tab session persistence for an active Admin Sandbox: refreshing the page restores the temporary Sandbox state and its separate live-state backup after account hydration. Sandbox state remains in `sessionStorage`, never in the normal local/cloud save; explicitly exiting Sandbox clears the temporary session.
+- Advanced the app/build and service-worker cache versions to v0.test.12. Preserved prior changelog entries and project rules. Verification is syntax/archive-level only; no live-browser test or GitHub deployment is claimed.
+
+# Wayfarer v0.test.11 — Restore lifecycle runner and isolate Sandbox skill selection (2026-10-27)
+
+- Fixed the Equipment Lifecycle Test Suite crash caused by an undefined requirement-injector variable; the report now describes the observed shared unlock-gate result.
+- Prevented skill selection and quest-priority edits made in Sandbox from writing to local storage or syncing to the real account. Sandbox selections remain in the temporary state and are discarded on exit.
+- Kept normal-account skill saving unchanged, and advanced the app/build and service-worker cache versions to v0.test.11.
+- Based on v0.test.10; prior changelog history and project rules are preserved. Syntax and archive checks are performed for this package; no live-browser test or GitHub deployment is claimed.
+
 # Wayfarer v0.test.10 — Real gameplay fault injection and Test quest registration (2026-10-27)
 
 - Updated the visible lifecycle injectables so Test-theme unlock, purchase, equip, and XP-bonus faults affect shared gameplay decision paths rather than forcing the test report to fail artificially.
