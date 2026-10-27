@@ -1,10 +1,10 @@
-# Wayfarer v0.test.9 — Add Final theme with intentional Inventory integration omission (2026-10-27)
+# Wayfarer v0.test.10 — Real gameplay fault injection and Test quest registration (2026-10-27)
 
-- Added a Sandbox-only `Final` theme duplicating the Test theme's unlock requirement (Test level 3), 100-coin price, Dungeon-based visual assets, and +5 Test XP perk.
-- Registered Final in the unlockable catalog and independent theme Debug baseline so discovery and diagnostics can see it.
-- Intentionally omitted working Inventory equip support for `final-theme`: it appears in Inventory after acquisition, but selecting it reports the missing integration and does not equip it. This is a deliberate fault-injection test case.
-- Updated Debug report versions and service-worker cache to `v0.test.9`; previous changelog history preserved.
-- Validation performed: JavaScript syntax, expected registry/baseline/Inventory-fault markers, release/cache/changelog alignment, and ZIP integrity. No live-browser test or GitHub edit performed.
+- Updated the visible lifecycle injectables so Test-theme unlock, purchase, equip, and XP-bonus faults affect shared gameplay decision paths rather than forcing the test report to fail artificially.
+- Routed theme Inventory equipping through a shared equip helper used by both the real Inventory click handler and the lifecycle runner; the equip injectable now blocks the actual equip operation.
+- Added a dedicated eligible `Test` quest template to the shared quest pool so selecting Test can generate a real Test quest.
+- Updated lifecycle tests to call the shared purchase/equip/reward helpers and report observed results.
+- Preserved the v0.test.8 baseline and all prior changelog history; no GitHub deployment was performed.
 
 # Wayfarer v0.test.8 — Show Test skill in Sandbox and correct Test quest/perk (2026-10-27)
 
