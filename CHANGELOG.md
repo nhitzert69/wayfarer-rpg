@@ -1,3 +1,11 @@
+# Wayfarer v1.17.7 — CEO icon and immediate soundtrack switching (2026-10-27)
+
+- Replaced the CEO theme icon with the supplied transparent-edged artwork, optimized as WebP while preserving transparency.
+- Changed theme soundtrack switching to stop and reset the previous track immediately before starting the newly equipped theme's soundtrack, preventing overlapping songs or the previous track fading on behind it.
+- Kept music volume at the configured level for the new track rather than fading it in. Existing browser autoplay restrictions still apply; if playback is blocked, the app continues to offer the Play music control.
+- Updated app diagnostic versions, service-worker cache version, and release metadata to v1.17.7.
+- Validation scope: source syntax, asset references, ZIP integrity, icon transparency, and release-version consistency checked locally. Live browser playback and deployment were not tested.
+
 # Wayfarer v1.17.6 — CEO theme (2026-10-27)
 
 - Added CEO as an unlockable Business theme at Business level 3 for 100 coins, with +5 Business XP on eligible newly generated Business quests while equipped.
