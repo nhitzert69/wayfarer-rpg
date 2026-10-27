@@ -1,3 +1,11 @@
+# Wayfarer v0.test.9 — Add Final theme with intentional Inventory integration omission (2026-10-27)
+
+- Added a Sandbox-only `Final` theme duplicating the Test theme's unlock requirement (Test level 3), 100-coin price, Dungeon-based visual assets, and +5 Test XP perk.
+- Registered Final in the unlockable catalog and independent theme Debug baseline so discovery and diagnostics can see it.
+- Intentionally omitted working Inventory equip support for `final-theme`: it appears in Inventory after acquisition, but selecting it reports the missing integration and does not equip it. This is a deliberate fault-injection test case.
+- Updated Debug report versions and service-worker cache to `v0.test.9`; previous changelog history preserved.
+- Validation performed: JavaScript syntax, expected registry/baseline/Inventory-fault markers, release/cache/changelog alignment, and ZIP integrity. No live-browser test or GitHub edit performed.
+
 # Wayfarer v0.test.8 — Show Test skill in Sandbox and correct Test quest/perk (2026-10-27)
 
 - Added the Test skill to the actual skill catalog under Sandbox testing; the existing catalog filter keeps it hidden outside Sandbox mode.
