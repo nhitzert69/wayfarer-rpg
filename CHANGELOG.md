@@ -1,3 +1,11 @@
+# Wayfarer v1.18.0 — Replace and compress theme soundtracks (2026-10-27)
+
+- Replaced the Spartan Endurance/Cardio soundtrack with the newly supplied `cardio-theme.mp3` and the Roman Discipline/Fitness soundtrack with the newly supplied `fitness-theme.mp3`, preserving the existing stable asset paths and theme mappings.
+- Re-encoded the two replacement tracks and the existing CEO soundtrack to 160 kbps stereo MP3 at 44.1 kHz to reduce download/storage size while retaining the web-friendly MP3 format.
+- Added a permanent theme-creation rule requiring all audio assets, including existing tracks brought into a release, to be compressed/optimized with settings appropriate to the source, while preserving intelligible musical quality, duration, looping behavior, and browser compatibility.
+- Updated the app's Debug report versions and service-worker cache namespace to v1.18.0. Existing service-worker audio paths remain unchanged.
+- Validation performed: audio metadata/duration and size comparison, asset-path/theme-mapping checks, rule/changelog/version consistency, JavaScript syntax, and ZIP integrity. Live browser playback, subjective audio quality, mobile playback, and deployment were not tested.
+
 # Wayfarer v1.17.9 — Correct Test theme perk label (2026-10-27)
 
 - Corrected the Test theme's Inventory/equipment perk label from “Fitness +5 XP/quest” to “Test +5 XP/quest”.
