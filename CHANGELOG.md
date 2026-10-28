@@ -1,3 +1,17 @@
+# Wayfarer v1.18.2 — Protect quest and XP persistence (2026-10-28)
+
+- Kept the local save revision timestamp aligned with the `updated_at` timestamp written to Supabase, so startup does not incorrectly prefer an older cloud save when a newer local quest/XP save failed to sync.
+- Waited for queued cloud saves before signing out. If the latest cloud save failed, sign-out is stopped and the account state is retained rather than silently clearing unsynced progress.
+- Applied the same revision timestamp handling to the selected-skills save path and updated the service-worker cache namespace and Debug build identifiers.
+- Validation performed: targeted persistence-path assertions, JavaScript syntax, asset/rule-file presence, version/changelog/cache consistency, and ZIP integrity. Live Supabase and browser refresh/logout tests were not available in this environment; deployment was not performed.
+
+# Wayfarer v1.18.1 — Replace CEO theme background (2026-10-27)
+
+- Replaced the CEO theme's existing full-screen background with the newly supplied VOC merchant's office and harbor sunset artwork.
+- Optimized the new background to WebP and retained the existing `ceo-background.webp` path so theme registration, CSS, Debug expectations, and service-worker asset mapping remain intact.
+- Updated Debug/build version identifiers and service-worker cache namespace to v1.18.1.
+- Validation performed: background image decoding/dimensions, referenced asset existence, version consistency, JavaScript syntax, and ZIP integrity. Live browser rendering and deployment were not tested.
+
 # Wayfarer v1.18.0 — Replace and compress theme soundtracks (2026-10-27)
 
 - Replaced the Spartan Endurance/Cardio soundtrack with the newly supplied `cardio-theme.mp3` and the Roman Discipline/Fitness soundtrack with the newly supplied `fitness-theme.mp3`, preserving the existing stable asset paths and theme mappings.

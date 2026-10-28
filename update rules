@@ -5,6 +5,12 @@
 - For colors, compare all registered theme palette variables against the same equipped theme with only the lock removed. For character/theme imagery, compare actual image sources against registered expected assets. An unmapped new theme must fail or be explicitly inconclusive, never silently pass.
 - Validate each lock with a non-Dungeon theme equipped: run with the lock off, enable it and confirm the relevant test detects the real override, then turn it off and confirm the expected result returns. Record whether this was syntax-only or live-browser verified.
 
+## Quest, XP, and account-save durability (mandatory)
+- Completing a quest must persist the completed flag, total XP, skill XP, coins, and completion count through the same shared save path.
+- Keep local-save revision metadata consistent with the revision timestamp written to the cloud save. A failed cloud write must not make an older cloud snapshot appear newer than the local state.
+- Drain pending cloud writes before signing out. If the latest save fails, do not silently clear the account-bound local state; clearly report the failure and let the user retry.
+- Test quest completion followed by immediate refresh, sign-out/sign-in, and cloud-save failure. Confirm completed quests and all awarded XP remain intact, and verify account isolation and Sandbox separation.
+
 ## Release changelog/version verification (mandatory)
 - Every single update, including small fixes, configuration changes, Debug-only changes, and rule/documentation changes, must be recorded as a new entry at the very top of `CHANGELOG.md` before packaging. Never ship an update without its own changelog entry.
 - Every update must add a new release entry to the very top of `CHANGELOG.md` before packaging. The top entry must describe the changes made in that specific update and must match the delivered project version; never leave an older release as the first entry.

@@ -920,16 +920,20 @@ function validAccountForm(){
  return {username,pin};
 }
 let cloudSyncQueue=Promise.resolve();
-async function syncCurrentState(){
+let cloudSyncFailure=null;
+async function syncCurrentState(updatedAtMs=Date.now()){
  if(!cloudClient||!cloudUser||cloudHydrating)return;
  const syncUserId=cloudUser.id;
  const payload=JSON.parse(JSON.stringify(state));
- const updatedAt=new Date().toISOString();
+ // Use the same revision timestamp for the local marker and cloud row. Otherwise
+ // updated_at can be a few milliseconds newer than the local save marker even
+ // when the cloud write failed, causing startup to prefer stale cloud progress.
+ const updatedAt=new Date(updatedAtMs).toISOString();
  const write=async()=>{
    if(!cloudClient||!cloudUser||cloudUser.id!==syncUserId||cloudHydrating)return;
    const {error}=await cloudClient.from("wayfarer_saves").upsert({user_id:syncUserId,app_state:payload,updated_at:updatedAt},{onConflict:"user_id"});
-   if(error){console.error("Wayfarer cloud save failed",error);setCloudStatus("Signed in, but cloud save failed. Check your connection and Supabase setup.");}
-   else setCloudStatus("Cloud sync active for @"+(document.getElementById("accountUsername").value.trim()||"your account")+". Your progress is saved online.");
+   if(error){cloudSyncFailure=error;console.error("Wayfarer cloud save failed",error);setCloudStatus("Signed in, but cloud save failed. Your device copy is retained; check your connection and Supabase setup.");}
+   else {cloudSyncFailure=null;setCloudStatus("Cloud sync active for @"+(document.getElementById("accountUsername").value.trim()||"your account")+". Your progress is saved online.");}
  };
  cloudSyncQueue=cloudSyncQueue.then(write,write);
  return cloudSyncQueue;
@@ -1007,7 +1011,12 @@ document.getElementById("accountForm")?.addEventListener("submit",async e=>{e.pr
 document.getElementById("createAccountBtn")?.addEventListener("click",async()=>{if(accountFlowMode!=="create")return;const credentials=validAccountForm();if(!credentials)return;const field=document.getElementById("accountGenderField");if(field.style.display==="none"){field.style.display="block";document.getElementById("createAccountBtn").textContent="Choose male or female below";field.scrollIntoView({behavior:"smooth",block:"center"});return;}const selected=document.querySelector('input[name="characterGender"]:checked');if(!selected)toast("Choose male or female for your character.");});
 document.querySelectorAll('input[name="characterGender"]').forEach(r=>r.addEventListener("change",async()=>{if(!r.checked)return;const credentials=validAccountForm();if(!credentials){hideGenderChoice();return;}const gender=r.value;if(gender!=="male"&&gender!=="female")return;document.getElementById("createAccountBtn").disabled=true;try{await finishSignIn(credentials.username,credentials.pin,true,gender);}finally{const btn=document.getElementById("createAccountBtn");if(btn)btn.disabled=false;}}));
 document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
- if(cloudClient)await cloudClient.auth.signOut();
+ // Drain queued account saves before clearing the local account state or ending
+ // the auth session. If the latest save failed, stay signed in so progress is
+ // not silently discarded by the sign-out cleanup below.
+ await cloudSyncQueue;
+ if(cloudSyncFailure){toast("Your latest progress could not be saved online. Please check your connection and try signing out again.");return;}
+ if(cloudClient){const {error}=await cloudClient.auth.signOut();if(error){setCloudStatus("Could not sign out: "+error.message);return;}}
  try{localStorage.removeItem("wayfarer-last-username");localStorage.removeItem(STATE_UPDATED_KEY);}catch(e){}
  // Clear account-bound data from the visible page and local cache on sign-out.
  // The account's saved data remains safely in its cloud row.
@@ -1033,7 +1042,17 @@ if(cloudClient){cloudClient.auth.onAuthStateChange((event,session)=>{if(session?
  if(localState&&localUpdatedAt>cloudUpdatedAt){state=localState;setCloudStatus("Restored newer local progress and syncing it to your cloud save.");}
  else state=row.app_state;
  if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Object.prototype.hasOwnProperty.call(state.equipment,"pet"))state.equipment.pet=null;if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};repairProfileGender(cloudUser);localStorage.setItem(KEY,JSON.stringify(state));try{localStorage.setItem(STATE_UPDATED_KEY,String(Math.max(Date.now(),localUpdatedAt,cloudUpdatedAt)));}catch(e){}render();if(localState&&localUpdatedAt>cloudUpdatedAt){cloudHydrating=false;await syncCurrentState();cloudHydrating=true;}else setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));try{localStorage.setItem(STATE_UPDATED_KEY,String(Date.now()));}catch(e){}render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;await syncCurrentState();restoreDebugSandboxSession();document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();if(typeof renderDebugPanel === "function")renderDebugPanel();}else{enforceAccountGate();}});}
-function save(skipRender=false){localStorage.setItem(KEY,JSON.stringify(state));try{localStorage.setItem(STATE_UPDATED_KEY,String(Date.now()));}catch(e){}if(!skipRender)render();if(cloudUser&&!cloudHydrating)syncCurrentState()}
+function nextSaveRevision(){
+ let previous=0;try{previous=Number(localStorage.getItem(STATE_UPDATED_KEY))||0;}catch(e){}
+ return Math.max(Date.now(),previous+1);
+}
+function save(skipRender=false){
+ const revision=nextSaveRevision();
+ localStorage.setItem(KEY,JSON.stringify(state));
+ try{localStorage.setItem(STATE_UPDATED_KEY,String(revision));}catch(e){}
+ if(!skipRender)render();
+ if(cloudUser&&!cloudHydrating)syncCurrentState(revision);
+}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
@@ -1298,9 +1317,10 @@ if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
  ensureSelectedSkills();
  try{
    if(!debugSandboxActive){
+     const revision=nextSaveRevision();
      localStorage.setItem(KEY,JSON.stringify(state));
-     try{localStorage.setItem(STATE_UPDATED_KEY,String(Date.now()));}catch(e){}
-     if(cloudUser&&!cloudHydrating)syncCurrentState();
+     try{localStorage.setItem(STATE_UPDATED_KEY,String(revision));}catch(e){}
+     if(cloudUser&&!cloudHydrating)syncCurrentState(revision);
    }
    renderSkillProgress();
    window.scrollTo({top: 0, behavior: "smooth"});
@@ -2087,7 +2107,7 @@ async function runThemeIntegrationTests(){
  if(lockState.debugDisablePortrait){const art=document.getElementById("characterArtwork"),icon=document.querySelector(".themeIcon"),actualArt=(art?.getAttribute("src")||art?.src||"").split("/").pop(),actualIcon=(icon?.getAttribute("src")||icon?.src||"").split("/").pop(),gender=state?.profile?.gender==="female"?"female":"male",expectedArt=active?.character?.[gender]||null,expectedIcon=active?.icon?(active.icon.split("/").pop()):null,matches=!!expectedArt&&actualArt===expectedArt&&!!expectedIcon&&actualIcon===expectedIcon;add("Feature lock: equipped theme character and theme images still match",!isNonDungeon||matches,`Equipped=${current}; character=${actualArt}; expected character=${expectedArt||"missing debugCharacter metadata"}; theme icon=${actualIcon}; expected icon=${expectedIcon||"missing icon metadata"}`,"debug-lock-detection",expectedArt&&expectedIcon?undefined:"INCONCLUSIVE");}
  if(lockState.debugDisableMusic){const expected=active?.music||null,observed=themeMusicSource,matches=!!expected&&observed===expected;add("Feature lock: selected theme music remains applied",!isNonDungeon||matches,`Equipped=${current}; active music source=${observed||"not started"}; expected=${expected||"missing debugMusic metadata"}`,"debug-lock-detection",expected?undefined:"INCONCLUSIVE");}
  const passed=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").length,inconclusive=results.filter(x=>x.status==="INCONCLUSIVE").length;
- const report={version:"v1.18.0",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
+ const report={version:"v1.18.2",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
  const out=document.getElementById("debugThemeTestResults");if(out)out.textContent=JSON.stringify(report,null,2);debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed, "+inconclusive+" inconclusive.");return report;
 }
 document.getElementById("debugRunThemeTests")?.addEventListener("click",runThemeIntegrationTests);
@@ -2239,7 +2259,7 @@ function runEquipmentLifecycleTests(){
   if(type==="theme"&&item.perkSkill){const calculated=calculateThemeBonus(item.id,item.perkSkill),bonusOk=calculated>0;check(`${item.name}: effect/XP bonus`,bonusOk,`Expected positive ${item.perkSkill} bonus; shared calculation returned ${calculated} XP.`);const pool=buildQuestPool(item.perkSkill),template=pool.find(q=>q.skill===item.perkSkill)||null;const generated=!!template&&template.skill===item.perkSkill;check(`${item.name}: related quest generation`,generated,generated?`Shared quest-template pool produced ${template.title} for ${item.perkSkill}.`:`No eligible quest template for ${item.perkSkill}.`);if(generated){const base=Number(template.xp)||15;const bonus=calculateThemeBonus(item.id,item.perkSkill);const quest={...template,baseXp:base,xp:base+bonus,perkBonusXp:bonus};const before=Number(sandbox.skillXp[item.perkSkill])||0;const award=awardQuestRewards(sandbox,quest);const observed=(Number(sandbox.skillXp[item.perkSkill])||0)-before;const expected=base+bonus;check(`${item.name}: quest completion reward`,observed===expected,`Shared reward helper awarded ${observed} ${item.perkSkill} XP; expected ${expected} (${base} base + ${bonus} bonus).`);}}
   else check(`${item.name}: defined item effects`,true,"No theme XP-perk contract declared; type-specific effect coverage is not defined.");
  }
- const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v1.18.0",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
+ const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v1.18.2",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
 }
 document.getElementById("debugRunEquipmentLifecycle")?.addEventListener("click",runEquipmentLifecycleTests);
 // Fault switches affect shared theme gates, so refresh the actual theme/store/inventory surfaces immediately.
