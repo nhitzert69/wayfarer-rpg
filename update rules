@@ -1,5 +1,11 @@
 # Update Rules
 
+## Skill-level quest XP scaling (v1.18.3 — mandatory)
+- Generated quests must add a skill-level XP bonus based on the level of the skill they train: +3 XP for each attained level from 2 through 9, +2 XP for each attained level from 10 through 19, and +1 XP for each attained level from 20 onward. The accumulated bonus is +24 at level 9, +26 at level 10, +44 at level 19, +45 at level 20, and +46 at level 21.
+- Apply the scaling only to quests for the matching skill, in addition to the template's base XP and any eligible theme bonus. Do not change the shared reward-award helper to add the bonus a second time.
+- Quest generation is the reward-locking boundary: save the skill level and skill-level bonus on each generated quest. Existing quest rewards must remain unchanged after later level-ups or equipment changes.
+- Display the skill-level bonus clearly on generated quests. Test the tier boundaries and verify completion awards the displayed total exactly once, with XP credited to the matching skill. Preserve Test/Sandbox isolation and all saved progress.
+
 ## Debug feature-lock regression verification (mandatory)
 - When a Debug feature lock forces a theme aspect to Dungeon, theme integration tests must inspect the actual computed/rendered output and compare it against the equipped theme's expected output; never declare failure merely because the injector checkbox is enabled.
 - For colors, compare all registered theme palette variables against the same equipped theme with only the lock removed. For character/theme imagery, compare actual image sources against registered expected assets. An unmapped new theme must fail or be explicitly inconclusive, never silently pass.

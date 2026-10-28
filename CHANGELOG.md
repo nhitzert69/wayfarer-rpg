@@ -1,3 +1,11 @@
+# Wayfarer v1.18.3 — Skill-level quest XP scaling (2026-10-28)
+
+- Added cumulative skill-level XP bonuses to newly generated quests: +3 XP for each attained skill level from 2–9, +2 for levels 10–19, and +1 from level 20 onward.
+- Applied the bonus only to quests for the matching skill and kept it additive with the base quest reward and eligible theme bonus. The reward and skill level are locked when the quest is generated, so existing quests remain unchanged.
+- Displayed the skill-level bonus on generated quests and added isolated Debug checks for the level 1, 2, 9, 10, 19, 20, and 21 boundaries.
+- Added permanent requirements for XP scaling, reward locking, and tier-boundary testing.
+- Validation performed: JavaScript syntax, XP-curve boundary assertions, quest reward-path assertions, version/changelog/cache alignment, required-file checks, and ZIP integrity. Live browser/Supabase testing and GitHub deployment were not performed.
+
 # Wayfarer v1.18.2 — Protect quest and XP persistence (2026-10-28)
 
 - Kept the local save revision timestamp aligned with the `updated_at` timestamp written to Supabase, so startup does not incorrectly prefer an older cloud save when a newer local quest/XP save failed to sync.
