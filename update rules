@@ -1,3 +1,10 @@
+## Store category organization and compact mobile cards (v1.18.4 — mandatory)
+- Keep Store navigation separated into Themes, Artifacts, and Pets categories. Selecting a category must show only its corresponding catalog panel, visibly identify the active tab, and preserve the selected category during Store re-renders.
+- Every registered purchasable item must appear in the category matching its stable item type/category without duplicating or bypassing shared unlock, purchase, ownership, or save logic.
+- When a category has no registered purchasables, show a clear empty state rather than inventing catalog items. Adding future artifacts or pets requires registering them in the authoritative catalog and integrating their actual purchase and inventory/equipment behavior.
+- Keep Store cards compact and mobile-friendly: use appropriately sized item art, concise spacing, readable text, and accessible controls while preserving prices, unlock requirements, perks, and purchase actions.
+- Test all three category buttons, active tab/panel state, responsive card sizing, purchase/unlock behavior, and state persistence. Clearly distinguish empty catalog states from failed loading.
+
 # Update Rules
 
 ## Skill-level quest XP scaling (v1.18.3 — mandatory)

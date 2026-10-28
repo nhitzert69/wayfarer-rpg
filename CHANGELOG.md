@@ -1,3 +1,11 @@
+# Wayfarer v1.18.4 — Store category tabs and compact item cards (2026-10-28)
+
+- Organized the Store into separate Themes, Artifacts, and Pets tabs with clear active-state and accessible tab/panel semantics.
+- Kept all currently registered purchasable themes in the Themes tab. Artifacts and Pets have dedicated empty states because no store items of those types are currently registered; the tabs are ready for future catalog entries.
+- Reduced theme card artwork from 92px to 60px (52px on narrow screens), tightened spacing and text sizing, and made purchase buttons more compact to reduce scrolling on mobile.
+- Preserved the existing theme purchase, unlock, Sandbox, inventory, and save paths.
+- Validation performed: JavaScript syntax, tab/category rendering assertions, version/cache/changelog consistency, required-file checks, and ZIP integrity. Live browser, purchase-flow, Supabase, and GitHub deployment tests were not performed.
+
 # Wayfarer v1.18.3 — Skill-level quest XP scaling (2026-10-28)
 
 - Added cumulative skill-level XP bonuses to newly generated quests: +3 XP for each attained skill level from 2–9, +2 for levels 10–19, and +1 from level 20 onward.
