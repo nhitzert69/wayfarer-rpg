@@ -1,3 +1,12 @@
+# Wayfarer v2.3.1 — delegate summary rendering to tab modules (2026-10-29)
+
+- Moved Quest Board summary rendering (daily completion count, lifetime completions, streak, date label, and shift-aware note) from `index.html` into `codes/tabs/quests.js`.
+- Moved the Journal entry count update into `codes/tabs/journal.js`. The core `render()` now coordinates these tab-owned summary refresh hooks instead of directly manipulating tab-specific summary elements.
+- Updated Journal's Edit action to use the core navigation API, preserving per-account active-tab memory and consistent tab lifecycle behavior.
+- Added `codes/inventory-service.js` as a shared source for normalized theme/pet/artifact classification and inventory ownership lookup. Character, Store, Debug, and theme lifecycle code now use the same classification helpers, reducing inconsistent case/category checks across tabs.
+- Kept authentication, account hydration, shared state, save/cloud sync, navigation coordination, and audio controls in their intended core/audio boundaries. Settings remains intentionally thin because its non-core controls are owned by the audio module and account/auth controls belong to the core.
+- Validation: JavaScript syntax, summary-renderer ownership, navigation hook, precache paths, version/cache consistency, and ZIP integrity checked. Live browser/Supabase behavior remains INCONCLUSIVE unless actually tested.
+
 # Wayfarer v2.3.0 — shared skill service and Admin resource grant fix (2026-10-29)
 
 - Fixed Debug “Grant XP & gold”: available to Admin in Sandbox or live mode. Live grants require explicit confirmation, require an authenticated Admin account, and use the normal core save/cloud-sync path; Sandbox grants remain temporary. The UI labels the target environment clearly and reports the result. Zero-value grants are rejected. Removal, reset and snapshot restore remain Sandbox-only.

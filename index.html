@@ -283,6 +283,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./codes/theme-registry.js"></script>
+<script src="./codes/inventory-service.js"></script>
 <script src="./codes/theme-service.js"></script>
 <script src="./codes/theme-music.js"></script>
 <script src="./codes/skill-service.js"></script>
@@ -594,7 +595,6 @@ let debugUnlockAllItems=false;
 let debugThemeGrantLevel=1;
 let debugAllowThemeUnequip=false;
 function renderCharacterInventory(){ if(window.WayfarerTabRenderers?.character?.renderCharacterInventory) return window.WayfarerTabRenderers.character.renderCharacterInventory(); }
-function hasUnlockable(id){return Array.isArray(state.inventory)&&state.inventory.some(item=>item&&item.id===id);}
 function renderStoreCatalog(){ if(window.WayfarerTabRenderers?.store?.renderStoreCatalog) return window.WayfarerTabRenderers.store.renderStoreCatalog(); }
 function renderCharacterOverview(){ if(window.WayfarerTabRenderers?.character?.renderCharacterOverview) return window.WayfarerTabRenderers.character.renderCharacterOverview(); }
 
@@ -609,13 +609,9 @@ function render(){
  const toNextEl=document.getElementById("toNext"); if(toNextEl) toNextEl.textContent=100-rem;
  const xpBarEl=document.getElementById("xpBar"); if(xpBarEl) xpBarEl.style.width=rem+"%";
  const xpCaptionEl=document.getElementById("xpCaption"); if(xpCaptionEl) xpCaptionEl.textContent=`${rem} / 100 XP toward your next level`;
- const done=state.quests.filter(q=>q.done).length;
- const dailyCountEl=document.getElementById("dailyCount"); if(dailyCountEl) dailyCountEl.textContent=`${done} / ${state.quests.length}`;
- const completedCountEl=document.getElementById("completedCount"); if(completedCountEl) completedCountEl.textContent=state.completedTotal;
- const journalCountEl=document.getElementById("journalCount"); if(journalCountEl) journalCountEl.textContent=state.journal.length;
- const streakEl=document.getElementById("streak"); if(streakEl) streakEl.textContent=`${state.questDays.length} days`;
- const dateLabelEl=document.getElementById("dateLabel"); if(dateLabelEl) dateLabelEl.textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
- const shiftNoteEl=document.getElementById("shiftNote"); if(shiftNoteEl) shiftNoteEl.textContent=({low:"Keep it gentle. Recovery is part of the campaign.",normal:"Small steps forge a different life.",free:"Your wider world awaits. Consider a longer adventure."})[state.settings.shift]||"Small steps forge a different life.";
+ // Tab-owned summary UI is delegated to the modules; the core only coordinates refreshes.
+ window.WayfarerTabRenderers?.quests?.renderSummary?.();
+ window.WayfarerTabRenderers?.journal?.renderSummary?.();
  ensureSelectedSkills();
  updateMusicControls();
  // Skill cards are shared progress UI and must not depend on visiting the Skills tab.

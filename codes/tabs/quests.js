@@ -471,6 +471,16 @@ window.generateQuests = generateQuests;
 
 /* Wayfarer quests tab renderer. Loaded on first tab selection. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
+window.WayfarerTabRenderers.quests.renderSummary = function(){
+ const quests=Array.isArray(state?.quests)?state.quests:[];
+ const done=quests.filter(q=>q&&q.done).length;
+ const dailyCountEl=document.getElementById("dailyCount");if(dailyCountEl)dailyCountEl.textContent=`${done} / ${quests.length}`;
+ const completedCountEl=document.getElementById("completedCount");if(completedCountEl)completedCountEl.textContent=String(Number(state?.completedTotal)||0);
+ const streakEl=document.getElementById("streak");if(streakEl)streakEl.textContent=`${(Array.isArray(state?.questDays)?state.questDays:[]).length} days`;
+ const dateLabelEl=document.getElementById("dateLabel");if(dateLabelEl)dateLabelEl.textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+ const shift=state?.settings?.shift||"normal";
+ const shiftNoteEl=document.getElementById("shiftNote");if(shiftNoteEl)shiftNoteEl.textContent=({low:"Keep it gentle. Recovery is part of the campaign.",normal:"Small steps forge a different life.",free:"Your wider world awaits. Consider a longer adventure."})[shift]||"Small steps forge a different life.";
+};
 window.WayfarerTabRenderers.quests = function() {
  const quests = Array.isArray(state?.quests) ? state.quests : [];
  const activeQuests = quests.filter(q => q && !q.done);
