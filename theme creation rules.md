@@ -1,3 +1,9 @@
+## Bloodthirst and skill-theme upgrades (v2.0.2)
+- Bloodthirst is a special non-Store theme with a kill-based unlock. Do not invent or infer a kill threshold; keep it unconfigured until specified. While equipped, it adds +2 XP and +2 gold to every skill quest.
+- Skill-theme levels unlock at skill levels 3, 8, 13, 18, and 23. Their perks are +5/+10/+15/+20/+25 XP and +0/+2/+4/+6/+8 gold, with costs 100/200/300/400/500 coins. Only the next upgrade is offered; maximum level is 5.
+- Quest generation locks theme XP/gold bonuses into the quest; completing a quest must award those exact stored bonuses once, regardless of later equipment changes.
+- XP/gold cheat tools and character reset/restore are Sandbox-only and must not write temporary Sandbox state to live local/cloud saves.
+
 # Wayfarer — Theme Creation Specification
 
 Every new theme must follow these rules unless explicitly changed.

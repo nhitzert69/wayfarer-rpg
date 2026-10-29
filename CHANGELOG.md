@@ -1,3 +1,12 @@
+# Wayfarer v2.0.2 — Bloodthirst, theme upgrades, and Sandbox-only Debug mutations (2026-10-29)
+
+- Added the Bloodthirst theme assets, crimson/ember/antique-gold visual identity, character portraits, soundtrack, registry metadata, equipped-theme rendering, and Debug baseline. It is not Store-purchasable; its kill threshold remains unset rather than invented. Sandbox “Unlock all items” can grant it for testing.
+- Added five levels to skill themes. Unlock levels are 3, 8, 13, 18, and 23; perks scale from +5 XP/+0 gold through +25 XP/+8 gold; upgrade prices are 100, 200, 300, 400, and 500 coins. Store shows only the next upgrade and hides themes at level 5.
+- Locked theme XP and gold rewards when quests are generated; reward completion awards each stored bonus once. Bloodthirst gives +2 XP and +2 gold on every skill quest while equipped.
+- Restricted XP/gold grant/removal, character reset/restore, quest-cooldown reset, and character-gender testing to Admin Sandbox. Sandbox saves now remain in temporary session state and do not write Sandbox mutations to the live local/cloud save.
+- Preserved the conservative v1.18.4-based structure: CSS remains external, while the interconnected application JavaScript stays inline.
+- Static validation performed: JavaScript syntax, reward/upgrade boundary assertions, Debug handler guards, referenced asset checks, release/cache/changelog consistency, and ZIP integrity. Browser, real Supabase, account-isolation, and deployed-app behavior remain unverified.
+
 # Wayfarer v2.0.1 — conservative first-step code separation (2026-10-29)
 
 - Rebuilt from the supplied v1.18.4 archive as the actual source baseline.
