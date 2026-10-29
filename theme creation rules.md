@@ -1,3 +1,65 @@
+# Wayfarer Theme Creation Rules — V3.0.0 Mandatory Standard
+
+This file is mandatory before any theme creation, modification, registration, asset/audio change, theme-related refactor, or theme cleanup. It supplements the master `update rules`; it does not replace it. Preserve the existing detailed rules below unless a deliberate, documented change is required.
+
+## A. Definition of a complete theme
+A theme is not complete merely because its artwork exists or it appears in the Store. Its entire lifecycle must be integrated and verified:
+1. Stable registry identity and metadata.
+2. Optimized icon, male/female character artwork, dedicated full-screen background, and dedicated soundtrack.
+3. Theme-specific body class, palette, readable interface styling, and correct responsive rendering.
+4. Correct Store listing, price, unlock requirements, and perk description.
+5. Correct ownership and Inventory visibility.
+6. Successful equip/unequip, equipped indicator, character art, background, palette, and soundtrack changes.
+7. Correct quest-time perk calculation and reward locking.
+8. Persistence after refresh and return to the app.
+9. Debug integration and isolated tests.
+10. No regression to existing themes, account data, or unrelated application features.
+
+## B. Required theme definition before implementation
+Before coding, document the theme name/description, stable internal ID, associated skill(s), unlock condition/level, price, exact perk type and amount, target skill (`perkSkill` when applicable), palette/visual direction, icon/art/background assets, soundtrack, and any special unlock behavior. Do not invent thresholds or data sources that the user has not specified.
+
+## C. Single source of truth and safe integration
+- Reuse the authoritative theme registry, inventory classifier, theme service, purchase/equip transactions, quest reward calculations, and music mapping.
+- Keep stable IDs, saved equipment IDs, unlock keys, skill names, and reward keys unchanged when changing display names or artwork.
+- Do not assume registry registration alone makes a theme purchasable, ownable, equipable, visible, styled, audible, or eligible for perks. Trace each lifecycle stage.
+- Avoid duplicate hard-coded allowlists when valid theme IDs can safely be derived from the shared registry.
+- Theme changes affect quests generated afterward only. Store applicable XP/coin/perk rewards on each quest at generation time; later equipment changes must not change existing quest rewards. Apply each eligible perk exactly once.
+- Preserve the starter Dungeon theme's special handling and all special/non-Store unlock rules. Do not invent kill thresholds or other unlock sources.
+
+## D. Assets, performance, and accessibility
+- Store images under `assets/images/` and audio under `assets/sound/`, following the existing project organization.
+- Optimize images before inclusion; prefer WebP when visual quality/transparency are preserved. Compress music to an appropriate web-friendly MP3/OGG bitrate, then verify decoding, duration, volume, and loop boundaries.
+- Update all asset references and service-worker precache entries whenever files are added, moved, renamed, or converted.
+- Test image/audio responses and actual decoding where possible. File existence alone is not proof that an asset renders or plays.
+- Ensure the background sits behind the interface with a readability overlay. Theme palettes must cover the relevant interface surfaces, including navigation, buttons, cards/panels, progress indicators, form controls, borders, and character framing as appropriate.
+- Maintain contrast, readable text, mobile/desktop layouts, scrolling, and clear interactive controls.
+
+## E. Transaction, reward, and persistence safety
+- Store purchases, unlocks, ownership, equipment changes, and perks must use the same shared decision/transaction paths as normal gameplay wherever practical.
+- Reject unmet requirements, insufficient currency, invalid IDs, duplicate purchases, and stale catalog actions safely.
+- Purchasing must not equip a theme automatically unless explicitly specified.
+- Sandbox transactions and tests use isolated temporary state and never write to live localStorage or Supabase.
+- Failed saves must preserve recoverable local progress and clearly report failures.
+- Music must respect the user's play/pause toggle, independent volume setting, loop behavior, crossfade behavior, and persisted preferences; handle mobile autoplay restrictions gracefully.
+
+## F. Mandatory theme verification
+For each new or materially changed theme, verify and report:
+- Registry identity, metadata, unlock behavior, Store visibility, and price.
+- Icon/background/portrait/soundtrack references and asset loading/decoding.
+- Theme body class and actual computed palette/background behavior, including lower interface surfaces.
+- Inventory ownership, equip/unequip, visible equipped state, character art, and persistence after refresh.
+- Quest reward locking, multiple matching skills where applicable, exactly-once reward application, and unchanged existing quests after equipment changes.
+- Debug tests, Sandbox isolation, and regression behavior for existing themes.
+- Mobile and desktop rendering.
+- Failure cases such as unmet level, failed purchase, blocked equip, missing assets, or unavailable audio where applicable.
+
+Debug checks must inspect observed application behavior, not merely the presence of a registry entry, selector, or enabled injector. Report each failure with test ID, expected result, actual result, and investigation suggestion. Use PASS, FAIL, or INCONCLUSIVE accurately. Non-active-theme visual checks must use temporary in-memory state and restore original classes without changing saved progress.
+
+## G. Completion gate
+Do not mark a theme complete until its full lifecycle has been traced and relevant tests are recorded. Static checks and browser-verified results must be distinguished. Preserve the existing theme-specific rules below, including Bloodthirst and skill-theme upgrade behavior, audio requirements, visual regression enforcement, and Debug/Sandbox safeguards.
+
+---
+
 ## Bloodthirst and skill-theme upgrades (v2.0.2)
 - Bloodthirst is a special non-Store theme with a kill-based unlock. Do not invent or infer a kill threshold; keep it unconfigured until specified. While equipped, it adds +2 XP and +2 gold to every skill quest.
 - Skill-theme levels unlock at skill levels 3, 8, 13, 18, and 23. Their perks are +5/+10/+15/+20/+25 XP and +0/+2/+4/+6/+8 gold, with costs 100/200/300/400/500 coins. Only the next upgrade is offered; maximum level is 5.

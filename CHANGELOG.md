@@ -1,3 +1,12 @@
+# Wayfarer v3.0.0 — Mandatory project rules and release standardization (2026-10-29)
+
+- Established `update rules` as the mandatory master standard for safe baselines/backups, source-of-truth handling, architecture ownership, account/Sandbox protection, test evidence, release bookkeeping, and completion criteria.
+- Expanded `theme creation rules.md` with a complete theme lifecycle contract, single-source-of-truth integration expectations, asset/accessibility requirements, transaction and reward safety, and a mandatory verification gate. Preserved the prior theme-specific rules below the new standard.
+- Added mandatory `game rules.md` for Kingdoms of the Unknown, covering standalone-first architecture, Wayfarer launcher behavior, optional read-only skill integration, independent versioned saves, lifecycle safety, and required tests.
+- Updated embedded Debug report versions and service-worker cache namespace to v3.0.0; added the three mandatory rules files to the service-worker asset list.
+- No gameplay, authentication, Supabase schema, account data, or user-save behavior was intentionally changed. No speculative code cleanup was made because this release's verified scope is governance/documentation and release metadata.
+- Validation: all JavaScript files pass `node --check`; all 82 service-worker asset entries resolve to files; mandatory rule files are present; service-worker cache and both embedded Debug report versions align with v3.0.0; changelog top entry and required project files verified. ZIP integrity checked after packaging. Live browser behavior, deployed PWA behavior, and Supabase persistence remain INCONCLUSIVE.
+
 # Wayfarer v2.3.15 — Kingdoms of the Unknown launcher and Sandbox startup fix (2026-10-29)
 - Added a red Play button beneath the Character portrait. The Character module lazily loads the game from `codes/game/`, keeping game logic separate from the tab.
 - Added the Kingdoms of the Unknown title/loading overlay using the approved fantasy title artwork, a top-left menu, and a Return to Main Menu action that closes the overlay and restores focus to the Character launcher.

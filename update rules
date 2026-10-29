@@ -1,3 +1,77 @@
+# Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
+
+These rules are mandatory for every Wayfarer update, including documentation-only, bug-fix, Debug-only, theme, game, refactor, and release-packaging changes. They are the master development and release standard. The companion files `theme creation rules.md` and `game rules.md` are also mandatory whenever their scope applies. Read all applicable rule files before editing. If a required file cannot be read, stop and ask for it; do not proceed by assumption.
+
+## 1. Rule hierarchy and change control
+- Follow this master standard for every change.
+- Follow `theme creation rules.md` for theme registration, assets, visuals, music, Store, unlocks, Inventory, equipment, perks, rewards, theme diagnostics, and theme-related cleanup.
+- Follow `game rules.md` for Kingdoms of the Unknown, game architecture, game saves, game UI, game testing, and Wayfarer/game integration.
+- When a change touches multiple areas, all applicable rule files apply.
+- If requirements conflict, pause before editing, identify the conflict, and resolve it explicitly. Do not silently ignore either rule.
+- Changing a mandatory rule is itself a versioned project change: edit the rule deliberately, explain why in the changelog, and preserve unrelated requirements and historical release notes.
+
+## 2. Source of truth and safe starting point
+- When authorized GitHub access is available, inspect the current live repository and the intended branch before every update. The repository is the source of truth; an old ZIP or remembered project state is not.
+- Before modifying files, inspect the current project structure, working-tree/diff state, version metadata, relevant callers, dependencies, event listeners, save paths, and existing tests.
+- If live repository access is unavailable, state that limitation and work only from a clearly identified user-supplied archive or source. Never claim that GitHub or production was changed unless that action actually succeeded.
+- Establish a recoverable baseline before editing: preserve a known-good commit or equivalent version-control checkpoint and, for release deliveries, a complete backup archive outside the working copy. Verify that the backup opens and contains the expected project files.
+- Do not experiment directly on the production/deployment branch when a separate working branch is available. Keep changes reviewable and narrow. Do not merge/deploy without the user's explicit approval when the workflow provides an approval gate.
+- Source-code backups do not back up user data. Avoid destructive data or schema changes unless explicitly requested and separately backed up with a rollback plan.
+
+## 3. Scope and preservation
+- Implement only the requested scope and confirmed cleanup. No unrelated redesigns, feature additions, or speculative rewrites.
+- Prefer a small, reversible fix over replacing a working system.
+- Do not delete code because it looks redundant. Establish that it is unreachable, duplicated without purpose, or obsolete by checking callers and runtime dependencies first.
+- Preserve existing features, username/PIN Supabase authentication, project URL/public-key configuration, account isolation, saved progress, session restoration, local/cloud save semantics, theme integration, service-worker/PWA behavior, and all prior changelog history unless the user explicitly authorizes a change.
+- Never expose a Supabase `service_role` key in client-side files. Do not substitute placeholders for the user's working project URL or public anon key.
+- Do not make undocumented changes to saved-data formats. Any necessary migration must be idempotent, preserve existing data, and have explicit validation and recovery behavior.
+
+## 4. Architecture and ownership
+- Keep `index.html` focused on core application responsibilities: startup, authentication/session restoration, account hydration, shared account state and persistence/cloud sync, shared service coordination, navigation, and tab registration/loading.
+- Keep feature-specific UI, rendering, event handling, and behavior in the responsible module. Avoid duplicate state ownership, duplicate event listeners, circular dependencies, and cross-tab rendering calls that bypass the core's coordination contract.
+- Shared rules and decisions should have one authoritative implementation. Store, Inventory, equipment, quest rewards, Debug tests, and Sandbox must use shared gameplay paths wherever practical instead of parallel implementations that can drift.
+- Do not remove compatibility wrappers or change module initialization order until every caller and dependency has been inspected and affected behavior has been tested.
+- All nine tab modules remain required: Quest Board, Character, Store, Skills, To Do, Groceries, Journal, Settings, and Debug. Preserve lazy-loading behavior where used and ensure all required entry points are available after refresh.
+
+## 5. Account, persistence, and Sandbox safety
+- Preserve username/PIN authentication, account isolation, restoration after refresh, and existing Supabase schema/configuration.
+- Do not clear account-bound local state merely because an auth callback temporarily returns null while session restoration is pending.
+- Drain pending cloud writes before sign-out. A failed cloud write must not silently discard local progress or make an older cloud snapshot appear newer than the current local state.
+- Sandbox state must be an isolated temporary copy. Sandbox operations must not write temporary changes to live local saves or Supabase. On exit, restore the live state unchanged.
+- Enforce authorization in both the UI and action handlers. Never bypass Admin checks to make a control appear functional.
+- Keep destructive resets, simulated transactions, fault injection, and feature-isolation tests restricted to their authorized environment. Tests must inspect observed outcomes and must not mutate real progress.
+
+## 6. Testing and evidence
+- Before editing, identify affected behavior and a proportionate regression checklist. After editing, run targeted tests plus relevant adjacent-system checks.
+- At minimum, validate JavaScript syntax, required file/asset paths, script loading order, service-worker precache paths, release metadata, and ZIP integrity for a packaged release.
+- Where applicable, test navigation, all nine tabs, login/session restoration, refresh persistence, save/cloud failure behavior, Store/Inventory/equipment, theme perks and reward locking, Sandbox isolation, Debug controls, and game integration.
+- Exercise normal and relevant failure paths. A checked fault injector is not proof that a failure occurred; inspect the actual result.
+- Report each test as PASS, FAIL, or INCONCLUSIVE. A static check is not a browser test. Never claim live browser, Supabase, deployed-site, mobile, or cross-device behavior was tested unless it was actually exercised.
+- When live testing is unavailable, state the remaining verification steps and do not describe the feature as fully runtime-verified.
+
+## 7. Mandatory release bookkeeping
+- Every update, including rule/documentation-only updates, gets a new entry at the very top of `CHANGELOG.md`. Preserve all older entries verbatim unless the user explicitly requests a history edit.
+- The top changelog entry must identify the release version/date, summarize actual changes, and state validation performed and important unverified behavior.
+- Keep the app's diagnostic/build version, embedded Debug report versions, service-worker cache namespace, top changelog entry, and release ZIP filename aligned. Document any deliberate exception.
+- Keep `CHANGELOG.md` in the service-worker asset list and ensure the deployed Version History can fetch it.
+- Every complete release ZIP must include `update rules`, `theme creation rules.md`, and `game rules.md`, plus all source, configuration, schema, assets, and changelog files required by the project. Verify archive contents and integrity before providing the link.
+- Use a short, consistent filename such as `Wayfarer_v3_0_0.zip`. Never invent or reuse a download path that has not been verified in the current session.
+- Do not claim the release is live until it has actually been deployed. A ZIP delivery is not itself a deployment.
+
+## 8. Definition of done
+A change is done only when:
+1. Its requirements and applicable rules were read.
+2. The actual baseline and affected dependencies were inspected.
+3. The smallest justified change was made.
+4. Targeted tests and relevant regressions were run and honestly reported.
+5. Version/changelog/cache metadata are aligned.
+6. The complete archive is verified when a ZIP is part of delivery.
+7. Known limitations and unverified checks are clearly disclosed.
+
+A tab is not considered functionally complete solely because its code is in a separate file. Report structural ownership and live functional verification separately.
+
+---
+
 ## v2.3.15 Kingdoms of the Unknown launcher and Sandbox startup (mandatory)
 - The Character tab owns only the red Play button and lazy-load trigger. The game itself belongs under `codes/game/`; keep its lifecycle, overlay, menu, orientation handling, and game-specific CSS there. Do not put game logic into `index.html` or `character.js`.
 - Game title art is `assets/images/kingdoms-of-the-unknown-title.png`; include it and `codes/game/game.js` / `codes/game/game.css` in the service-worker precache. Opening the game must not change authentication, character state, or the selected Wayfarer tab. Return to Main Menu closes the overlay and restores focus to the Play button.
