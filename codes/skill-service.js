@@ -2,6 +2,18 @@
    progression mathematics and skill normalization live here for every tab to reuse. */
 (function(){
   const root=window;
+  root.migrateSkillState=function(target){
+    if(!target||typeof target!=="object")return target;
+    if(!Array.isArray(target.quests))target.quests=[];
+    if(!target.skillXp||typeof target.skillXp!=="object")target.skillXp={};
+    // Preserve XP and quest attribution when retiring the legacy skill label.
+    target.quests.forEach(q=>{if(q&&q.skill==="Social Confidence")q.skill="Social Interactions";});
+    if(Object.prototype.hasOwnProperty.call(target.skillXp,"Social Confidence")){
+      target.skillXp["Social Interactions"]=(Number(target.skillXp["Social Interactions"])||0)+(Number(target.skillXp["Social Confidence"])||0);
+      delete target.skillXp["Social Confidence"];
+    }
+    return target;
+  };
   root.allSkillNames=function(){return skillCatalog.flatMap(c=>c.skills.map(s=>s[0]));};
   root.ensureSelectedSkills=function(){
     if(!Array.isArray(state.selectedSkills)) state.selectedSkills=[];

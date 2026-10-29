@@ -1,3 +1,19 @@
+# Wayfarer v2.3.5 — cross-tab event delegation and Settings rendering (2026-10-29)
+
+- Updated To Do, Groceries, Journal, and Skills to delegate dynamic-row/catalog events from stable containers, preventing per-render listener rebinding and keeping actions tied to current shared state.
+- Settings renderer now restores checkbox and range controls as well as ordinary fields, and synchronizes the visible music-volume label.
+- Kept state mutation and persistence on the existing core `save()` boundary; no authentication or cloud-sync ownership moved.
+- Audited all nine tab entry modules for renderer/module registration; this is a cross-tab reliability pass, not a claim that all remaining core dependencies are eliminated.
+- Validation: syntax, module registration, event-delegation guards, service-worker paths, version alignment, and ZIP integrity checked. Live browser/Supabase behavior remains INCONCLUSIVE.
+
+# Wayfarer v2.3.4 — extract shared skill catalog and legacy skill migration (2026-10-29)
+
+- Moved the authoritative skill catalog out of `index.html` into `codes/skill-catalog.js`, shared by Skills, Debug, and the skill progression service.
+- Moved the legacy `Social Confidence` → `Social Interactions` migration into `codes/skill-service.js`; both initial local state and hydrated cloud state use the same migration helper, preserving quest attribution and combining XP rather than discarding it.
+- Added the catalog module to the service-worker precache and aligned the cache namespace and embedded Debug report versions to v2.3.4.
+- Continued the all-nine-tab modularization effort. Authentication, account restoration, shared account state, save/cloud-sync authority, navigation, and tab registry/loading remain in core intentionally.
+- Validation target: JavaScript syntax, catalog availability/order, migration behavior (including repeat invocation), service-worker paths, version consistency, and ZIP integrity. Browser interactions and Supabase persistence remain INCONCLUSIVE unless tested in a live browser.
+
 # Wayfarer v2.3.3 — finish cross-tab navigation and summary ownership fixes (2026-10-29)
 
 - Fixed Journal summary-hook registration order: `renderSummary` is now attached after the callable Journal renderer is created, so core summary coordination can update the journal-entry count instead of losing the hook.

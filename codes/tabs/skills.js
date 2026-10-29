@@ -29,18 +29,22 @@ window.WayfarerTabRenderers.skills.renderSkillCatalog = function(){
  }).join("")}</div></div>`).join("");
  const count=document.getElementById("selectedSkillCount");
  if(count)count.textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
- root.querySelectorAll("[data-skill-choice]").forEach(input=>input.addEventListener("change",()=>{
+}
+// The catalog root survives innerHTML rerenders; delegate change handling once.
+const skillCatalogRoot=document.getElementById("skillCatalog");
+if(skillCatalogRoot&&!skillCatalogRoot.dataset.wayfarerSkillActionsBound){
+ skillCatalogRoot.dataset.wayfarerSkillActionsBound="true";
+ skillCatalogRoot.addEventListener("change",event=>{
+  const input=event.target.closest("[data-skill-choice]");
+  if(input&&skillCatalogRoot.contains(input)){
    const name=input.dataset.skillChoice;
    if(input.checked){if(!state.selectedSkills.includes(name))state.selectedSkills.push(name);if(!state.skillPriorities[name])state.skillPriorities[name]="secondary";}
    else{state.selectedSkills=state.selectedSkills.filter(s=>s!==name);delete state.skillPriorities[name];}
-   renderSkillCatalog();
-   renderSkillProgress();
- }));
- root.querySelectorAll("[data-skill-priority]").forEach(select=>select.addEventListener("change",()=>{
-   state.skillPriorities[select.dataset.skillPriority]=select.value;
-   save(true);
-   renderSkillCatalog();
- }));
+   renderSkillCatalog();renderSkillProgress();return;
+  }
+  const select=event.target.closest("[data-skill-priority]");
+  if(select&&skillCatalogRoot.contains(select)){state.skillPriorities[select.dataset.skillPriority]=select.value;save(true);renderSkillCatalog();}
+ });
 }
 window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.skills = function() { window.WayfarerTabRenderers.skills.renderSkillProgress(); window.WayfarerTabRenderers.skills.renderSkillCatalog(); };

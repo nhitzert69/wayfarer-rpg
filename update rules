@@ -1,3 +1,15 @@
+## v2.3.5 cross-tab event ownership (mandatory)
+- Keep the modularization goal across all nine tabs; do not focus exclusively on one tab.
+- Dynamic To Do, Groceries, Journal and Skills list/catalog interactions should delegate from stable container roots and use dataset guards so repeated renders do not bind per-row handlers. Do not move persistence authority out of the core `save()` boundary.
+- Settings owns rendering of its own controls, including checkbox/range values and the visible music-volume label; actual theme audio behavior remains in `codes/theme-music.js`.
+- Continue to preserve auth, account restoration, shared state, cloud persistence, navigation, Sandbox isolation, theme reward locking and Admin gates in their established owners.
+- Every release updates this rules file, the top changelog entry, Debug report versions, and service-worker cache namespace together. Check all nine tab modules, JavaScript syntax, event-binding guards, every precache path, version consistency, and ZIP integrity. Browser/Supabase behavior is INCONCLUSIVE unless actually tested.
+
+## v2.3.4 shared skill catalog ownership (mandatory)
+- The authoritative `skillCatalog` must live in `codes/skill-catalog.js`, loaded before `codes/skill-service.js` and before the core inline application script. Skills, Debug, and skill progression must use that one catalog; do not duplicate it in a tab or in `index.html`.
+- Skill-domain migrations (including `Social Confidence` → `Social Interactions`) belong in `codes/skill-service.js` as an idempotent helper. Apply it to both locally restored state and cloud-hydrated state without dropping saved XP or quest attribution. Keep general account restoration and persistence authority in the core.
+- Every release must update the changelog top entry, Debug report versions, and service-worker cache namespace together. Verify script load order, all nine tab module paths, migration idempotence, syntax, every precache path, version consistency, and ZIP integrity. Browser/Supabase behavior remains INCONCLUSIVE unless actually tested.
+
 ## v2.3.3 all-tabs integration audit (mandatory)
 - Continue auditing all nine tabs; do not narrow the overall modularization goal to Quest Board, Character, and Store alone.
 - Attach renderer hooks such as `renderSummary` only after the callable renderer is created; verify no later assignment overwrites hooks. Core may coordinate tab-owned hooks but must not own tab-specific DOM updates.
