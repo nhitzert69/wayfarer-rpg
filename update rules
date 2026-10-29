@@ -1,3 +1,10 @@
+## v2.0.6 four-feature extraction (mandatory)
+- Build v2.0.6 from the supplied v2.0.3 archive, not from v2.0.4/v2.0.5.
+- Extract theme music, adventure chooser/generation, quest-pool/campaign generation, and quest-card/reward completion into `codes/theme-music.js`, `codes/adventures.js`, `codes/quest-generation.js`, and `codes/app-render-quests.js`.
+- Keep Core Account, App Startup, Debug, To-Do, Journal, and Groceries inline. Do not change authentication/session handling or account save/restore logic as part of extraction.
+- Load the four classic scripts after Supabase and before the main inline script. Preserve code order within each extracted section and precache all modules for offline use.
+- Syntax checks are not sufficient: test login and refresh first, then quest generation/completion and XP/gold, adventure generation, music controls, and theme/background switching. Mark untested browser behavior INCONCLUSIVE.
+
 ## Bloodthirst background regression (v2.0.3 — mandatory)
 - The default Dungeon background selector must explicitly exclude `body.bloodthirstTheme`, just as it excludes every other theme with a dedicated background. Verify that equipping Bloodthirst displays `assets/images/bloodthirst-background.webp`, and that switching to another theme restores that theme's own background.
 - Do not fix this by changing the Bloodthirst art, palette, equipment state, or theme registry when the root cause is CSS selector specificity/exclusion.

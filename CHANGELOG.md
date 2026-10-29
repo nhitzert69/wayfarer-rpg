@@ -1,3 +1,11 @@
+# Wayfarer v2.0.6 — incremental extraction of music, adventures, quest generation, and quest rendering (2026-10-29)
+
+- Rebuilt from the supplied v2.0.3 archive, avoiding the v2.0.4/v2.0.5 feature-tab extractions associated with the refresh-login regression.
+- Extracted theme music, adventure chooser/generation, quest-pool/campaign generation, and quest-card/reward completion into four classic scripts under `codes/`.
+- Kept Core Account, App Startup, Debug, To-Do, Journal, and Groceries inline. Shared account state, reward calculations, and save paths remain in the original application.
+- Updated script loading, offline precache, cache namespace, and release version identifiers.
+- Validation: JavaScript syntax and static path/archive checks. Login persistence, browser interactions, quest completion, music playback, and background rendering have not been browser-verified.
+
 # Wayfarer v2.0.3 — Fix Bloodthirst page background (2026-10-29)
 
 - Fixed the default Dungeon-background CSS selector so it explicitly excludes the equipped Bloodthirst theme.

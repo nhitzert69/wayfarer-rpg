@@ -282,6 +282,11 @@
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./codes/theme-music.js"></script>
+<script src="./codes/adventures.js"></script>
+<script src="./codes/quest-generation.js"></script>
+<script src="./codes/app-render-quests.js"></script>
+
 <script>
 // Register navigation immediately so a later optional feature cannot disable the tabs.
 document.querySelectorAll(".tab").forEach(function(button){
@@ -642,57 +647,6 @@ function renderStoreCatalog(){
 function renderCharacterOverview(){if(ensureDungeonThemeState())save(true);const profile=state.profile||{};const gender=profile.gender;const equippedTheme=state.equipment?.theme||"dungeon-theme";const themeName=equippedTheme==="bloodthirst-theme"?"Bloodthirst":equippedTheme==="orthodox-theme"?"Faith":equippedTheme==="academy-theme"?"Academy":equippedTheme==="adventure-theme"?"Adventurer":equippedTheme==="social-interactions-theme"?"Social Butterfly":equippedTheme==="relationships-theme"?"Heartkeeper":equippedTheme==="fitness-theme"?"Roman Discipline":equippedTheme==="spartan-endurance-theme"?"Spartan Endurance":equippedTheme==="mozart-salon-theme"?"Mozart's Salon":equippedTheme==="ceo-theme"?"CEO":equippedTheme==="v0-test-theme"?"Test":"Dungeon";const genderLabel=gender==="male"?"Male "+themeName:gender==="female"?"Female "+themeName:"Starting adventurer";const artwork=document.getElementById("characterArtwork");if(artwork){const female=gender==="female";artwork.src=equippedTheme==="bloodthirst-theme"?(female?"./assets/images/female-bloodthirst.webp":"./assets/images/male-bloodthirst.webp"):equippedTheme==="orthodox-theme"?(female?"./assets/images/female-orthodox.webp":"./assets/images/male-orthodox.webp"):equippedTheme==="relationships-theme"?(female?"./assets/images/female-relationships.webp":"./assets/images/male-relationships.webp"):equippedTheme==="social-interactions-theme"?(female?"./assets/images/female-social.webp":"./assets/images/male-social.webp"):equippedTheme==="academy-theme"?(female?"./assets/images/female-academy.webp":"./assets/images/male-academy.webp"):equippedTheme==="adventure-theme"?(female?"./assets/images/female-adventurer.webp":"./assets/images/male-adventurer.webp"):equippedTheme==="fitness-theme"?(female?"./assets/images/female-fitness.webp":"./assets/images/male-fitness.webp"):equippedTheme==="spartan-endurance-theme"?(female?"./assets/images/female-spartan-endurance.webp":"./assets/images/male-spartan-endurance.webp"):equippedTheme==="mozart-salon-theme"?(female?"./assets/images/female-mozart-salon.webp":"./assets/images/male-mozart-salon.webp"):equippedTheme==="ceo-theme"?(female?"./assets/images/female-ceo.webp":"./assets/images/male-ceo.webp"): (female?"./assets/images/female-dungeon.webp":"./assets/images/male-dungeon.webp");artwork.alt=(female?"Female":"Male")+" "+themeName+" character portrait";}const nameEl=document.getElementById("characterNameLabel");if(nameEl)nameEl.textContent=String(wayfarerSignedInUsername||cloudUser?.user_metadata?.wayfarer_username||((cloudUser?.email||"").split("@")[0])||"Wayfarer").trim()||"Wayfarer";const genderEl=document.getElementById("characterGenderLabel");if(genderEl)genderEl.textContent=genderLabel;const xpEl=document.getElementById("characterXpLabel");if(xpEl)xpEl.textContent=(Number(state.xp)||0)+" XP";const goldEl=document.getElementById("storeGoldBalance");if(goldEl)goldEl.textContent=String(Math.max(0,Number(state.gold)||0));renderCharacterInventory();if(typeof applyDebugFeatureSwitches==="function"&&debugSandboxActive)applyDebugFeatureSwitches();}
 
 // v0.14.5: theme-aware music system. Settings are persisted in the existing account state.
-const THEME_MUSIC={
- "dungeon-theme":"./assets/sound/dungeon-theme.mp3",
- "adventure-theme":"./assets/sound/adventure-theme.mp3",
- "academy-theme":"./assets/sound/academy-theme.mp3",
- "social-interactions-theme":"./assets/sound/social-interactions-theme.mp3",
- "relationships-theme":"./assets/sound/relationships-theme.mp3",
- "orthodox-theme":"./assets/sound/orthodox-theme.mp3",
- // Reserved tracks for future themes; these themes are not registered or equipable yet.
- "fitness-theme":"./assets/sound/fitness-theme.mp3",
- "spartan-endurance-theme":"./assets/sound/cardio-theme.mp3",
- "mozart-salon-theme":"./assets/sound/piano-theme.mp3",
- "ceo-theme":"./assets/sound/ceo-theme.mp3",
- "v0-test-theme":"./assets/sound/dungeon-theme.mp3",
- "bloodthirst-theme":"./assets/sound/bloodthirst-theme.mp3",
- "cardio-theme":"./assets/sound/cardio-theme.mp3",
- "piano-theme":"./assets/sound/piano-theme.mp3"
-};
-let themeMusicAudio=null, themeMusicSource="", themeMusicFadeTimers=new Map(), musicPlaybackUnlocked=false;
-function getMusicSettings(){if(!state.settings||typeof state.settings!=="object")state.settings={...defaultSettings};if(typeof state.settings.musicEnabled!=="boolean")state.settings.musicEnabled=true;if(!state.settings.musicEnabledMigrationV1){state.settings.musicEnabled=true;state.settings.musicEnabledMigrationV1=true;}const volume=Number(state.settings.musicVolume);state.settings.musicVolume=Number.isFinite(volume)?Math.max(0,Math.min(100,volume)):35;return state.settings;}
-function getEquippedMusicSource(){const id=(debugIsAdmin&&debugSandboxActive&&document.getElementById("debugDisableMusic")?.checked)?"dungeon-theme":(state?.equipment?.theme||"dungeon-theme");return THEME_MUSIC[id]||THEME_MUSIC["dungeon-theme"];}
-function updateMusicControls(){const settings=getMusicSettings();const toggle=document.getElementById("musicEnabled"),volume=document.getElementById("musicVolume"),value=document.getElementById("musicVolumeValue"),button=document.getElementById("musicPlayButton"),status=document.getElementById("musicStatus");if(toggle)toggle.checked=settings.musicEnabled;if(volume)volume.value=String(settings.musicVolume);if(value)value.textContent=settings.musicVolume+"%";if(button)button.textContent=settings.musicEnabled?"Ⅱ Pause music":"▶ Play music";if(status)status.textContent=!settings.musicEnabled?"Music paused":(themeMusicAudio&&!themeMusicAudio.paused?"Playing current theme soundtrack":"Ready to play — tap Play music if your browser blocks autoplay");}
-function stopMusicFade(audio){if(audio&&themeMusicFadeTimers.has(audio)){clearInterval(themeMusicFadeTimers.get(audio));themeMusicFadeTimers.delete(audio);}else if(!audio){for(const timer of themeMusicFadeTimers.values())clearInterval(timer);themeMusicFadeTimers.clear();}}
-function fadeAudio(audio,target,duration=700,done){stopMusicFade(audio);if(!audio){if(done)done();return;}const start=Number(audio.volume)||0,steps=14;let step=0;const timer=setInterval(()=>{step++;audio.volume=Math.max(0,Math.min(1,start+(target-start)*(step/steps)));if(step>=steps){stopMusicFade(audio);audio.volume=target;if(done)done();}},Math.max(16,duration/steps));themeMusicFadeTimers.set(audio,timer);}
-function createThemeAudio(src){const audio=new Audio(src);audio.loop=true;audio.preload="none";audio.volume=0;audio.addEventListener("error",()=>{const status=document.getElementById("musicStatus");if(status)status.textContent="Could not load this soundtrack. Check the deployed audio files.";});return audio;}
-async function applyThemeMusic({userInitiated=false}={}){
- const settings=getMusicSettings(),src=getEquippedMusicSource(),target=settings.musicVolume/100;
- updateMusicControls();
- if(!settings.musicEnabled){if(themeMusicAudio&&!themeMusicAudio.paused)fadeAudio(themeMusicAudio,0,450,()=>themeMusicAudio.pause());else if(themeMusicAudio)themeMusicAudio.pause();return;}
- if(!musicPlaybackUnlocked&&!userInitiated){const status=document.getElementById("musicStatus");if(status)status.textContent="Ready — tap Play music to start";return;}
- musicPlaybackUnlocked=musicPlaybackUnlocked||userInitiated;
- if(themeMusicSource!==src||!themeMusicAudio){
-  const old=themeMusicAudio;
-  // Theme changes are an immediate handoff: stop the previous soundtrack before starting the new one.
-  if(old){stopMusicFade(old);old.pause();old.currentTime=0;old.src="";}
-  stopMusicFade();themeMusicSource=src;
-  const next=createThemeAudio(src);themeMusicAudio=next;next.preload="auto";next.volume=target;
-  try{await next.play();}
-  catch(_){const status=document.getElementById("musicStatus");if(status)status.textContent="Tap Play music to allow playback";return;}
- }
- else {try{if(themeMusicAudio.paused)await themeMusicAudio.play();stopMusicFade(themeMusicAudio);themeMusicAudio.volume=target;}catch(_){const status=document.getElementById("musicStatus");if(status)status.textContent="Tap Play music to allow playback";return;}}
- updateMusicControls();
-}
-function syncDungeonMusic(){applyThemeMusic();}
-function tryStartDungeonMusic(){if(getMusicSettings().musicEnabled)applyThemeMusic({userInitiated:true});}
-document.getElementById("musicEnabled")?.addEventListener("change",event=>{getMusicSettings().musicEnabled=!!event.target.checked;save(true);updateMusicControls();if(event.target.checked)applyThemeMusic({userInitiated:true});else applyThemeMusic();});
-document.getElementById("musicVolume")?.addEventListener("input",event=>{const settings=getMusicSettings();settings.musicVolume=Math.max(0,Math.min(100,Number(event.target.value)||0));const label=document.getElementById("musicVolumeValue");if(label)label.textContent=settings.musicVolume+"%";if(themeMusicAudio&&!themeMusicAudio.paused){stopMusicFade();themeMusicAudio.volume=settings.musicVolume/100;}save(true);});
-document.getElementById("musicPlayButton")?.addEventListener("click",()=>{const settings=getMusicSettings();settings.musicEnabled=!settings.musicEnabled;save(true);updateMusicControls();if(settings.musicEnabled)applyThemeMusic({userInitiated:true});else applyThemeMusic();});
-window.addEventListener("pointerdown",()=>{if(getMusicSettings().musicEnabled)tryStartDungeonMusic();},{passive:true});
-window.addEventListener("keydown",()=>{if(getMusicSettings().musicEnabled)tryStartDungeonMusic();});
-window.addEventListener("pagehide",()=>{stopMusicFade();if(themeMusicAudio)themeMusicAudio.pause();});
-
 function render(){
  // The old global-character-level widgets were removed from the main page.
  // Update them only if a future version puts those elements back.
@@ -713,10 +667,6 @@ function render(){
  const activeQuests=state.quests.filter(q=>!q.done);
  const mainQuests=activeQuests.filter(q=>getSkillPriority(q.skill)==="priority");
  const sideQuests=activeQuests.filter(q=>getSkillPriority(q.skill)!=="priority");
- function questCard(q){return `<article class="card questActive" data-quest-card="${esc(q.id)}">
-  <div class="questTop"><div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP · +${5+Math.max(0,Number(q.perkBonusGold)||0)} coins${q.skillLevelBonusXp?` <small style="display:block;font-size:11px;opacity:.85">Includes +${q.skillLevelBonusXp} skill-level bonus XP (Lv ${q.generatedForLevel||1})</small>`:""}${q.perkBonusXp?` <small style="display:block;font-size:11px;opacity:.85">Includes ${q.perkBonusXp} ${esc(q.perkThemeName||"theme")} bonus XP</small>`:""}</span></div>
-   <p>${esc(q.description||"Complete this quest in a way that fits your day.")}</p><div class="row"><span class="tag">${esc(q.category)}</span><span class="tag">${esc(q.skill||"Discipline")}</span>${q.estimatedMinutes?`<span class="tag">~${q.estimatedMinutes} min</span>`:""}<button class="btn small" data-complete-btn="${q.id}">Complete</button></div></div></div>
- </article>`;}
  const mainGrid=document.getElementById("mainQuestGrid"),sideGrid=document.getElementById("sideQuestGrid");
  if(mainGrid)mainGrid.innerHTML=mainQuests.length?mainQuests.map(questCard).join(""):'<div class="empty">No main quests yet. Mark one or more selected skills as Priority in the Skills tab, then generate quests.</div>';
  if(sideGrid)sideGrid.innerHTML=sideQuests.length?sideQuests.map(questCard).join(""):'<div class="empty">No side quests right now. Select secondary skills and generate quests, or enjoy your clear board.</div>';
@@ -757,39 +707,6 @@ function render(){
  for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el&&el.type!=="checkbox"&&el.type!=="range")el.value=val}
 updateMusicControls();
 renderCharacterOverview();}
-function awardQuestRewards(target,q){
- const amount=Math.max(0,Number(q?.xp)||0);const coins=5+Math.max(0,Number(q?.perkBonusGold)||0);
- target.xp=(Number(target.xp)||0)+amount;target.gold=Math.max(0,Number(target.gold)||0)+coins;
- if(!target.skillXp||typeof target.skillXp!=="object")target.skillXp={};
- const skill=q?.skill||({"Social":"Social Interactions","Adventure":"Adventure","Skill":"Creativity","Knowledge":"Knowledge","Relationships":"Relationships","Daily":"Discipline","Side quest":"Discipline","Boss quest":"Adventure"})[q?.category]||"Discipline";
- target.skillXp[skill]=(Number(target.skillXp[skill])||0)+amount;target.completedTotal=(Number(target.completedTotal)||0)+1;
- return {xp:amount,skill,coins};
-}
-function completeQuest(id,done=true){
- const q=state.quests.find(q=>String(q.id)===String(id));
- if(!q||q.done===done)return;
- if(!done){toast("Earned XP is never removed. Your completed quest stays recorded.");return;}
- if(!debugQuestRulesOverridden()&&!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP + ${5+Math.max(0,Number(q.perkBonusGold)||0)} coins${q.perkBonusXp?` (includes ${q.perkBonusXp} ${q.perkThemeName||"theme"} bonus XP)`:""}?`))return;
- // Record completion and award XP immediately, before the visual card animation.
- q.done=true;
- const award=awardQuestRewards(state,q);
- const skill=award.skill;
- const perkThemeName=q.perkThemeName||"";
- if(!state.questDays.includes(today()))state.questDays.push(today());
- toast(`Quest complete! +${q.xp} XP · +${award.coins} coins${q.perkBonusXp?` · includes +${q.perkBonusXp} ${perkThemeName} bonus`:""}`);
- const grids=[document.getElementById("mainQuestGrid"),document.getElementById("sideQuestGrid")].filter(Boolean);
- const trigger=grids.flatMap(grid=>[...grid.querySelectorAll("[data-complete-btn]")]).find(el=>String(el.dataset.completeBtn)===String(id));
- const card=trigger?trigger.closest("article"):null;
- // Save immediately without rerendering, so the user can see the checked/complete state slide away.
- save(true);
- if(!card){render();return;}
- card.classList.add("questDone","questLeaving");
- card.querySelectorAll("button").forEach(el=>{el.disabled=true;});
- const title=card.querySelector("h3");if(title)title.setAttribute("aria-label","Completed: "+q.title);
- const completeButton=card.querySelector("[data-complete-btn]");if(completeButton){completeButton.textContent="Completed ✓";completeButton.setAttribute("aria-label","Quest completed");}
- window.setTimeout(()=>render(),340);
-}
-
 function renderSkillProgress(){
  ensureSelectedSkills();
  const attrs=state.selectedSkills;
@@ -1030,141 +947,6 @@ if(clearBoughtGroceries)clearBoughtGroceries.addEventListener("click",()=>{state
 const clearGroceries=document.getElementById("clearGroceries");
 if(clearGroceries)clearGroceries.addEventListener("click",()=>{if(!state.groceries.length)return;if(!confirm("Clear your entire grocery list?"))return;state.groceries=[];save();toast("Grocery list cleared.");});
 
-// Adventure chooser: generate a location-independent mission and add it to the quest board.
-const adventureToggle=document.getElementById("generateAdventureBtn");
-const adventureChooser=document.getElementById("adventureChooser");
-const adventureClose=document.getElementById("closeAdventureChooser");
-function setAdventureChooserOpen(open){
-  if(!adventureChooser||!adventureToggle)return;
-  adventureChooser.style.display=open?"block":"none";
-  adventureChooser.setAttribute("aria-hidden",open?"false":"true");
-  adventureToggle.setAttribute("aria-expanded",open?"true":"false");
-  if(open){adventureChooser.scrollIntoView({behavior:"smooth",block:"nearest"});}
-}
-if(adventureToggle)adventureToggle.addEventListener("click",function(){
-  const isOpen=adventureChooser&&adventureChooser.style.display!=="none";
-  setAdventureChooserOpen(!isOpen);
-});
-if(adventureClose)adventureClose.addEventListener("click",function(){setAdventureChooserOpen(false);});
-
-const adventurePools={
-  short:[
-    ["The Road Less Travelled","Drive about 15 minutes in a direction you rarely choose. Park somewhere safe, explore on foot for 15 minutes, and notice three things you would normally pass by."],
-    ["Five-Minute Curiosity","Head to an unfamiliar public area nearby. Find one detail that makes you curious and spend five minutes finding out more, if practical."],
-    ["The Unplanned Turn","Take a safe, sensible route toward an unfamiliar area. Make one spontaneous but practical stop and explore it for at least 10 minutes."],
-    ["Find the Quiet","Travel to a nearby public outdoor space. Put your phone away and spend 10 quiet minutes noticing sounds, movement, and details around you."],
-    ["Three Things Hunt","Explore an unfamiliar street or public area and find something old, something colourful, and something unusual."],
-    ["The Local Detail","Visit an area you usually pass through. Find a small detail—a sign, sculpture, building feature, or view—you have never noticed before."],
-    ["A Different View","Drive around 15 minutes to a safe place where you can walk. Find a new viewpoint and stay long enough to take in the surroundings."],
-    ["The Photo Scout","Explore somewhere unfamiliar and take three photos: a texture, an interesting shape, and something that tells a story."],
-    ["Follow the Green","Find a public green space or tree-lined route nearby. Walk a new section and identify three natural details."],
-    ["The Long Way Around","Choose a safe route home with one extra loop or stop. Explore for 10 minutes before heading back."],
-    ["Unexpected Architecture","Explore an unfamiliar public area and find a building or structure with a feature you like. Notice what makes it stand out."],
-    ["The Small Discovery","Travel a short distance to somewhere you have not explored properly. Find one thing that could make the outing worth repeating."],
-    ["Wander Without a Shopping List","Visit a public shopping street or market area without needing to buy anything. Browse and find one thing you didn't know existed."],
-    ["A Bench With a View","Find a safe public place to sit outdoors. Spend 10 minutes there, then walk a different way back to your starting point."],
-    ["The Unfamiliar Loop","Drive about 15 minutes away and take a 20-minute walk on a route you have not used before."],
-    ["Find Something Handmade","Look around an unfamiliar public area for handmade art, craft, decoration, or creative work. Find one example and appreciate its details."],
-    ["The Soundtrack Walk","Choose a short playlist and explore an unfamiliar area on foot. Finish the walk without looking at your phone while moving."],
-    ["A Tiny Travel Story","Take a short outing and collect three details that would help you describe the place to a friend later."],
-    ["Find the Water","If accessible, visit a public river, canal, lake, coast, or fountain area. Walk for 15 minutes and notice how the place changes around the water."],
-    ["The Different Direction","Choose a direction you rarely go, drive around 15 minutes, and explore a safe public place there."],
-    ["One New Street","Find an unfamiliar street or path in a public area. Walk along it and choose your favourite detail."],
-    ["The Mini Landmark Hunt","Find a public monument, plaque, sculpture, or locally meaningful feature without choosing a named destination in advance."],
-    ["Browse and Discover","Explore an unfamiliar public area and browse a shop, display, or community noticeboard. Discover one event or activity that interests you."],
-    ["The Five Senses","Take a short outing to an unfamiliar outdoor area. Notice one thing you can see, hear, smell, feel, and—where appropriate—taste."],
-    ["The Curious Corner","Pick a safe public area you have never stopped at. Explore for 15 minutes and find one reason someone might enjoy visiting."],
-    ["A Small Scenic Detour","Choose a pleasant, safe detour on a short drive. Stop only where parking is permitted and enjoy the surroundings for a few minutes."],
-    ["The Colour Quest","Explore a nearby public area and find five different colours in buildings, nature, signs, or objects."],
-    ["Find a New Walking Route","Drive about 15 minutes to an area with safe walking access. Create a short loop instead of retracing every step."],
-    ["The Curious Sign","Look for an interesting public sign, notice, or piece of local information. Read it and learn one small thing about the area."],
-    ["A Place for Future You","Explore somewhere new and identify one place you might return to for reading, thinking, walking, or bringing a friend."],
-    ["The Window-Shopper","Walk along an unfamiliar shopping street and find the most intriguing window display without needing to buy anything."],
-    ["The Nature Detail","Find a public outdoor space and spend 10 minutes looking closely at leaves, clouds, birds, stones, or other natural details."],
-    ["The Spontaneous Stop","On a safe, planned short outing, make one unplanned stop at a public place that catches your attention."],
-    ["The Local Flavour","If affordable and available, try a small local snack or drink you have not tried before. Otherwise, discover a food or drink you might try another time."],
-    ["The Forgotten Nearby","Visit a place close to home that you have not explored in a long time. Find something new about it."],
-    ["The Public Art Search","Look for public art, murals, sculptures, or creative details in an unfamiliar area. Choose your favourite."],
-    ["The No-Rush Mission","Take a short drive to a walkable area and explore slowly for 20 minutes, with no errands to complete."],
-    ["A New Place to Pause","Find a safe, comfortable public spot you have never paused at before. Spend 10 minutes there and decide what makes it pleasant."],
-    ["The Route Reversal","Explore a familiar area from the opposite direction or enter it using a different safe route. Notice what changes."],
-    ["The Tiny Expedition Report","Complete a short outing, then write down where you explored in general terms, what you discovered, and whether you would return."],
-    ["Find the Odd One Out","Explore a public area and find one detail that seems different from everything around it. Think about why it caught your eye."],
-    ["The Open-Air Break","Take a short drive to an outdoor public place and spend at least 15 minutes outside without scrolling."],
-    ["A New Everyday View","Find a place where everyday life is happening—a square, walkway, or public seating area—and observe respectfully for 10 minutes."],
-    ["The Curious Building","Explore an unfamiliar public area and choose a building or structure to observe. Notice three details about its shape, materials, or design."],
-    ["The Mini Area Contrast","Travel toward a nearby area with a different local feel, even if it is only a few streets away. Explore for 15 minutes and identify what feels different."],
-    ["The Unexpected Path","Find a public path or walkway you have never used. Walk a short section, staying on permitted routes."],
-    ["The One-Question Adventure","Ask a staff member or local person a simple, appropriate question about the area, if a natural opportunity arises. If not, discover the answer through public information."],
-    ["The Discovery Without Spending","Go somewhere new without buying anything. Explore for 20 minutes and return with one discovery instead of a purchase."],
-    ["The Favourite Detail","Explore an unfamiliar area and choose one detail you would photograph, sketch, or describe to someone else."],
-    ["Make a Future Pin","Find a public place you would like to revisit. Save a note or map pin for yourself and explain what drew you to it."]
-  ],
-  day:[
-    ["The Five Discoveries","Choose an unfamiliar area within a practical travel distance—up to about two hours each way. Find something old, something beautiful, something unusual, something local, and somewhere you would revisit."],
-    ["The Three-Stop Expedition","Plan a day outing with three different public stops: one for exploring on foot, one for scenery or nature, and one for a local discovery."],
-    ["The Unfamiliar District","Travel to an unfamiliar town or district without selecting a specific named attraction first. Explore its centre, then walk through an area beyond the busiest streets."],
-    ["The Scenic Route Mission","Choose a destination area up to two hours away and take a safe, scenic route where practical. Make two permitted stops and notice how the landscape changes."],
-    ["The Local Culture Quest","Explore an unfamiliar area and find three clues to its local character, such as architecture, public art, food, language, or community life."],
-    ["The Nature and Neighbourhood Day","Combine a walk in a public natural area with exploring a nearby built-up area. Find one thing you liked in each."],
-    ["The Unplanned Afternoon","Travel to an unfamiliar area with only a loose plan. Choose your next stop after each discovery, while keeping travel and return plans sensible."],
-    ["The Five Senses Expedition","Spend a day exploring an unfamiliar area. Record one memorable sight, sound, smell, texture, and taste if safely and comfortably available."],
-    ["The History Hunt","Find three visible traces of the past in an unfamiliar area—older buildings, plaques, preserved structures, or public displays—and learn something about one."],
-    ["The Everyday Explorer","Spend time in an unfamiliar town or district and explore places where everyday life happens, not just its main attraction. Find a public space, a local shopfront, and a quiet street."],
-    ["The Two Landscapes","Visit two areas with different surroundings, such as built-up streets and open countryside, or a park and a waterfront. Compare what you noticed."],
-    ["The Local Speciality","Explore an unfamiliar area and discover a local food, craft, product, or tradition. Try it if available and within budget; otherwise learn about it."],
-    ["The Long Walk Discovery","Travel to an unfamiliar area and complete a walk suited to your ability. Along the way, find three points of interest and take a proper rest break."],
-    ["The Photo Journal Day","Visit an unfamiliar area and take a series of photos that tell the story of the outing: arrival, a detail, a view, an unexpected discovery, and a favourite moment."],
-    ["The Public Transport Expedition","Use public transport to reach an unfamiliar area, if practical. Explore on foot, discover something interesting, and plan a reliable return journey."],
-    ["The Market and Streets Quest","If a market or public gathering is available, explore it, then walk around the surrounding area. If not, substitute another public community space."],
-    ["The Three Generations of Buildings","In an unfamiliar area, look for buildings or structures that appear to belong to different periods. Compare their visible features without needing exact dates."],
-    ["The Friend-Recommendation Test","Explore an unfamiliar area and find three things you might recommend to a friend: a place to walk, something interesting to see, and a possible food or drink stop."],
-    ["The Quiet Corners Expedition","Spend the day finding calm public places in an unfamiliar area. Visit two or three, and choose which would be best for reading or thinking."],
-    ["The Regional Difference","Travel to an area that feels different from your everyday surroundings. Find three small differences in architecture, landscape, shops, or local atmosphere."],
-    ["The Spontaneous Detour Day","Plan a main area to explore, but leave room for one safe spontaneous detour. Complete the detour and note whether it became the highlight."],
-    ["The Open Map Challenge","Look at a map of an area you do not know and choose a public area to explore, rather than a famous attraction. Find your way around and discover three points of interest."],
-    ["The Coast, River, or Countryside Quest","If accessible within your travel range, explore a public natural feature such as a coast, river, lake, or countryside path. If none is nearby, choose another landscape that differs from home."],
-    ["The Community Discovery","Look for public information about community activities, clubs, events, or local traditions in an unfamiliar area. Find one you might realistically attend in the future."],
-    ["The Whole-Day Wander","Set aside several hours for an unhurried exploration of an unfamiliar area. Walk, pause, discover, and let curiosity choose at least one of your stops."],
-    ["The Unexpected Collection","Across an unfamiliar area, find and photograph or note five things: a pattern, a sign, a natural detail, a piece of design, and something that made you smile."],
-    ["The Local Story","Find a public plaque, display, historic feature, or local information source. Learn one story about the area and find another nearby place that adds context."],
-    ["The Three Neighbourhoods","Explore three distinct public areas within one region. Spend enough time in each to notice its atmosphere, layout, and one point of interest."],
-    ["The New Favourite Place","Spend the day looking for a place you would genuinely want to revisit. Explore multiple options and choose a favourite based on how it felt to be there."],
-    ["The Return Route Adventure","Travel to an unfamiliar area and explore it. On the way back, choose a different safe route if practical and make one extra stop where permitted."],
-    ["The Day of Small Firsts","During one outing, do three things for the first time: visit an unfamiliar public area, try or learn something new, and take a route you have not used before."],
-    ["The Budget Explorer","Set a modest budget—or zero spending—and plan a day of discovery. Prioritise free public spaces, walking, and things to observe rather than purchases."],
-    ["The Museum Alternative","If a museum or gallery is available and suits you, visit one and explore the surrounding area. Otherwise, find a public cultural display, historic feature, or creative space."],
-    ["The Unfamiliar Food Trail","Explore an unfamiliar area and look for a local food or drink option. Try something within your budget, then walk around and discover two more interesting details."],
-    ["The Sunrise or Sunset Expedition","Plan an outing around daylight and visit a safe public place for a sunrise or sunset if timing and weather allow. Add a short exploration before heading home."],
-    ["The Crossroads Challenge","Choose an unfamiliar area and make three sensible choices during the day based on curiosity rather than habit: a street to explore, a place to pause, and a final stop."],
-    ["The Landscape Notebook","Travel to an area with different scenery and record five observations about the landscape, weather, buildings, plants, or sounds."],
-    ["The Future Adventure Scout","Explore an unfamiliar area and identify three possible future activities, such as a walk, event, local class, or place to bring a friend."],
-    ["The Local Connections Day","Explore an unfamiliar public area and, where natural, have one brief friendly interaction—ask a simple question or exchange a few words. No interaction is required if it feels inappropriate."],
-    ["The Hidden-in-Plain-Sight Day","Spend several hours exploring an area without relying on famous attractions. Find three ordinary things that turned out to be more interesting than expected."],
-    ["The Complete Expedition","Choose an unfamiliar area within a sensible travel range. Discover one historic or cultural detail, one natural or scenic spot, one local speciality or story, and one place you would return to. Finish by recording your favourite discovery."]
-  ]
-};
-function generateAdventure(type){
-  const pool=adventurePools[type];
-  if(!pool||!pool.length)return;
-  const historyKey=type==="short"?"__adventureShortHistory":"__adventureDayHistory";
-  if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
-  const recent=Array.isArray(state.questHistory[historyKey])?state.questHistory[historyKey]:[];
-  const fresh=pool.filter(item=>!recent.includes(item[0]));
-  const choices=fresh.length?fresh:pool;
-  const [title,description]=choices[Math.floor(Math.random()*choices.length)];
-  state.questHistory[historyKey]=[title,...recent.filter(t=>t!==title)].slice(0,12);
-  const quest={id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2),title,description,category:"Adventure",skill:"Adventure",xp:15,done:false,source:"adventure",adventureType:type};
-  if(!Array.isArray(state.quests))state.quests=[];
-  state.quests.push(quest);
-  state.activeDate=today();
-  save();
-  setAdventureChooserOpen(false);
-  toast(`${type==="short"?"Short":"Day"} adventure generated! +15 XP when completed.`);
-  // Keep the current scroll position after generating an adventure.
-}
-document.querySelectorAll(".adventure-choice").forEach(button=>button.addEventListener("click",function(){generateAdventure(button.dataset.adventureType);}));
-
 // Keep the hosted PWA's service worker updated when a new version is deployed.
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", function () {
@@ -1251,289 +1033,6 @@ function getLevelBand(level){
   if(level<=9) return 3;
   return 3 + Math.floor((level-7)/3);
 }
-function buildQuestPool(skill){
-  if(skill==="Test")return [{title:"Test",description:"Complete this Sandbox-only test quest to verify Test XP and theme bonuses.",minLevel:1,maxLevel:999,tier:"Test",category:"Skill",skill:"Test",xp:15}];
-  const level=getSkillLevel(skill);
-  const band=Math.min(3,getLevelBand(level));
-  const xp=15;
-  const pools={
-    "Adventure": [
-      ["Take a different route","Use a street or path you rarely take."],["Explore a nearby place","Visit a local place you have never properly explored."],["Find one small discovery","Look for a shop, view, park, building, or detail you had not noticed."],["Plan a mini expedition","Choose a destination, check the route, and go if practical."],["Try a solo outing","Spend time out on your own doing something you enjoy."],["Make an errand an adventure","Add an interesting stop or choose a different location."],["Visit a new café","Try a café or bakery you have not visited before."],["Explore a park","Visit a nearby green space and walk a new path."],["Take a town-centre wander","Explore a few streets without rushing to get anywhere."],["Visit a local landmark","Find a landmark nearby and see it in person."],["Discover a new shop","Browse an independent or unfamiliar shop."],["Choose a destination at random","Pick a nearby town or place and plan a practical visit."],["Try a new food spot","Find somewhere local to eat or drink that is new to you."],["Watch the sunset somewhere new","Choose a safe spot with a good view."],["Take a scenic route","Choose a pleasant route rather than the quickest one."],["Visit a nearby village","Explore a village or neighbourhood you rarely visit."],["Find a viewpoint","Look for a public place with an interesting view."],["Explore by public transport","Take a short, planned trip to a place you can easily return from."],["Make a three-stop outing","Choose three small places to visit on one trip."],["Visit a market","Explore a local market or community event if one is available."],["Go on a photo walk","Take pictures of details you might usually overlook."],["Find a quiet place outdoors","Spend a little time somewhere peaceful outside."],["Try an unfamiliar activity","Give a beginner-friendly activity a go."],["Plan a half-day adventure","Make a simple plan for an outing on a future free day."],["Explore after work","Take a short detour somewhere pleasant if your energy allows."],["Visit a museum or gallery","Explore a local cultural place if one is accessible."],["Take the long way home","Choose a safe, interesting detour when practical."],["Look for local events","Find an event, exhibition, or activity you might attend."],["Explore a waterfront","Visit a river, canal, lake, or coast nearby."],["Have a destination-free walk","Start with a safe area and follow your curiosity."],["Try a new route by bike","Explore a safe route if you have a bicycle."],["Find a place to read outside","Bring a book to a park, bench, or other comfortable spot."],["Explore a neighbourhood","Walk through an area you do not know well."],["Plan a day trip","Choose a reachable destination and list what you would need."],["Go somewhere before going home","Add a small enjoyable stop to your day."],["Visit a place at a different time","See a familiar place in the morning, evening, or another light."],["Ask for a local recommendation","Ask someone or look up a local place worth visiting."],["Make a mini travel budget","Plan an outing with transport, food, and a small activity."],["Try a nature trail","Find a suitable local trail and walk part of it."],["Record your discovery","Write a short note about a place you enjoyed and why."]
-    ],
-    "Reading": [
-      ["Read 10 pages","Read 10 pages of any book you enjoy."],["Read 10 pages without distractions","Put distractions away and read."],["Read 10 pages and save an idea","Write down an idea worth remembering."],["Read somewhere different","Take your book to a comfortable new spot."],["Read before screens","Read before opening games or social media."],["Read a chapter","Finish a chapter or a natural section of your book."],["Try a new genre","Read a sample from a genre you rarely choose."],["Read nonfiction","Learn something from a nonfiction book."],["Read fiction","Spend time immersed in a story."],["Revisit a favourite passage","Read a passage you remember enjoying."],["Write a one-sentence summary","Summarise what you read in one sentence."],["Look up an unfamiliar word","Find its meaning and note how it is used."],["Read a biography","Read about a person's life or experiences."],["Read outside","Take your book to a park or another pleasant outdoor spot."],["Read without checking your phone","Keep your phone out of reach for the session."],["Read a short story","Finish a short story or a portion of one."],["Explore a library catalogue","Find a book you might want to borrow."],["Choose your next book","Pick a book based on genuine curiosity."],["Read a review and a sample","See whether a book interests you before committing."],["Discuss something you read","Tell someone about an interesting idea or story."],["Make a reading note","Record the title, page, and one takeaway."],["Read a poem","Read a poem and consider what stands out."],["Read about a new subject","Choose a topic you know little about."],["Read in a different format","Try an ebook, audiobook sample, or print book."],["Return to a paused book","Read a little more instead of abandoning it."],["Read during a spare moment","Use a small pocket of free time for a book."],["Compare two viewpoints","Read how two authors approach a similar topic."],["Read a book excerpt","Try the opening pages of a book you are curious about."],["Reflect on a character or idea","Write down what you found interesting and why."],["Set up your next reading session","Leave your book ready and choose when to continue."]
-    ],
-    "Social Interactions": [
-      ["Make the first move","Greet someone or start a small interaction."],["Ask an open question","Ask something that invites more than yes or no."],["Share one thought","Share an opinion, story, or detail in conversation."],["Start a conversation with a colleague","Ask how their day or shift is going."],["Give a genuine compliment","Notice something specific and say it sincerely."],["Practise saying hello first","Greet someone instead of waiting for them to greet you."],["Ask a follow-up question","Show interest by asking about something they mentioned."],["Talk to someone new","Have a brief, low-pressure exchange with someone unfamiliar."],["Join a group conversation","Add one comment or question when it feels appropriate."],["Share a small story","Tell someone something amusing or interesting from your day."],["Express a preference","Say what you would like to do, eat, or watch."],["Ask for a recommendation","Ask someone about a place, meal, film, or activity they like."],["Make a casual invitation","Invite someone for coffee, a walk, or another simple activity."],["Keep a conversation going","Ask one follow-up instead of ending the exchange quickly."],["Practise comfortable eye contact","Use natural eye contact while listening, without forcing it."],["Put your phone away","Give someone your attention during a conversation."],["Speak up once","Contribute one thought in a situation where you might stay quiet."],["Introduce yourself","Introduce yourself in a suitable social setting."],["Ask someone about their interests","Give them room to talk about something they enjoy."],["Share a recommendation","Tell someone about a book, place, game, or song you like."],["Thank someone warmly","Give a specific, genuine thank-you."],["Make small talk while waiting","Try a brief friendly exchange when the situation suits it."],["Reconnect with an acquaintance","Send a simple message to someone you know but rarely contact."],["Ask someone how they are really doing","Listen to the answer rather than treating it as a formality."],["Offer help","Offer a small, appropriate bit of help to someone."],["Attend a social setting","Spend some time at a club, class, event, or gathering."],["Ask someone to join you","Invite a person along for an activity you already plan to do."],["Share a harmless disagreement","Respectfully express a different opinion when it feels appropriate."],["Tell someone what you enjoyed","Give positive feedback after an activity or conversation."],["Practise an assertive no","Politely decline something you do not want to do."],["Ask for help or advice","Make a reasonable request instead of struggling silently."],["Talk to a service worker warmly","Be friendly and present during a normal interaction."],["Join a hobby community","Look for a local or online group related to a real interest."],["Stay a little longer","If comfortable, remain at a social setting for a few extra minutes."],["Start a conversation about your surroundings","Comment on something relevant to the shared situation."],["Ask about someone's plans","Show interest in what they have coming up."],["Share a personal goal","Tell someone about a hobby or goal you are working on."],["Practise listening without planning your reply","Focus on understanding what the other person says."],["Make a second interaction","Speak to someone you already greeted earlier."],["Reach out first","Send a message without waiting for the other person to initiate."],["Join a conversation with one question","Ask a relevant question to enter a group discussion."],["Talk about a shared interest","Find one point of common interest and explore it."],["Introduce two people","If appropriate, help two people you know connect."],["Give yourself credit for trying","Record one social action you initiated today."],["Ask someone about a local favourite","Find out where they like to go nearby."],["Suggest doing something together","Offer a specific activity and a simple time window."],["Practise a confident introduction","Say your name and one natural detail about yourself."],["Handle a quiet moment comfortably","Allow a pause without feeling you must fill it immediately."],["Ask one more question","When interested, go one question deeper in a conversation."],["Take a small social risk","Do one safe, respectful interaction you have been hesitating over."]
-    ],
-    "Relationships": [
-      ["Check in with someone","Send a thoughtful message asking how they are doing."],["Show appreciation","Tell someone specifically what you appreciate about them."],["Make a plan","Suggest coffee, a walk, a meal, a call, or an activity."],["Give someone your attention","Have a conversation without checking your phone."],["Remember a detail","Ask about something important they mentioned before."],["Strengthen an old connection","Reach out to someone you miss talking to."],["Call a family member","Have a short call and ask about their life."],["Send a voice message","Send a personal voice note rather than a generic reaction."],["Share a good memory","Remind someone of a positive experience you shared."],["Ask about a challenge","Check in about something difficult they told you about."],["Celebrate someone's win","Congratulate someone on something that matters to them."],["Offer practical help","Offer help with a suitable task or errand."],["Make time for a friend","Set aside time to talk without multitasking."],["Follow through on a promise","Complete a small commitment you made to someone."],["Plan a regular catch-up","Suggest a simple recurring way to stay in touch."],["Send a thoughtful link","Share an article, song, or memory they might appreciate."],["Ask for their opinion","Invite someone's thoughts on a decision or idea."],["Learn something new about family","Ask a relative about a story or experience from their life."],["Thank someone for their support","Name something they did that helped you."],["Apologise where appropriate","Take responsibility for a small mistake if one needs addressing."],["Clear up a misunderstanding","Have a calm, respectful conversation if needed."],["Remember an important date","Add a birthday or meaningful date to your calendar."],["Suggest a shared hobby","Invite someone to try an activity together."],["Make a low-key visit","Arrange a short visit with someone you value."],["Ask what someone needs","Offer support without assuming what would help."],["Share an update about your life","Tell someone what you have been doing lately."],["Reconnect with an acquaintance","Turn a familiar face into a more active connection."],["Plan a small group activity","Suggest a meal, game, walk, or outing with a few people."],["Be fully present at a meal","Put distractions away while spending time with someone."],["Check in after an event","Ask someone how something they attended went."],["Send encouragement","Support someone working toward a goal."],["Invite someone on an adventure","Suggest exploring a place together."],["Ask about an old interest","Revisit a hobby or dream they once talked about."],["Create a shared tradition","Suggest a simple activity you could repeat together."],["Make a relationship note","Write down one way to invest in a connection this week."],["Reach out without a reason","Send a friendly message simply because you thought of them."],["Listen to someone's story","Give them time to explain without interrupting."],["Offer a sincere compliment","Recognise a quality you value in someone close to you."],["Arrange a phone-free catch-up","Spend time together with phones put away."],["Follow up on a conversation","Return to a topic someone previously shared."]
-    ],
-    "Piano": [
-      ["Practise a scale","Play a familiar scale slowly and evenly."],["Practise chord changes","Move between two chords with relaxed, controlled hands."],["Work on a difficult bar","Repeat a small passage slowly before increasing tempo."],["Practise with a metronome","Use a comfortable tempo and focus on steady timing."],["Play a piece from memory","Try a section you know without looking at the score."],["Read a short section of sheet music","Work through a few measures carefully."],["Practise hands separately","Work on each hand before combining them."],["Improve your posture","Check bench height, relaxed shoulders, and comfortable hand position."],["Practise a new fingering","Choose a short phrase and use consistent fingering."],["Play slowly and accurately","Choose a piece and prioritise clean notes over speed."],["Review an old piece","Return to something you learned earlier."],["Learn a new musical phrase","Work on a short new section of a song."],["Practise dynamics","Play a phrase softly, loudly, and with a clear contrast."],["Practise evenness","Play a scale or pattern and listen for uneven notes."],["Play without stopping","Play through a familiar piece and recover calmly from mistakes."],["Listen to a piano performance","Notice phrasing, dynamics, and tone."],["Copy a short rhythm","Listen to a simple rhythm and tap or play it back."],["Practise a cadence","Play a simple chord progression and listen to how it resolves."],["Name notes on the keyboard","Identify a set of notes without rushing."],["Practise pedal control","If you use a pedal, practise clear changes without muddying the sound."],["Record a short performance","Record a small section and listen for one thing to improve."],["Play for enjoyment","Choose a familiar piece and enjoy playing it without a strict target."],["Practise a transition","Focus on moving smoothly between two sections."],["Learn a new chord","Learn the notes of a chord and play it in a few positions if suitable."],["Practise rhythm hands separately","Clap or tap the rhythm before playing it."],["Play a phrase musically","Shape one phrase with a clear beginning and ending."],["Set a piano goal","Choose one small skill or passage to improve next session."],["Review your practice notes","Look at what you worked on and choose the next step."],["Practise a weak spot","Find one recurring mistake and work on it slowly."],["Play a piece for someone","Share a short piece with a friend or family member if comfortable."],["Try sight-reading","Read a very easy new passage at a steady pace."],["Practise left-hand control","Work on a bass pattern or accompaniment."],["Practise right-hand melody","Focus on clear phrasing and even tone."],["Play a simple accompaniment","Practise supporting a melody with a steady pattern."],["Learn a song section by ear","Try to find a short melody by listening and experimenting."],["Do a focused warm-up","Start with gentle finger patterns and relaxed movement."],["Practise at a slower tempo","Reduce speed enough to play a passage accurately."],["Polish the ending of a piece","Work on the final few measures and finish confidently."],["Compare two takes","Play a phrase twice and notice what improved."],["Finish with a favourite piece","End practice by playing something you enjoy."]
-    ],
-    "Fitness": [
-      ["Complete a short strength session","Do a manageable strength workout using familiar exercises."],["Practise push-up technique","Use a suitable variation and focus on controlled form."],["Practise a squat pattern","Perform bodyweight squats or another suitable squat variation."],["Practise a hip hinge","Rehearse a comfortable hinge pattern without forcing range."],["Train your back","Do a suitable row or pulling movement with controlled form."],["Train your chest","Do a suitable push movement at a manageable effort."],["Train your legs","Choose a safe leg-strength exercise you know."],["Train your core","Practise a controlled core exercise suited to your ability."],["Train your shoulders","Choose a comfortable shoulder-strength movement."],["Practise a lunge variation","Use support or a smaller range if needed."],["Do a full-body session","Choose one push, one pull, one leg, and one core movement."],["Review your workout plan","Check that your plan covers the main movement patterns."],["Log your workout","Record exercises, sets, reps, and how the session felt."],["Warm up before training","Do a gradual warm-up before your strength session."],["Practise controlled repetitions","Slow down a familiar movement and keep it controlled."],["Focus on range of motion","Use a comfortable range without forcing joints."],["Learn one exercise variation","Research or practise a safe variation of a familiar movement."],["Train with resistance bands","Use a band for a suitable pulling, pushing, or leg exercise."],["Try a dumbbell movement","Practise a familiar dumbbell exercise with a manageable load."],["Practise bodyweight strength","Choose a suitable bodyweight movement and focus on technique."],["Train your glutes","Choose a comfortable glute bridge or other suitable movement."],["Strengthen your upper back","Practise a controlled row, band pull-apart, or similar movement."],["Work on grip strength","Use a safe, simple grip exercise without overdoing it."],["Practise single-leg balance and strength","Use support and a suitable movement if needed."],["Review your technique","Check one exercise against reliable form guidance."],["Plan your next strength session","Choose exercises and prepare what you need."],["Respect your recovery","Assess soreness and energy before choosing training or rest."],["Take a rest-day walk and recover","Use gentle movement if it feels good, rather than forcing a workout."],["Repeat a familiar workout consistently","Complete your planned session without chasing a personal record."],["Try a new machine safely","Learn the setup and use a manageable load if at a gym."],["Practise a deadlift pattern","Use a very manageable load or bodyweight hinge to focus on technique."],["Practise an overhead press variation","Choose a comfortable, controlled press suited to your ability."],["Work on hamstrings","Choose a suitable hamstring exercise and focus on control."],["Work on calves","Perform a comfortable calf-raise variation."],["Build a simple progression plan","Choose one exercise to improve gradually over several sessions."],["Check your training consistency","Review how many strength sessions you completed recently."],["Do a short accessory session","Choose one or two manageable exercises for an area you want to develop."],["Practise breathing while lifting","Keep breathing naturally and avoid straining or holding your breath unnecessarily."],["Set up your training space","Prepare equipment and remove trip hazards before exercising."],["Celebrate consistency, not maximums","Record a win based on showing up and using good form."]
-    ],
-    "Orthodox Christianity": [
-      ["Say a short prayer","Pause for a few quiet minutes and pray sincerely, using your own words or a familiar Orthodox prayer."],
-      ["Study a passage of the Bible","Read a short passage from Scripture slowly, then reflect on one thing it teaches or raises for you."],
-      ["Pray with the prayer rope","Set aside a quiet few minutes to pray with your prayer rope at a comfortable pace, without treating the count as a performance target."],
-      ["Learn about an Orthodox practice","Spend 10 minutes reading a trustworthy Orthodox source about a prayer, feast, saint, or part of the Divine Liturgy."],
-      ["Reflect on a Gospel teaching","Read a few verses from one of the Gospels and consider one small way to put the teaching into practice today."]
-    ],
-    "Cardio": [
-      ["Take a brisk walk","Walk at a pace that feels purposeful but sustainable."],["Try an easy walk-run","Alternate gentle jogging and walking if appropriate for you."],["Go for a relaxed bike ride","Choose a safe route and comfortable pace."],["Swim at an easy pace","Swim comfortably if you have access to a suitable pool."],["Explore a walking route","Find a safe route you might enjoy using regularly."],["Do a gentle cardio warm-up","Use easy walking, cycling, or marching to warm up."],["Take the stairs if suitable","Choose stairs only if they feel safe and comfortable."],["Try a dance session","Put on music and move for a few songs."],["Walk during a break","Use a free pocket of time for a short walk."],["Cycle for an errand","Use a bike for a practical trip if the route is safe."],["Try an indoor cardio session","Choose a suitable low-impact follow-along session."],["Build a simple cardio routine","Choose an activity and a realistic time to repeat it."],["Explore a park on foot","Walk a loop or a section of a local park."],["Do a steady-paced session","Choose a pace at which you can still speak in sentences."],["Practise gentle intervals","Alternate slightly brisker movement with easy recovery periods."],["Try a rowing machine","Learn the setup and start at a comfortable effort if available."],["Use an exercise bike","Ride at a sustainable pace and focus on consistency."],["Walk with a destination","Walk to a shop, café, or other nearby place."],["Take a longer weekend walk","Choose a route that matches your current ability."],["Try a beginner fitness class","Find a suitable class with an intensity you can adapt."],["Walk without scrolling","Keep your phone away and pay attention to the route."],["Track a comfortable session","Record activity and duration without judging your pace."],["Try a new cardio activity","Sample a safe activity you have not done recently."],["Do a recovery cardio session","Choose gentle movement on a day when you need an easier effort."],["Plan a scenic route","Find a pleasant, safe route for a future walk or ride."],["Walk with a friend","Invite someone for a comfortable walk together."],["Use music for movement","Choose a playlist and move at a sustainable pace."],["Practise pacing","Start easy and avoid going too hard too soon."],["Try a short after-work session","Fit in a manageable amount of movement if your energy allows."],["Explore a nature path","Walk a suitable trail and enjoy the surroundings."],["Build toward a regular habit","Choose two realistic times for cardio this week."],["Try low-impact cardio","Choose an activity that is gentle on your joints."],["Notice your breathing","During a comfortable session, notice how effort changes your breathing."],["Finish with an easy cooldown","Slow down gradually after a cardio session."],["Review your cardio progress","Note what you did and how your stamina felt."],["Prepare for a cardio outing","Set out comfortable shoes or other needed gear."],["Try a short hill walk","Choose a gentle hill only if it suits your current ability."],["Make an active errand","Walk or cycle for part of a practical journey if safe."],["Enjoy movement outdoors","Choose an outdoor activity simply because it feels good."],["Schedule your next session","Put a realistic cardio session into your upcoming week."]
-    ],
-    "Business": [["Work on your business for 15 minutes","Set a 15-minute timer and make focused progress on one useful business task."],["Work on your business for 20 minutes","Choose one small priority and work on it without distractions for 20 minutes."],["Work on your business for 30 minutes","Spend half an hour on a concrete task that moves your business forward."],["Work on your business for 45 minutes","Complete a focused 45-minute work session on your current business priority."],["Work on your business for 60 minutes","Protect an hour for meaningful business work, taking a short break if needed."],["Choose your next business priority","Write down your three most important business tasks and select the one to tackle first."],["Research one business idea","Spend 15 minutes researching a product, service, or problem your business could address."],["Describe your ideal customer","Write a short description of who your business helps and what they need."],["Improve one part of your offer","Make one clear improvement to the product or service you provide or hope to provide."],["Review your business notes for 20 minutes","Organise existing ideas and identify one practical next action."],["Research three competitors","Compare three relevant businesses and note what they do well and where you could differ."],["Write a simple business goal","Define one measurable goal and a realistic next step toward it."],["Draft a short business description","Explain what your business does, who it serves, and why it is useful."],["List ten potential customers or audiences","Identify suitable people, groups, or customer types to learn more about, without spamming anyone."],["Improve your workspace for business","Spend 15 minutes making your work area easier to use for focused business tasks."],["Create a basic task list","Break a business goal into small actions you can complete one by one."],["Learn one business concept","Spend 20 minutes learning about a relevant topic such as pricing, sales, bookkeeping, or marketing."],["Review one business expense","Check a cost or planned expense and note whether it is necessary and affordable."],["Draft a social media post for your business","Create one helpful, relevant post that explains an idea, product, service, or lesson."],["Make a small improvement and record it","Finish one modest business improvement and note what changed."],["Plan tomorrow's business session","Choose a specific task and decide when you will work on it next."],["Write down a customer problem","Describe one problem your intended customer faces and how your offer might help."]]
-  };
-  // Quests evolve with skill level: foundational quests stop appearing from level 5,
-  // while more involved challenges unlock as the player progresses.
-  const beginnerOnly={
-    "Adventure":["Take a different route","Find one small discovery","Explore a park","Take a town-centre wander","Discover a new shop","Explore a neighbourhood","Go somewhere before going home"],
-    "Reading":["Read 10 pages","Read 10 pages without distractions","Read somewhere different","Read before screens","Read during a spare moment","Set up your next reading session"],
-    "Social Interactions":["Make the first move","Practise saying hello first","Talk to a service worker warmly","Make small talk while waiting","Practise comfortable eye contact","Share one thought"],
-    "Relationships":["Send a simple check-in","Ask how someone's day went","Thank someone warmly","Remember an important detail"],
-    "Piano":["Do a focused warm-up","Practise at a slower tempo","Play a favourite piece","Practise a simple scale"],
-    "Fitness":["Practise push-up technique","Practise a squat pattern","Practise a hip hinge","Set up your training space","Warm up before training"],
-    "Cardio":["Take a brisk walk","Walk during a break","Take the stairs if suitable","Do a gentle cardio warm-up"]
-  };
-  const advancedPools={
-    "Adventure":[
-      ["Build a full-day route from scratch","Choose an unfamiliar area, plan three worthwhile stops, and complete the outing."],
-      ["Follow a local history trail","Find several historical clues or sites in one area and connect what you learn."],
-      ["Make a spontaneous detour","During a planned outing, safely add an unplanned stop and explore it."],
-      ["Create a personal field guide","Visit an unfamiliar area and record five discoveries worth remembering."],
-      ["Explore without a fixed itinerary","Choose a broad area, set a return time, and let curiosity guide the stops. "]
-    ],
-    "Reading":[
-      ["Compare two authors on one question","Read 10 pages, then note where the authors agree or differ."],
-      ["Turn a chapter into an action","Read 10 pages and identify one idea you can apply this week."],
-      ["Trace a recurring theme","Read 10 pages and record how a theme develops in the book."],
-      ["Write a thoughtful book reflection","Read 10 pages and write a short reflection with one question and one takeaway."],
-      ["Explore a challenging passage","Read 10 pages carefully and explain the hardest idea in your own words."]
-    ],
-    "Social Interactions":[
-      ["Lead a group conversation","Help a group conversation flow by inviting another person to share their view."],
-      ["Invite someone to a planned outing","Suggest a specific activity and time, and follow through on the invitation."],
-      ["Introduce two people","When appropriate, introduce people who may enjoy meeting each other."],
-      ["Share a more personal story","Share a meaningful but comfortable story and give the other person room to respond."],
-      ["Attend something alone and participate","Go to a group activity independently and make at least two natural interactions."],
-      ["Handle an awkward pause calmly","Stay present in a conversation and ask a relevant question rather than rushing to fill silence."],
-      ["Reconnect and make a plan","Contact an acquaintance and try to turn the exchange into a concrete plan to meet."]
-    ],
-    "Relationships":[
-      ["Arrange quality time with someone","Suggest and organise a shared activity that suits both of you."],
-      ["Have a meaningful catch-up","Ask thoughtful questions and share updates beyond everyday small talk."],
-      ["Follow through on a promise","Complete a commitment you made to someone or communicate clearly if plans need to change."],
-      ["Show appreciation in a specific way","Tell someone what you value about them and give a concrete example."],
-      ["Repair a small misunderstanding","If appropriate, calmly clarify a misunderstanding and listen to the other person's perspective."],
-      ["Create a new shared memory","Invite someone to try an activity neither of you usually does."]
-    ],
-    "Piano":[
-      ["Shape a phrase musically","Practise piano for 10 minutes and deliberately shape a phrase with dynamics and phrasing."],
-      ["Practise a difficult passage in sections","Practise piano for 10 minutes, isolate a difficult section, and gradually put it back together."],
-      ["Record and review a performance","Practise piano for 10 minutes, record a short piece, and identify one improvement."],
-      ["Learn a passage from memory","Practise piano for 10 minutes and work toward playing a short section without looking at the score."],
-      ["Coordinate hands on a new section","Practise piano for 10 minutes, hands separately first if needed, then together."],
-      ["Perform a complete piece","Practise piano for 10 minutes and play a complete piece without stopping, then reflect on it."]
-    ],
-    "Fitness":[
-      ["Review a month of strength training","Look over your workout log and choose one realistic progression for the next month."],
-      ["Build a balanced strength session","Plan a session covering push, pull, legs, and core with suitable exercises."],
-      ["Improve one exercise with controlled progression","Choose a familiar lift and make a small, safe progression while maintaining good form."],
-      ["Practise a unilateral strength movement","Choose a suitable single-arm or single-leg exercise and focus on control and balance."],
-      ["Compare technique across two sets","Film or observe a familiar exercise if safe and appropriate, then identify one form cue."],
-      ["Plan a sustainable training week","Schedule strength sessions with rest and recovery days that fit your real routine."],
-      ["Identify and address a weak point","Choose one movement pattern that needs work and plan a sensible practice approach."]
-    ],
-    "Cardio":[
-      ["Plan a longer route with a fallback","Choose a route that suits your ability, check the return options, and complete a comfortable session."],
-      ["Try structured easy intervals","Alternate comfortable brisk intervals with recovery, keeping the effort controlled."],
-      ["Explore a new activity route","Plan and complete a safe route for walking, cycling, or another cardio activity."],
-      ["Review your endurance routine","Look at recent sessions and set one realistic consistency goal for the coming week."],
-      ["Complete a steady session without distractions","Choose a sustainable pace and focus on the experience instead of checking your phone."],
-      ["Plan a cardio outing with someone","Invite someone for a walk, ride, swim, or other suitable endurance activity."]
-    ],
-    "Business": [["Build a one-hour business work block","Choose a high-impact task, define the finish line, and work on it for 60 focused minutes."],["Create a simple competitor comparison","Compare at least three alternatives by audience, offer, price, strengths, and gaps."],["Draft a one-page business plan","Summarise the customer, problem, offer, channel, costs, and next milestone on one page."],["Test one marketing message","Write two versions of a message for your intended audience and decide how you could compare them fairly."],["Map the path from idea to first customer","List the practical steps needed to validate the idea and reach a first potential customer."],["Review a month of business progress","Review completed work, obstacles, useful lessons, and the next three priorities."]]
-  };
-  // Rank every quest by the level band where it belongs. Base-pool entries are split
-  // into foundations (Lv 1-4), growth (Lv 5-7), and advanced (Lv 8-10).
-  const baseItems=pools[skill]||[];
-  const lowEnd=Math.ceil(baseItems.length*0.34);
-  const midEnd=Math.ceil(baseItems.length*0.68);
-  let items=baseItems.map((item,index)=>({item,minLevel:index<lowEnd?1:index<midEnd?5:8,maxLevel:index<lowEnd?4:index<midEnd?7:999,tier:index<lowEnd?"Foundations":index<midEnd?"Growth":"Advanced"}));
-  if(level>=5) items=items.concat((advancedPools[skill]||[]).map(item=>({item,minLevel:5,maxLevel:7,tier:"Growth"})));
-  if(level>=8){
-    const expertPools={
-      "Adventure":[["Plan an expedition with a theme","Choose a theme such as architecture, nature, or local history and build an outing around several discoveries."],["Make a two-part adventure","Combine an unfamiliar destination with a second stop chosen spontaneously along the way."]],
-      "Reading":[["Synthesize a chapter into a short note","Read 10 pages and write a concise explanation linking the main idea to something you already know."],["Build a reading trail","Read 10 pages and identify a related book, author, or subject to explore next."]],
-      "Social Interactions":[["Host a small get-together","Invite a few people to a simple activity and help everyone feel included."],["Start a recurring social activity","Suggest a regular walk, game, practice, or meetup with someone or a group."]],
-      "Relationships":[["Create a thoughtful tradition","Plan a small recurring activity that helps you stay connected with someone."],["Have a considerate difficult conversation","If something needs addressing, prepare your thoughts and have a calm, respectful conversation."]],
-      "Piano":[["Polish a performance end to end","Practise piano for 10 minutes, focusing on transitions, dynamics, and a confident ending."],["Learn and connect a full section","Practise piano for 10 minutes and work on connecting sections smoothly without stopping."]],
-      "Fitness":[["Review progress and set a new training block","Use your training notes to set a realistic multi-week strength goal and plan recovery."],["Refine a main lift or movement","Choose a familiar strength movement and focus on repeatable technique across working sets."]],
-      "Cardio":[["Build a repeatable endurance plan","Create a realistic weekly plan with varied sessions, easy effort, and recovery."],["Complete a planned scenic outing","Choose a safe route, prepare what you need, and complete an enjoyable longer walk or ride."]],
-    "Business": [["Design a repeatable weekly business routine","Create a realistic weekly rhythm for delivery, marketing, finances, learning, and review."],["Validate a business assumption","Identify a risky assumption and plan a low-cost way to gather evidence before investing more time or money."],["Improve one business process","Map a recurring task, remove an unnecessary step, and document the improved process."],["Create a measurable marketing experiment","Set a clear hypothesis, audience, metric, duration, and decision rule for a small experiment."]]
-  };
-    items=items.concat((expertPools[skill]||[]).map(item=>({item,minLevel:8,maxLevel:999,tier:"Advanced"})));
-  }
-  if(level>=11){
-    const masterPools={
-      "Adventure":[["Design a full-day expedition with contingencies","Plan several stops around a theme, check transport and opening constraints, set a budget, and include a fallback if one stop fails."],["Complete a self-guided discovery challenge","Explore an unfamiliar area and document six discoveries across history, nature, local culture, and an unexpected find."],["Build a two-area itinerary","Connect two unfamiliar areas into one safe, realistic day trip with a deliberate unplanned stop."],["Lead yourself through an unfamiliar activity","Choose a suitable activity you have never tried, research the basics, and complete a beginner session."],["Create an adventure worth repeating","Plan and complete an outing, then write a reusable route and notes for a future visit."]],
-      "Reading":[["Compare three sources on one question","Read 10 pages and compare the book's argument with two credible sources, noting agreement and tension."],["Build a structured reading brief","Read 10 pages and write a short brief with the central claim, supporting evidence, and two questions."],["Apply an idea and evaluate the result","Read 10 pages, test one suitable idea in real life, and record what did and did not work."],["Trace an author's argument","Read 10 pages and map the main claim, evidence, assumptions, and one counterargument."],["Connect ideas across books","Read 10 pages and link the material to a concept from another book or subject you know."]],
-      "Social Interactions":[["Organise a small group outing from start to finish","Invite several people, settle on a practical plan, communicate details, and help the group feel included."],["Build a new connection into a second meeting","Have a conversation with someone new and, if the interaction feels mutual, suggest a specific follow-up activity."],["Contribute meaningfully in a group setting","Attend a suitable group activity and contribute more than once, including asking others for their views."],["Navigate a difference of opinion constructively","Express your view clearly, ask about the other perspective, and seek common ground without pretending to agree."],["Initiate a social plan without overplanning","Choose a simple activity, invite someone, and follow through without waiting for a perfect plan."]],
-      "Relationships":[["Create a regular connection ritual","Agree on a realistic recurring catch-up or shared activity with someone important to you."],["Have a thoughtful relationship check-in","Ask what has been going well, what each of you needs, and one small thing to improve."],["Repair a strained connection where appropriate","Reach out respectfully, acknowledge your part if relevant, listen, and accept the other person's boundaries."],["Coordinate a meaningful shared experience","Plan an activity around another person's interests and handle the practical details together."],["Strengthen a wider circle of connections","Reconnect with two people and make a concrete, low-pressure plan with at least one of them."]],
-      "Piano":[["Refine a complete piece in focused sections","Practise piano for 10 minutes, isolate the weakest transitions, and reconnect them with deliberate phrasing."],["Perform and self-assess a complete piece","Practise piano for 10 minutes, play a complete piece, and note one musical strength and one specific next improvement."],["Develop expressive control","Practise piano for 10 minutes, deliberately vary dynamics, articulation, and tempo control in a familiar passage."],["Strengthen a difficult passage steadily","Practise piano for 10 minutes, use slow accurate repetitions, and finish by testing the passage at a comfortable tempo."],["Prepare a piece for sharing","Practise piano for 10 minutes and work toward a confident, uninterrupted performance for another person or a recording."]],
-      "Fitness":[["Run a structured strength-training block","Plan several weeks of consistent strength sessions with sensible progression, rest, and a way to track performance."],["Audit technique across your main movements","Review your push, pull, squat, hinge, and core patterns, choosing one specific technique improvement to practise."],["Build a balanced programme around recovery","Create a realistic weekly strength plan that balances movement patterns, workload, and recovery days."],["Track and evaluate a training progression","Compare recent training notes, identify a meaningful trend, and choose a small evidence-based next step."],["Address a persistent training weak point","Select a movement that needs work and plan a gradual, safe practice progression rather than rushing load increases."]],
-      "Cardio":[["Complete a planned endurance outing","Choose a safe route and sustainable pace, prepare supplies and return options, and review how the effort felt afterward."],["Build a four-week cardio routine","Plan a realistic month of varied endurance sessions with gradual progression and recovery."],["Evaluate your endurance consistency","Review recent activity, identify what disrupts consistency, and adjust your plan to make it sustainable."],["Explore a longer route with a backup","Plan a route with a shorter alternative, check conditions, and complete the option that suits your energy and safety."],["Combine cardio with a social plan","Arrange a walk, ride, or other suitable endurance activity with someone and agree on a manageable route."]],
-    "Business": [["Build a 90-day business roadmap","Define a measurable outcome, quarterly milestones, weekly actions, risks, and review points."],["Conduct a full business review","Review customers, offer, operations, marketing, costs, and progress, then choose the highest-leverage next move."],["Design a sustainable business operating system","Document recurring workflows, priorities, metrics, and review habits that support consistent execution."],["Develop and test a growth strategy","Choose a realistic growth opportunity, identify the assumptions behind it, and outline a small validation plan."]]
-  };
-    items=items.concat((masterPools[skill]||[]).map(item=>({item,minLevel:11,maxLevel:999,tier:"Master"})));
-  }
-  items=items.filter(entry=>level>=entry.minLevel&&level<=entry.maxLevel);
-  return items.map(({item:[title,description],minLevel,maxLevel,tier})=>{
-    let finalDescription=description;
-    if(skill==="Reading") finalDescription=`Read 10 pages. ${description}`;
-    if(skill==="Piano") finalDescription=`Practise piano for 10 minutes. ${description}`;
-    return {title,description:finalDescription,minLevel,maxLevel,tier,category:skill==="Adventure"?"Adventure":skill==="Reading"?"Knowledge":skill==="Social Interactions"?"Social":skill==="Relationships"?"Relationships":skill==="Piano"?"Skill":skill==="Cardio"?"Adventure":skill==="Orthodox Christianity"?"Faith":"Skill",skill,xp:15};
-  });
-}
-function openCampaignPlanner(open){
-  const panel=document.getElementById("campaignPlanner");
-  if(!panel)return;
-  const show=!!open;panel.style.display=show?"block":"none";panel.setAttribute("aria-hidden",show?"false":"true");
-  if(show)panel.scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-function updateCampaignPreview(){
-  const time=Number(document.getElementById("campaignTime")?.value||60);
-  const energy=document.getElementById("campaignEnergy")?.value||"normal";
-  const target=Math.max(5,Math.floor(time*(time<=30?.8:.82)));
-  const label=time>=240?"4+ hours":`${time} minutes`;
-  const preview=document.getElementById("campaignPreview");
-  if(preview)preview.textContent=`For ${label}, Wayfarer will prioritize Main Quests for this session, adjusted for your energy, with spare time for travel, breaks and spontaneity. Side Quests for every other selected skill are still generated and can be completed later${energy==="low"?". Challenges will be kept gentle.":energy==="high"?". More demanding options will be favoured.":"."}`;
-}
-function estimatedQuestMinutes(q,place){
- const text=(q.title+" "+q.description+" "+q.skill).toLowerCase();
- const durationMatch=text.match(/\b(\d+)\s*minutes?\b/);
- let mins=10;
- if(/day trip|full-day|half-day|three-stop|multiple stops|museum|market|event|attend|outing|town|village|destination|explore|adventure|café|cafe|waterfront|trail|neighbourhood|neighborhood/.test(text))mins=30;
- if(/plan a day trip|plan a half-day|full-day|three-stop|attend a social setting|visit a museum|major expedition/.test(text))mins=55;
- if(/read 10 pages|practise piano|practice piano|warm-up|warm up|one question|one interaction|one small|one sentence|write a one-sentence|read a poem/.test(text))mins=Math.min(mins,10);
- if(/workout|strength session|run|cycling|bike ride|swim|cardio session|hiking/.test(text))mins=Math.max(mins,20);
- if(durationMatch)mins=Math.max(1,Number(durationMatch[1])||mins);
- if(place==="home"&&/visit|outside|walk|town|café|cafe|park|travel|outing|explore a nearby|street|landmark|waterfront/.test(text))return Infinity;
- if(place==="out"&&/at home|indoor|practise piano|practice piano|read 10 pages|write for 10 minutes|journal|organise your space|organize your space/.test(text))return Infinity;
- return mins;
-}
-function focusScore(skill,focus){
- if(focus==="balanced")return 1;
- const groups={adventure:["Adventure","Walking & Hiking","Cardio","Cycling","Running","Photography","Geography"],social:["Social Interactions","Relationships","Conversation","Networking","Hosting","Community Involvement","Teamwork","Language Practice"],productive:["Piano","Reading","Learning","Fitness","Strength Training","Cardio","Cooking","Writing","Coding","Foreign Languages","Business"]};
- return (groups[focus]||[]).includes(skill)?4:0.65;
-}
-function pickCampaignQuest(skill,opts,usedTitles,availableMinutes=Infinity){
- const pool=buildQuestPool(skill);
- const recent=Array.isArray(state.questHistory[skill])?state.questHistory[skill]:[];
- let candidates=pool.filter(q=>!recent.includes(q.title)&&!usedTitles.has(q.title));
- if(!candidates.length)candidates=pool.filter(q=>!usedTitles.has(q.title));
- if(!candidates.length)candidates=pool.slice();
- const makeCandidates=place=>candidates.map(q=>({...q,_minutes:estimatedQuestMinutes(q,place),_score:focusScore(skill,opts.focus),_place:place})).filter(q=>Number.isFinite(q._minutes));
- let eligible=makeCandidates(opts.place||"either");
- if(!eligible.length&&opts.place!=="either")eligible=makeCandidates("either");
- if(!eligible.length)return null;
- eligible.sort((a,b)=>{
-   const energyFactor=opts.energy==="low"?0.7:opts.energy==="high"?1.2:1;
-   const target=Math.min(Number(opts.time)||60,20);
-   return (b._score-a._score)||(Math.abs(a._minutes*energyFactor-target)-Math.abs(b._minutes*energyFactor-target));
- });
- const shortlist=eligible.slice(0,Math.min(6,eligible.length));
- return shortlist[Math.floor(Math.random()*shortlist.length)];
-}
-const QUEST_GENERATION_COOLDOWN_MS=4*60*60*1000;
-function getNewlySelectedQuestSkills(){
- ensureSelectedSkills();
- const previouslyGenerated=new Set(Array.isArray(state.lastGeneratedSkills)?state.lastGeneratedSkills:[]);
- const alreadyHasQuest=new Set((state.quests||[]).filter(q=>q&&q.source==="generated").map(q=>q.skill));
- return state.selectedSkills.filter(skill=>!previouslyGenerated.has(skill)&&!alreadyHasQuest.has(skill));
-}
-function formatCooldown(ms){const total=Math.max(0,Math.ceil(ms/1000));const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),sec=total%60;return `${h}h ${String(m).padStart(2,"0")}m ${String(sec).padStart(2,"0")}s`;}
-function updateGenerateButtonStatus(){
- const button=document.getElementById("generateBtn");if(!button)return;
- const remaining=debugQuestRulesOverridden()?0:Number(state.questGenerationCooldownUntil||0)-Date.now();
- if(remaining>0){const newSkills=getNewlySelectedQuestSkills();button.textContent=newSkills.length?`✦ Generate quests for ${newSkills.length} new skill${newSkills.length===1?"":"s"}`:`✦ Generate quests · ${formatCooldown(remaining)}`;button.disabled=!newSkills.length;button.title=newSkills.length?"Generate quests only for newly selected skills; existing quests will remain.":"New quests available when the 4-hour cooldown ends.";}
- else{button.textContent="✦ Generate quests";button.disabled=false;button.title="Generate a fresh set of quests for your selected skills.";}
-}
-setInterval(updateGenerateButtonStatus,1000);
-function generateQuests(opts){
-  ensureSelectedSkills();
-  const now=Date.now();
-  const cooldownActive=!debugQuestRulesOverridden()&&Number(state.questGenerationCooldownUntil||0)>now;
-  const skills=cooldownActive?getNewlySelectedQuestSkills():[...state.selectedSkills];
-  if(!skills.length){openCampaignPlanner(false);if(cooldownActive)toast("Quest generation is cooling down. Existing quests are kept; newly selected skills can still receive quests.");else toast("Choose at least one skill in the Skills tab first.");updateGenerateButtonStatus();return;}
-  const preserveExisting=cooldownActive;
-  if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
-  const settings=opts||{
-    time:Number(document.getElementById("campaignTime")?.value||60),
-    energy:document.getElementById("campaignEnergy")?.value||"normal",
-    focus:document.getElementById("campaignFocus")?.value||"balanced",
-    place:document.getElementById("campaignPlace")?.value||"either"
-  };
-  const priority=skills.filter(skill=>getSkillPriority(skill)==="priority");
-  const secondary=skills.filter(skill=>getSkillPriority(skill)!=="priority");
-  const ordered=[...priority.sort((a,b)=>focusScore(b,settings.focus)-focusScore(a,settings.focus)),...secondary.sort((a,b)=>focusScore(b,settings.focus)-focusScore(a,settings.focus))];
-  const chosen=[];const usedTitles=new Set();
-  // Selected time prioritizes Main Quests; it never caps the number of selected skills receiving quests.
-  for(const skill of ordered){
-    const quest=pickCampaignQuest(skill,settings,usedTitles,Infinity);
-    if(!quest)continue;
-    const minutes=quest._minutes;
-    const chosenPlace=quest._place||settings.place;
-    delete quest._minutes;delete quest._score;delete quest._place;
-    const equippedThemeAtGeneration=state.equipment?.theme||"dungeon-theme";
-    const themeBonusXp=calculateThemeBonus(equippedThemeAtGeneration,skill);
-    const themeBonusGold=calculateThemeGoldBonus(equippedThemeAtGeneration,skill);
-    const themeNameAtGeneration=equippedThemeAtGeneration==="bloodthirst-theme"?"Bloodthirst":equippedThemeAtGeneration==="orthodox-theme"?"Orthodox Christianity":equippedThemeAtGeneration==="academy-theme"?"Academy":equippedThemeAtGeneration==="adventure-theme"?"Adventure":equippedThemeAtGeneration==="social-interactions-theme"?"Social Interactions":equippedThemeAtGeneration==="relationships-theme"?"Relationships":equippedThemeAtGeneration==="spartan-endurance-theme"?"Spartan Endurance":equippedThemeAtGeneration==="mozart-salon-theme"?"Mozart's Salon":equippedThemeAtGeneration==="ceo-theme"?"CEO":"";
-    const baseXp=Number(quest.xp)||15;
-    const generatedForLevel=getSkillLevel(skill);
-    const skillLevelBonusXp=calculateSkillQuestLevelBonus(generatedForLevel);
-    chosen.push({...quest,baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:chosenPlace,done:false,source:"generated",generatedForLevel,id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2)});
-    usedTitles.add(quest.title);
-    state.questHistory[skill]=[quest.title,...(state.questHistory[skill]||[]).filter(t=>t!==quest.title)].slice(0,8);
-  }
-  // If an adventure/social focus is chosen, make the campaign feel connected through a shared plan note.
-  if(chosen.length>1){
-    const lead=chosen.find(q=>getSkillPriority(q.skill)==="priority")||chosen[0];
-    const support=chosen.filter(q=>q.id!==lead.id);
-    if(settings.focus==="adventure"&&support.some(q=>/Social Interactions|Relationships|Conversation|Networking|Hosting/.test(q.skill)))lead.description += " Treat any natural, comfortable interaction during the outing as progress toward your social skills too.";
-    if(settings.focus==="social"&&support.some(q=>/Adventure|Walking & Hiking|Photography|Geography/.test(q.skill)))lead.description += " If it feels practical, choose a public place or activity that gives you a natural shared topic to talk about.";
-    if(settings.focus==="balanced")lead.description += " Use this as the anchor for today's session; fit the supporting quests around it where practical.";
-  }
-  if(!chosen.length){openCampaignPlanner(false);toast("No eligible quests were found in the quest library for the selected skills. Existing quests were kept.");updateGenerateButtonStatus();return;}
-  if(preserveExisting){
-    const existingIds=new Set((state.quests||[]).map(q=>String(q.id)));
-    state.quests=[...(state.quests||[]),...chosen.filter(q=>!existingIds.has(String(q.id)))];
-    state.lastGeneratedSkills=[...new Set([...(state.lastGeneratedSkills||[]),...skills])];
-  }else{
-    state.quests=chosen;
-    state.lastGeneratedSkills=[...state.selectedSkills];
-    state.questGenerationCooldownUntil=Date.now()+QUEST_GENERATION_COOLDOWN_MS;
-  }
-  state.activeDate=today();
-  save();
-  updateGenerateButtonStatus();
-  openCampaignPlanner(false);
-  if(!chosen.length){toast("No eligible quests were found in the quest library for the selected skills.");return;}
-  const total=chosen.reduce((sum,q)=>sum+(q.estimatedMinutes||10),0);
-  toast(preserveExisting?`Added ${chosen.length} quest${chosen.length===1?"":"s"} for newly selected skills. Existing quests and cooldown preserved.`:`Campaign ready: ${chosen.length} quests, about ${total} minutes planned. Next full refresh in 4 hours.`);
-}
-const generateQuestsButton=document.getElementById("generateBtn");
-// The primary button opens the campaign planner; quest generation happens only
-// when the user confirms the plan. Keep the existing planner and quest logic intact.
-if(generateQuestsButton)generateQuestsButton.addEventListener("click",()=>openCampaignPlanner(true));
-["campaignTime","campaignEnergy"].forEach(id=>document.getElementById(id)?.addEventListener("change",updateCampaignPreview));
-document.getElementById("buildCampaignBtn")?.addEventListener("click",()=>generateQuests());
-document.getElementById("closeCampaignPlanner")?.addEventListener("click",()=>openCampaignPlanner(false));
-document.getElementById("cancelCampaignBtn")?.addEventListener("click",()=>openCampaignPlanner(false));
-updateCampaignPreview();
 
 
 // Initialize the interface from saved local data on every page load.
@@ -1651,7 +1150,7 @@ async function runThemeIntegrationTests(){
  if(lockState.debugDisablePortrait){const art=document.getElementById("characterArtwork"),icon=document.querySelector(".themeIcon"),actualArt=(art?.getAttribute("src")||art?.src||"").split("/").pop(),actualIcon=(icon?.getAttribute("src")||icon?.src||"").split("/").pop(),gender=state?.profile?.gender==="female"?"female":"male",expectedArt=active?.character?.[gender]||null,expectedIcon=active?.icon?(active.icon.split("/").pop()):null,matches=!!expectedArt&&actualArt===expectedArt&&!!expectedIcon&&actualIcon===expectedIcon;add("Feature lock: equipped theme character and theme images still match",!isNonDungeon||matches,`Equipped=${current}; character=${actualArt}; expected character=${expectedArt||"missing debugCharacter metadata"}; theme icon=${actualIcon}; expected icon=${expectedIcon||"missing icon metadata"}`,"debug-lock-detection",expectedArt&&expectedIcon?undefined:"INCONCLUSIVE");}
  if(lockState.debugDisableMusic){const expected=active?.music||null,observed=themeMusicSource,matches=!!expected&&observed===expected;add("Feature lock: selected theme music remains applied",!isNonDungeon||matches,`Equipped=${current}; active music source=${observed||"not started"}; expected=${expected||"missing debugMusic metadata"}`,"debug-lock-detection",expected?undefined:"INCONCLUSIVE");}
  const passed=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").length,inconclusive=results.filter(x=>x.status==="INCONCLUSIVE").length;
- const report={version:"v2.0.3",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
+ const report={version:"v2.0.6",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
  const out=document.getElementById("debugThemeTestResults");if(out)out.textContent=JSON.stringify(report,null,2);debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed, "+inconclusive+" inconclusive.");return report;
 }
 document.getElementById("debugRunThemeTests")?.addEventListener("click",runThemeIntegrationTests);
@@ -1804,7 +1303,7 @@ function runEquipmentLifecycleTests(){
   if(type==="theme"&&item.perkSkill){const calculated=calculateThemeBonus(item.id,item.perkSkill),bonusOk=calculated>0;check(`${item.name}: effect/XP bonus`,bonusOk,`Expected positive ${item.perkSkill} bonus; shared calculation returned ${calculated} XP.`);const pool=buildQuestPool(item.perkSkill),template=pool.find(q=>q.skill===item.perkSkill)||null;const generated=!!template&&template.skill===item.perkSkill;check(`${item.name}: related quest generation`,generated,generated?`Shared quest-template pool produced ${template.title} for ${item.perkSkill}.`:`No eligible quest template for ${item.perkSkill}.`);if(generated){const base=Number(template.xp)||15;const bonus=calculateThemeBonus(item.id,item.perkSkill);const quest={...template,baseXp:base,xp:base+bonus,perkBonusXp:bonus};const before=Number(sandbox.skillXp[item.perkSkill])||0;const award=awardQuestRewards(sandbox,quest);const observed=(Number(sandbox.skillXp[item.perkSkill])||0)-before;const expected=base+bonus;check(`${item.name}: quest completion reward`,observed===expected,`Shared reward helper awarded ${observed} ${item.perkSkill} XP; expected ${expected} (${base} base + ${bonus} bonus).`);}}
   else check(`${item.name}: defined item effects`,true,"No theme XP-perk contract declared; type-specific effect coverage is not defined.");
  }
- const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v2.0.3",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
+ const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v2.0.6",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
 }
 document.getElementById("debugRunEquipmentLifecycle")?.addEventListener("click",runEquipmentLifecycleTests);
 // Fault switches affect shared theme gates, so refresh the actual theme/store/inventory surfaces immediately.
@@ -1874,8 +1373,7 @@ async function loadWayfarerChangelog(){
 document.getElementById("debugReloadChangelog")?.addEventListener("click",loadWayfarerChangelog);
 loadWayfarerChangelog();
 render();
-enforceAccountGate();
-</script>
+enforceAccountGate();</script>
 
 </body>
 </html>
