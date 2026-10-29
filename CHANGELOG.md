@@ -1,3 +1,9 @@
+# Wayfarer v3.0.3 — Conservative transferred-file cleanup (2026-10-30)
+
+- Removed only `assets/images/social-interactions-market.webp`, an unreferenced image with no references found in the application, theme registry, service-worker precache, or project rules/documentation.
+- Kept all active scripts, styles, other assets, configuration, login, saved-progress code, and mandatory rules intact. No runtime logic changed.
+- Aligned Debug report versions, service-worker cache namespace, and update rules. Reference audit performed; live browser and Supabase regression testing not performed.
+
 # Wayfarer v3.0.2 — CHATGPT live testing permissions (2026-10-30)
 
 - Restrict live XP and gold grants to the signed-in CHATGPT test account with confirmation. Admin grants remain Sandbox-only.
