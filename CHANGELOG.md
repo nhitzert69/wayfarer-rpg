@@ -1,3 +1,11 @@
+# Wayfarer v1.20.1 — inline account logic and index-owned Debug UI (2026-10-29)
+
+- Moved the complete account/login/session-restoration implementation from `codes/core-account.js` directly into `index.html`, immediately before the remaining application modules. The existing early Supabase client and shared preflight remain the single client/session bootstrap. Removed the duplicate `codes/core-account.js` module so there is no competing or stale copy.
+- Confirmed the Debug Workshop page markup is already owned by `index.html`; kept its UI markup there and left `codes/debug.js` responsible for Debug behavior, test functions, and event handlers only.
+- Kept Admin authorization tied to the authenticated account logic; the index's Admin tab visibility is a reflection of the verified Admin flag, never an independent grant. Sandbox still requires authenticated Admin verification.
+- Updated mandatory update rules, service-worker cache namespace, and Debug report version strings.
+- Validation: inline JavaScript extracted and syntax-checked, all remaining project JavaScript syntax-checked, script order and single-source account logic checked, rules-file presence and ZIP integrity checked. Live browser/Supabase behavior remains unverified.
+
 # Wayfarer v1.20.0 — reliable Admin tab sync and explicit Sandbox-active state (2026-10-29)
 
 - Fixed the index Admin-tab synchronizer listening for `wayfarer-auth-restored` on `document` even though account code dispatches it on `window`; it now listens on the correct event target and rechecks on `pageshow`, focus, and return to a visible tab. The synchronizer reflects only the verified Admin flag from account code.

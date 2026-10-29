@@ -1,3 +1,9 @@
+## Index-owned authentication and Debug UI (v1.20.1 — mandatory)
+- The complete account/login/session-restoration implementation lives inline in `index.html` and executes after the Supabase CDN/client bootstrap but before feature modules. Do not reintroduce a competing `codes/core-account.js` script or create a second Supabase client/session restore. Keep `window.wayfarerSupabaseClient` and `window.wayfarerAuthPreflight` shared.
+- The Debug Workshop markup and navigation button live in `index.html`. `codes/debug.js` contains Debug functions and event handlers, not a second generated page/UI. Keep Admin visibility based only on the authenticated Admin flag published by the inline account logic.
+- Preserve all existing account identity, username/PIN sign-in, session persistence, account isolation, saved progress, and Sandbox boundaries. Sandbox resume must still verify Supabase session and exact Admin identity; never authorize from a local snapshot alone.
+- Update changelog, service-worker cache namespace, and Debug report versions together. Syntax/ZIP checks do not substitute for real browser tests.
+
 ## Verified Admin tab event and explicit Sandbox-active marker (v1.20.0 — mandatory)
 - `core-account.js` dispatches `wayfarer-auth-restored` on `window`; listeners that synchronize the Admin Debug tab must listen on `window`, not `document`. The index synchronizer may reflect only `window.wayfarerAdminAuthenticated === true`; never infer Admin from cached usernames. Recheck on auth restoration, admin-status changes, pageshow/focus, and when the document becomes visible.
 - A Sandbox snapshot alone does not mean Sandbox is active. Persist an explicit same-tab `wayfarer-debug-sandbox-active-v1` marker and `active:true` snapshot property only while Sandbox is active. Startup hints and restore require both; exiting Sandbox clears both. A missing marker must use normal startup and never display a Sandbox-resume message.
