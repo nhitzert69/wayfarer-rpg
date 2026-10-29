@@ -327,9 +327,14 @@ window.setTimeout(function(){
     window.wayfarerAuthPreflight.then(function(result){
       const session=result&&result.data&&result.data.session;
       if(!session||!session.user)return;
-      let cached=null;
-      try{cached=JSON.parse(sessionStorage.getItem("wayfarer-debug-sandbox-session-v1")||"null");}catch(e){}
-      if(!cached||!cached.username||!cached.live||!cached.sandbox)return;
+      let cached=null, sandboxMarkedActive=false;
+      try{
+        sandboxMarkedActive=sessionStorage.getItem("wayfarer-debug-sandbox-active-v1")==="true";
+        cached=JSON.parse(sessionStorage.getItem("wayfarer-debug-sandbox-session-v1")||"null");
+      }catch(e){}
+      // A snapshot alone is not proof that Sandbox is active. Only a current,
+      // explicit same-tab marker may change the startup message.
+      if(!sandboxMarkedActive||!cached||cached.active!==true||!cached.username||!cached.live||!cached.sandbox)return;
       const metadataName=String(session.user.user_metadata&&session.user.user_metadata.wayfarer_username||"").trim();
       let lastName="";
       try{lastName=String(localStorage.getItem("wayfarer-last-username")||"").trim();}catch(e){}
@@ -358,11 +363,14 @@ window.setTimeout(function(){
     if(tab.style.display!==display)tab.style.display=display;
     if(tab.disabled===admin)tab.disabled=!admin;
   }
-  document.addEventListener("wayfarer-auth-restored",syncAdminTab);
+  window.addEventListener("wayfarer-auth-restored",syncAdminTab);
+  window.addEventListener("wayfarer-admin-status-changed",syncAdminTab);
+  window.addEventListener("pageshow",syncAdminTab);
+  window.addEventListener("focus",syncAdminTab);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)syncAdminTab();});
   document.addEventListener("DOMContentLoaded",syncAdminTab);
   const nav=document.querySelector(".tabs");
   if(nav&&window.MutationObserver)new MutationObserver(syncAdminTab).observe(nav,{subtree:true,attributes:true,attributeFilter:["style","class","disabled"]});
-  window.addEventListener("wayfarer-admin-status-changed",syncAdminTab);
 })();
 </script>
 <script src="./codes/core-account.js"></script>

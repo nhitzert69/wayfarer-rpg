@@ -1,3 +1,9 @@
+## Verified Admin tab event and explicit Sandbox-active marker (v1.20.0 — mandatory)
+- `core-account.js` dispatches `wayfarer-auth-restored` on `window`; listeners that synchronize the Admin Debug tab must listen on `window`, not `document`. The index synchronizer may reflect only `window.wayfarerAdminAuthenticated === true`; never infer Admin from cached usernames. Recheck on auth restoration, admin-status changes, pageshow/focus, and when the document becomes visible.
+- A Sandbox snapshot alone does not mean Sandbox is active. Persist an explicit same-tab `wayfarer-debug-sandbox-active-v1` marker and `active:true` snapshot property only while Sandbox is active. Startup hints and restore require both; exiting Sandbox clears both. A missing marker must use normal startup and never display a Sandbox-resume message.
+- Keep auth verification mandatory before restoring Sandbox. Validate the exact authenticated Admin username against the snapshot. Do not sync temporary Sandbox state to the live account. Update changelog, service-worker cache namespace, and Debug report versions together.
+- Verify Admin tab immediate visibility, non-Admin hidden state, normal startup with stale/no snapshot, active Sandbox refresh, and exit clearing the marker in a real browser before claiming behavior is fixed.
+
 ## Index-level Admin tab sync and Sandbox startup (v1.19.9 — mandatory)
 - `index.html` may show a possible Sandbox-resume status only after the shared Supabase preflight resolves with a session and a same-tab Admin snapshot appears to match. This is a hint only; it must never bypass the authoritative auth check or independently restore/authorize Sandbox.
 - `core-account.js` is authoritative for verified Admin status and must publish `window.wayfarerAdminAuthenticated`; index-level tab sync may only reflect that flag. Never grant Admin based on localStorage/sessionStorage alone.

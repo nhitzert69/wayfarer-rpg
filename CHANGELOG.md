@@ -1,3 +1,10 @@
+# Wayfarer v1.20.0 — reliable Admin tab sync and explicit Sandbox-active state (2026-10-29)
+
+- Fixed the index Admin-tab synchronizer listening for `wayfarer-auth-restored` on `document` even though account code dispatches it on `window`; it now listens on the correct event target and rechecks on `pageshow`, focus, and return to a visible tab. The synchronizer reflects only the verified Admin flag from account code.
+- Added an explicit same-tab Sandbox-active marker and `active: true` snapshot field. The index shows “Resuming your Sandbox…” only when both are present, and the Debug module resumes only when the explicit marker and authenticated Admin identity are valid. Exiting Sandbox clears both marker and snapshot.
+- Updated mandatory update rules, service-worker cache namespace, and Debug report versions.
+- Validation: JavaScript syntax, event-target wiring, active-marker conditions, rules-file presence, and ZIP integrity. Live browser/Supabase behavior remains unverified.
+
 # Wayfarer v1.19.9 — index-level Admin tab sync and quicker Sandbox resume (2026-10-29)
 
 - Added an index-level Admin tab visibility synchronizer that reacts immediately after the authenticated account gate publishes verified Admin status. The index helper cannot grant access; it only reflects the trusted flag set by `core-account.js`.
