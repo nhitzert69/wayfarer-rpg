@@ -625,7 +625,7 @@ function ensureDungeonThemeState(){
 function renderCharacterInventory(){ if(window.WayfarerTabRenderers?.character?.renderCharacterInventory) return window.WayfarerTabRenderers.character.renderCharacterInventory(); }
 function hasUnlockable(id){return Array.isArray(state.inventory)&&state.inventory.some(item=>item&&item.id===id);}
 let activeStoreCategory="themes";
-document.querySelectorAll("[data-store-category]").forEach(button=>button.addEventListener("click",()=>setStoreCategory(button.dataset.storeCategory)));
+
 function setStoreCategory(category){
  if(!["themes","artifacts","pets"].includes(category))return;activeStoreCategory=category;
  document.querySelectorAll("[data-store-category]").forEach(button=>{const active=button.dataset.storeCategory===category;button.setAttribute("aria-selected",active?"true":"false");button.tabIndex=active?0:-1;});
@@ -653,225 +653,32 @@ function render(){
  const dateLabelEl=document.getElementById("dateLabel"); if(dateLabelEl) dateLabelEl.textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
  const shiftNoteEl=document.getElementById("shiftNote"); if(shiftNoteEl) shiftNoteEl.textContent=({low:"Keep it gentle. Recovery is part of the campaign.",normal:"Small steps forge a different life.",free:"Your wider world awaits. Consider a longer adventure."})[state.settings.shift]||"Small steps forge a different life.";
  ensureSelectedSkills();
- if(window.WayfarerTabRenderers?.skills){ window.WayfarerTabRenderers.skills.renderSkillProgress(); window.WayfarerTabRenderers.skills.renderSkillCatalog(); }
-  if(window.WayfarerTabRenderers?.quests) window.WayfarerTabRenderers.quests();
-
-  if(window.WayfarerTabRenderers?.todo) window.WayfarerTabRenderers.todo();
-
-  if(window.WayfarerTabRenderers?.groceries) window.WayfarerTabRenderers.groceries();
-
-  if(window.WayfarerTabRenderers?.journal) window.WayfarerTabRenderers.journal();
-
-  if(window.WayfarerTabRenderers?.settings) window.WayfarerTabRenderers.settings();
-
-updateMusicControls();
-if(window.WayfarerTabRenderers?.character) window.WayfarerTabRenderers.character(); else renderCharacterOverview();
+ updateMusicControls();
  const activeTabName=document.querySelector(".tab.active")?.dataset.tab;
+ // Tab-owned UI is rendered only by its own lazy-loaded module. Shared counters above remain core-owned.
+ if(activeTabName && window.WayfarerTabRenderers){
+   const renderers=window.WayfarerTabRenderers;
+   if(activeTabName==="quests")renderers.quests?.();
+   else if(activeTabName==="character")renderers.character?.();
+   else if(activeTabName==="store")renderers.store?.renderStoreCatalog?.();
+   else if(activeTabName==="skills"){renderers.skills?.renderSkillProgress?.();renderers.skills?.renderSkillCatalog?.();}
+   else if(activeTabName==="todo")renderers.todo?.();
+   else if(activeTabName==="groceries")renderers.groceries?.();
+   else if(activeTabName==="journal")renderers.journal?.();
+   else if(activeTabName==="settings")renderers.settings?.();
+   else if(activeTabName==="debug")renderers.debug?.renderDebugPanel?.();
+ }
  if(activeTabName && !window.WayfarerTabModules?.[activeTabName] && !window.WayfarerTabModulePromises?.[activeTabName] && typeof loadWayfarerTab==="function") loadWayfarerTab(activeTabName);
 }
 function renderSkillProgress(){ if(window.WayfarerTabRenderers?.skills?.renderSkillProgress) return window.WayfarerTabRenderers.skills.renderSkillProgress(); }
-function renderSkillCatalog(){
- const root=document.getElementById("skillCatalog"); if(!root)return;
- ensureSelectedSkills();
- root.innerHTML=skillCatalog.filter(cat=>debugSandboxActive||!cat.skills.some(skill=>skill[0]==="Test")).map(cat=>`<div class="skillCategory"><h3>${cat.icon} ${esc(cat.category)}</h3><div class="skillChoices">${cat.skills.map(([name,desc])=>{
-   const selected=state.selectedSkills.includes(name);
-   const priority=getSkillPriority(name);
-   return `<div class="skillChoice" style="display:flex;align-items:flex-start;gap:10px"><input type="checkbox" data-skill-choice="${esc(name)}" aria-label="Select ${esc(name)}" ${selected?"checked":""}><span style="flex:1;min-width:0"><strong>${esc(name)}</strong><small>${esc(desc)}</small>${selected?`<label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px;color:var(--gold)">Quest role <select data-skill-priority="${esc(name)}" style="margin-left:auto;max-width:145px;padding:6px 8px;background:#101315;color:#f0e6d4;border:1px solid #8f6b43;border-radius:8px"><option value="priority" ${priority==="priority"?"selected":""}>👑 Priority</option><option value="secondary" ${priority==="secondary"?"selected":""}>✦ Secondary</option></select></label>`:""}</span></div>`;
- }).join("")}</div></div>`).join("");
- const count=document.getElementById("selectedSkillCount");
- if(count)count.textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
- root.querySelectorAll("[data-skill-choice]").forEach(input=>input.addEventListener("change",()=>{
-   const name=input.dataset.skillChoice;
-   if(input.checked){if(!state.selectedSkills.includes(name))state.selectedSkills.push(name);if(!state.skillPriorities[name])state.skillPriorities[name]="secondary";}
-   else{state.selectedSkills=state.selectedSkills.filter(s=>s!==name);delete state.skillPriorities[name];}
-   renderSkillCatalog();
-   renderSkillProgress();
- }));
- root.querySelectorAll("[data-skill-priority]").forEach(select=>select.addEventListener("change",()=>{
-   state.skillPriorities[select.dataset.skillPriority]=select.value;
-   if(!debugSandboxActive){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(error){console.error("Could not persist skill priority:",error);}}
-   renderSkillCatalog();
- }));
-}
-const saveSkillsButton=document.getElementById("saveSkillsBtn");
-if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
- event.preventDefault();
- const catalog=document.getElementById("skillCatalog");
- if(catalog){
-   state.selectedSkills=Array.from(catalog.querySelectorAll("[data-skill-choice]:checked"))
-     .map(input=>input.getAttribute("data-skill-choice"))
-     .filter(name=>allSkillNames().includes(name));
- }
- ensureSelectedSkills();
- try{
-   if(!debugSandboxActive){
-     const revision=nextSaveRevision();
-     localStorage.setItem(KEY,JSON.stringify(state));
-     try{localStorage.setItem(STATE_UPDATED_KEY,String(revision));}catch(e){}
-     if(cloudUser&&!cloudHydrating)syncCurrentState(revision);
-   }
-   renderSkillProgress();
-   window.scrollTo({top: 0, behavior: "smooth"});
-   toast(`✓ Saved ${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"}.`);
-   }catch(error){
-   toast("Could not save skills on this device. Please check browser storage settings.");
-   console.error("Wayfarer could not save selected skills:",error);
- }
-});
-
-
-
-let todoEditingId=null;
-const todoForm=document.getElementById("todoForm"),todoSubmitBtn=document.getElementById("todoSubmitBtn"),cancelTodoEditBtn=document.getElementById("cancelTodoEditBtn");
-function resetTodoForm(){todoEditingId=null;if(todoForm)todoForm.reset();if(todoSubmitBtn)todoSubmitBtn.textContent="Save task";if(cancelTodoEditBtn)cancelTodoEditBtn.style.display="none";}
-function editTodo(id){const t=state.todo.find(x=>String(x.id)===String(id));if(!t)return;todoEditingId=t.id;document.getElementById("todoTitle").value=t.title||"";document.getElementById("todoDue").value=t.dueDate||"";document.getElementById("todoPriority").value=t.priority||"normal";document.getElementById("todoNotes").value=t.notes||"";todoSubmitBtn.textContent="Update task";cancelTodoEditBtn.style.display="inline-flex";document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab==="todo"));document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-todo"));window.scrollTo({top:0,behavior:"smooth"});}
-function deleteTodo(id){const t=state.todo.find(x=>String(x.id)===String(id));if(!t||!confirm(`Delete task "${t.title}"?`))return;state.todo=state.todo.filter(x=>String(x.id)!==String(id));if(String(todoEditingId)===String(id))resetTodoForm();save();toast("Task deleted.");}
-function saveTodoTask(){
- const wasEditing=todoEditingId!==null;
- try{
-  const titleEl=document.getElementById("todoTitle");
-  const title=titleEl.value.trim();
-  if(!title){titleEl.focus();toast("Please enter a task name.");return;}
-  const now=new Date();
-  const data={title,dueDate:document.getElementById("todoDue").value,priority:document.getElementById("todoPriority").value,notes:document.getElementById("todoNotes").value.trim(),updatedAt:now.toISOString()};
-  if(todoEditingId!==null){
-   const task=state.todo.find(x=>String(x.id)===String(todoEditingId));
-   if(!task){resetTodoForm();toast("That task could not be found.");return;}
-   Object.assign(task,data);
-  }else{
-   const id=(window.crypto&&typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2);
-   state.todo.push({id,...data,completed:false,createdAt:now.toISOString()});
-  }
-  localStorage.setItem(KEY,JSON.stringify(state));
-  resetTodoForm();
-  render();
-  toast(wasEditing?"Task updated.":"Task saved.");
- }catch(error){
-  console.error("Could not save To Do task",error);
-  toast("Couldn't save task. Please try again.");
- }
-}
-todoSubmitBtn.addEventListener("click",saveTodoTask);
-todoForm.addEventListener("submit",function(event){event.preventDefault();saveTodoTask();});
-cancelTodoEditBtn.addEventListener("click",resetTodoForm);
-document.getElementById("addTodoBtn").addEventListener("click",()=>document.getElementById("todoTitle").focus());
-
-
-// Journal entries are saved locally with a timestamp and can be edited or deleted.
-let journalEditingId = null;
-const journalForm = document.getElementById("journalForm");
-const journalSubmitBtn = document.getElementById("journalSubmitBtn");
-const cancelJournalEditBtn = document.getElementById("cancelJournalEditBtn");
-function resetJournalForm(){
-  journalEditingId = null;
-  if(journalForm) journalForm.reset();
-  if(journalSubmitBtn) journalSubmitBtn.textContent = "Save journal entry";
-  if(cancelJournalEditBtn) cancelJournalEditBtn.style.display = "none";
-}
-function editJournalEntry(id){
-  const entry = state.journal.find(item => String(item.id) === String(id));
-  if(!entry) return;
-  journalEditingId = entry.id;
-  document.getElementById("entryTitle").value = entry.title || "";
-  document.getElementById("entryType").value = entry.type || "Lifestyle & personal growth";
-  document.getElementById("entryText").value = entry.text || "";
-  if(journalSubmitBtn) journalSubmitBtn.textContent = "Update journal entry";
-  if(cancelJournalEditBtn) cancelJournalEditBtn.style.display = "inline-flex";
-  document.querySelectorAll(".tab").forEach(tab=>tab.classList.toggle("active",tab.dataset.tab==="journal"));
-  document.querySelectorAll(".section").forEach(section=>section.classList.toggle("active",section.id==="section-journal"));
- }
-function deleteJournalEntry(id){
-  const entry = state.journal.find(item => String(item.id) === String(id));
-  if(!entry) return;
-  if(!window.confirm(`Delete journal entry "${entry.title}"? This cannot be undone.`)) return;
-  state.journal = state.journal.filter(item => String(item.id) !== String(id));
-  if(String(journalEditingId) === String(id)) resetJournalForm();
-  save();
-  toast("Journal entry deleted.");
-}
-if(journalForm){
-  journalForm.addEventListener("submit",function(event){
-    event.preventDefault();
-    const title = document.getElementById("entryTitle").value.trim();
-    const type = document.getElementById("entryType").value;
-    const text = document.getElementById("entryText").value.trim();
-    if(!title){ document.getElementById("entryTitle").focus(); return; }
-    const now = new Date();
-    const displayDate = now.toLocaleString(undefined,{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
-    if(journalEditingId !== null){
-      const entry = state.journal.find(item => String(item.id) === String(journalEditingId));
-      if(!entry){ resetJournalForm(); toast("That journal entry could not be found."); return; }
-      entry.title = title;
-      entry.type = type;
-      entry.text = text;
-      entry.updatedAt = now.toISOString();
-      entry.updatedDisplayDate = displayDate;
-      // Preserve the original creation date/time when editing.
-      entry.displayDate = entry.displayDate || entry.date || displayDate;
-      save();
-      resetJournalForm();
-      render();
-      toast("Journal entry updated.");
-    } else {
-      const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(36).slice(2);
-      state.journal.push({id,title,type,text,createdAt:now.toISOString(),date:now.toISOString(),displayDate});
-      save();
-      resetJournalForm();
-      render();
-      toast("Journal entry saved.");
-    }
-  });
-}
-if(cancelJournalEditBtn) cancelJournalEditBtn.addEventListener("click",function(){resetJournalForm();toast("Edit cancelled.");});
-
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
- document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
- document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-"+b.dataset.tab));
- if(b.dataset.tab==="skills")renderSkillCatalog();
-}));
 function renderSkillCatalog(){ if(window.WayfarerTabRenderers?.skills?.renderSkillCatalog) return window.WayfarerTabRenderers.skills.renderSkillCatalog(); }
-document.getElementById("saveSkillsBtn").addEventListener("click",()=>{
- const catalog=document.getElementById("skillCatalog");
- if(catalog){
-   state.selectedSkills=Array.from(catalog.querySelectorAll("[data-skill-choice]:checked")).map(input=>input.dataset.skillChoice).filter(name=>allSkillNames().includes(name));
-   catalog.querySelectorAll("[data-skill-priority]").forEach(select=>{state.skillPriorities[select.dataset.skillPriority]=select.value;});
- }
- ensureSelectedSkills();save();renderSkillProgress();render();window.scrollTo({top:0,behavior:"smooth"});toast("Skills and quest priorities saved.");
-});
-
-// Delegated navigation handler: one click handler for every tab.
-document.addEventListener("click", function(event) {
-  const button = event.target.closest(".tab[data-tab]");
-  if (!button) return;
-  event.preventDefault();
-  const tabName = button.getAttribute("data-tab");
-  document.querySelectorAll(".tab[data-tab]").forEach(function(tab) {
-    tab.classList.toggle("active", tab === button);
-  });
-  document.querySelectorAll("main .section[id^='section-']").forEach(function(section) {
-    section.classList.toggle("active", section.id === "section-" + tabName);
-  });
-  if (tabName === "skills" && typeof renderSkillCatalog === "function") renderSkillCatalog();
-});
 
 
 
-// Grocery list: saved alongside the user's existing local Wayfarer data.
-const groceryForm=document.getElementById("groceryForm");
-if(groceryForm)groceryForm.addEventListener("submit",function(event){
- event.preventDefault();
- const name=document.getElementById("groceryItem").value.trim();
- const quantity=document.getElementById("groceryQty").value.trim();
- if(!name)return;
- state.groceries.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name,quantity,checked:false,createdAt:new Date().toISOString()});
- groceryForm.reset();
- save();
- document.getElementById("groceryItem").focus();
-});
-const clearBoughtGroceries=document.getElementById("clearBoughtGroceries");
-if(clearBoughtGroceries)clearBoughtGroceries.addEventListener("click",()=>{state.groceries=state.groceries.filter(g=>!g.checked);save();toast("Checked items removed.");});
-const clearGroceries=document.getElementById("clearGroceries");
-if(clearGroceries)clearGroceries.addEventListener("click",()=>{if(!state.groceries.length)return;if(!confirm("Clear your entire grocery list?"))return;state.groceries=[];save();toast("Grocery list cleared.");});
+
+
+
+
 
 // Keep the hosted PWA's service worker updated when a new version is deployed.
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
@@ -1076,7 +883,7 @@ async function runThemeIntegrationTests(){
  if(lockState.debugDisablePortrait){const art=document.getElementById("characterArtwork"),icon=document.querySelector(".themeIcon"),actualArt=(art?.getAttribute("src")||art?.src||"").split("/").pop(),actualIcon=(icon?.getAttribute("src")||icon?.src||"").split("/").pop(),gender=state?.profile?.gender==="female"?"female":"male",expectedArt=active?.character?.[gender]||null,expectedIcon=active?.icon?(active.icon.split("/").pop()):null,matches=!!expectedArt&&actualArt===expectedArt&&!!expectedIcon&&actualIcon===expectedIcon;add("Feature lock: equipped theme character and theme images still match",!isNonDungeon||matches,`Equipped=${current}; character=${actualArt}; expected character=${expectedArt||"missing debugCharacter metadata"}; theme icon=${actualIcon}; expected icon=${expectedIcon||"missing icon metadata"}`,"debug-lock-detection",expectedArt&&expectedIcon?undefined:"INCONCLUSIVE");}
  if(lockState.debugDisableMusic){const expected=active?.music||null,observed=themeMusicSource,matches=!!expected&&observed===expected;add("Feature lock: selected theme music remains applied",!isNonDungeon||matches,`Equipped=${current}; active music source=${observed||"not started"}; expected=${expected||"missing debugMusic metadata"}`,"debug-lock-detection",expected?undefined:"INCONCLUSIVE");}
  const passed=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").length,inconclusive=results.filter(x=>x.status==="INCONCLUSIVE").length;
- const report={version:"v2.0.9",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
+ const report={version:"v2.1.0",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
  const out=document.getElementById("debugThemeTestResults");if(out)out.textContent=JSON.stringify(report,null,2);debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed, "+inconclusive+" inconclusive.");return report;
 }
 document.getElementById("debugRunThemeTests")?.addEventListener("click",runThemeIntegrationTests);
@@ -1229,7 +1036,7 @@ function runEquipmentLifecycleTests(){
   if(type==="theme"&&item.perkSkill){const calculated=calculateThemeBonus(item.id,item.perkSkill),bonusOk=calculated>0;check(`${item.name}: effect/XP bonus`,bonusOk,`Expected positive ${item.perkSkill} bonus; shared calculation returned ${calculated} XP.`);const pool=buildQuestPool(item.perkSkill),template=pool.find(q=>q.skill===item.perkSkill)||null;const generated=!!template&&template.skill===item.perkSkill;check(`${item.name}: related quest generation`,generated,generated?`Shared quest-template pool produced ${template.title} for ${item.perkSkill}.`:`No eligible quest template for ${item.perkSkill}.`);if(generated){const base=Number(template.xp)||15;const bonus=calculateThemeBonus(item.id,item.perkSkill);const quest={...template,baseXp:base,xp:base+bonus,perkBonusXp:bonus};const before=Number(sandbox.skillXp[item.perkSkill])||0;const award=awardQuestRewards(sandbox,quest);const observed=(Number(sandbox.skillXp[item.perkSkill])||0)-before;const expected=base+bonus;check(`${item.name}: quest completion reward`,observed===expected,`Shared reward helper awarded ${observed} ${item.perkSkill} XP; expected ${expected} (${base} base + ${bonus} bonus).`);}}
   else check(`${item.name}: defined item effects`,true,"No theme XP-perk contract declared; type-specific effect coverage is not defined.");
  }
- const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v2.0.9",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
+ const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v2.1.0",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
 }
 document.getElementById("debugRunEquipmentLifecycle")?.addEventListener("click",runEquipmentLifecycleTests);
 // Fault switches affect shared theme gates, so refresh the actual theme/store/inventory surfaces immediately.
@@ -1258,8 +1065,6 @@ document.getElementById("debugApplyAccountGender")?.addEventListener("click",()=
  save();render();renderDebugPanel();debugLog("Changed "+(debugSandboxActive?"temporary Sandbox":"live Admin character")+" gender to "+gender+".");toast(debugSandboxActive?"Sandbox character gender set to "+(gender==="female"?"Female":"Male")+". Live profile unchanged.":"Live character gender saved as "+(gender==="female"?"Female":"Male")+".");
 });
 function equipThemeItem(itemId,targetState=state){const item=(targetState.inventory||[]).find(x=>x&&x.id===itemId);if(!item||!(item.type==="theme"||String(item.category||"").toLowerCase()==="theme"||item.equipable===true))return {ok:false,reason:"not-equipable-or-not-owned"};if(lifecycleFaultEnabled("equip",item))return {ok:false,reason:"injected-equip-failure"};if(!targetState.equipment||typeof targetState.equipment!=="object")targetState.equipment={};targetState.equipment.theme=itemId;return {ok:true,slot:"theme"};}
-document.getElementById("themeInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;if(!state.inventory.some(item=>item&&item.id===itemId&&(item.type==="theme"||String(item.category||"").toLowerCase()==="theme"||item.equipable===true)))return;if(state.equipment?.theme===itemId) {if(debugSandboxActive&&debugAllowThemeUnequip){state.equipment.theme=null;debugLog("Unequipped theme in sandbox test mode.");toast("Theme unequipped (sandbox only).");}else{toast("A theme must always be equipped. Enable the sandbox exception to test unequipped state.");return;}}else{const equipResult=equipThemeItem(itemId,state);if(!equipResult.ok){toast("Could not equip this theme: "+equipResult.reason+".");debugLog("Theme equip operation failed for "+itemId+": "+equipResult.reason);return;}const themeName=itemId==="orthodox-theme"?"Faith":itemId==="academy-theme"?"Academy":itemId==="adventure-theme"?"Adventurer":itemId==="social-interactions-theme"?"Social Butterfly":itemId==="relationships-theme"?"Heartkeeper":itemId==="fitness-theme"?"Fitness":itemId==="spartan-endurance-theme"?"Spartan Endurance":itemId==="v0-test-theme"?"Test":itemId==="bloodthirst-theme"?"Bloodthirst":"Dungeon";debugLog(debugSandboxActive?"Equipped "+themeName+" theme in sandbox.":"Equipped "+themeName+" theme.");toast(themeName+" theme equipped.");}applyThemeMusic({userInitiated:true});save();renderDebugPanel();});
-document.getElementById("petInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;const pet=(state.inventory||[]).find(item=>item&&String(item.id)===String(itemId)&&(item.type==="pet"||String(item.category||"").toLowerCase()==="pet"));if(!pet)return;if(state.equipment?.pet===itemId){state.equipment.pet=null;toast((pet.name||"Pet")+" unequipped.");}else{state.equipment.pet=itemId;toast((pet.name||"Pet")+" equipped.");}save();renderDebugPanel();});
 document.getElementById("debugAllowThemeUnequip")?.addEventListener("change",event=>{if(!debugRequireSandbox()){event.target.checked=false;return;}debugAllowThemeUnequip=!!event.target.checked;if(!debugAllowThemeUnequip&&state.equipment?.theme==null){state.equipment.theme="dungeon-theme";save();}render();renderDebugPanel();debugLog(debugAllowThemeUnequip?"Sandbox-only unequipped theme exception enabled.":"Sandbox-only unequipped theme exception disabled.");toast(debugAllowThemeUnequip?"Sandbox can test no-theme state.":"Theme required again.");});
 document.getElementById("debugOverrideQuestRules")?.addEventListener("change",event=>{if(!debugRequireSandbox()){event.target.checked=false;return;}debugOverrideQuestRules=!!event.target.checked;updateGenerateButtonStatus();renderDebugPanel();debugLog(debugOverrideQuestRules?"Sandbox-only quest safeguards override enabled: cooldown and completion confirmation bypassed.":"Sandbox-only quest safeguards restored.");toast(debugOverrideQuestRules?"Quest safeguards overridden in sandbox only.":"Quest safeguards restored.");});
 function applyUnlockAllItems(enabled){if(!debugRequireSandbox())return;debugUnlockAllItems=!!enabled;if(!Array.isArray(state.inventory))state.inventory=[];if(debugUnlockAllItems){for(const item of UNLOCKABLE_ITEMS){if(!hasUnlockable(item.id))state.inventory.push({...item});}debugLog("Unlock all items enabled; all registered unlockables added to the sandbox inventory.");toast("All registered items unlocked in sandbox.");}else{const liveIds=new Set((debugLiveStateBackup?.inventory||[]).map(item=>item?.id));state.inventory=state.inventory.filter(item=>!UNLOCKABLE_ITEMS.some(def=>def.id===item.id));for(const item of UNLOCKABLE_ITEMS){if(liveIds.has(item.id)&&!hasUnlockable(item.id))state.inventory.push({...item});}if(state.equipment?.theme&&!hasUnlockable(state.equipment.theme))state.equipment.theme="dungeon-theme";debugLog("Unlock all items disabled; temporary grants removed unless owned before the sandbox.");toast("Sandbox item unlock override disabled.");}save(true);render();renderDebugPanel();}document.getElementById("debugUnlockAllItems")?.addEventListener("change",event=>{applyUnlockAllItems(!!event.target.checked);});

@@ -17,3 +17,7 @@ window.WayfarerTabRenderers.store.renderStoreCatalog = function(){
 }
 window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.store = function() { window.WayfarerTabRenderers.store.renderStoreCatalog(); };
+
+
+/* Store category interaction extracted in v2.1.0. */
+document.querySelectorAll("[data-store-category]").forEach(button=>button.addEventListener("click",()=>setStoreCategory(button.dataset.storeCategory)));

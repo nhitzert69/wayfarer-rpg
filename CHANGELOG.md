@@ -1,3 +1,11 @@
+# Wayfarer v2.1.0 — lazy tab functionality extraction (2026-10-29)
+
+- Moved Skills save actions, To Do create/edit/delete actions, Journal create/edit/delete actions, Groceries add/remove/clear actions, Store category interaction, and Character Inventory/equipment click handlers out of `index.html` into their matching lazily loaded tab scripts.
+- Changed the core render coordinator to render the active tab only; shared counters, account/session handling, save/sync, and gameplay services remain core-owned.
+- Kept the existing nine-tab lazy loader and module caching.
+- Updated app/debug version strings and service-worker cache namespace.
+- Validation in this package: JavaScript syntax, asset paths, service-worker references, and ZIP integrity. Browser behavior remains INCONCLUSIVE until tested in the deployed app.
+
 # Wayfarer v2.0.9 — quest rendering and Debug tab reliability fixes (2026-10-29)
 
 - Made quest rendering resilient to missing/uninitialized quest arrays and bound completion actions once per quest grid to prevent duplicate listeners.

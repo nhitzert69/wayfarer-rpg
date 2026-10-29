@@ -1,3 +1,9 @@
+## v2.1.0 lazy tab action extraction (mandatory)
+- Skills, To Do, Journal, Groceries, Store category interaction, and Character Inventory/equipment click handlers are owned by their lazy-loaded tab files; do not move account/session/save primitives into tabs.
+- Core render updates shared counters and delegates tab-specific rendering to the active loaded tab only. Keep cross-tab state changes visible when the user opens a tab by rendering from current shared state.
+- The other tab files own their renderers, but remaining Store purchase/upgrade and Debug action handlers are still in core until separately mapped and migrated; do not claim all tab handlers are extracted.
+- Browser validation is required for login/refresh, tab switching, list CRUD, quest visibility/completion, Store/Inventory, Debug controls and Sandbox isolation.
+
 ## v2.0.9 quest and Debug regression follow-up (mandatory)
 - Quest renderer must safely handle absent quest arrays and attach completion handlers only once per grid.
 - Core render should ensure the selected tab module is loaded when needed without repeated fetches or recursive rendering.

@@ -43,3 +43,31 @@ window.WayfarerTabRenderers.skills.renderSkillCatalog = function(){
 }
 window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.skills = function() { window.WayfarerTabRenderers.skills.renderSkillProgress(); window.WayfarerTabRenderers.skills.renderSkillCatalog(); };
+
+
+/* Lazy Skills tab actions extracted from index.html in v2.1.0. */
+const saveSkillsButton=document.getElementById("saveSkillsBtn");
+if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
+ event.preventDefault();
+ const catalog=document.getElementById("skillCatalog");
+ if(catalog){
+   state.selectedSkills=Array.from(catalog.querySelectorAll("[data-skill-choice]:checked"))
+     .map(input=>input.getAttribute("data-skill-choice"))
+     .filter(name=>allSkillNames().includes(name));
+ }
+ ensureSelectedSkills();
+ try{
+   if(!debugSandboxActive){
+     const revision=nextSaveRevision();
+     localStorage.setItem(KEY,JSON.stringify(state));
+     try{localStorage.setItem(STATE_UPDATED_KEY,String(revision));}catch(e){}
+     if(cloudUser&&!cloudHydrating)syncCurrentState(revision);
+   }
+   renderSkillProgress();
+   window.scrollTo({top: 0, behavior: "smooth"});
+   toast(`✓ Saved ${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"}.`);
+   }catch(error){
+   toast("Could not save skills on this device. Please check browser storage settings.");
+   console.error("Wayfarer could not save selected skills:",error);
+ }
+});
