@@ -1,3 +1,11 @@
+# Wayfarer v2.0.7 — lazy tab entry points and Admin gender control (2026-10-29)
+
+- Added nine tab-specific JavaScript entry files and a one-time lazy loader. Each entry file is requested when its tab is selected and reused on later visits; the Quest Board entry is initialized after page load.
+- This is a compatibility-first foundation, not the completed extraction of all tab business logic: the interconnected renderers, form handlers, and shared state logic remain in the existing inline application script so their behavior is not silently changed. Further extraction should move bounded logic tab-by-tab after dependency mapping and browser validation.
+- Enabled the Admin character-gender control outside Sandbox. Applying a live change now requires confirmation and uses the existing save/sync path; in Sandbox it remains temporary and is discarded on exit. Other destructive/resource Debug tools remain Sandbox-only.
+- Updated Debug release identifiers, service-worker cache namespace, and offline precache entries for the tab entry files.
+- Validation: JavaScript syntax, module path/cache checks, and ZIP integrity. Browser navigation, login/refresh persistence, lazy-load timing, live gender cloud sync, and full tab behavior have not been browser-verified.
+
 # Wayfarer v2.0.6 — incremental extraction of music, adventures, quest generation, and quest rendering (2026-10-29)
 
 - Rebuilt from the supplied v2.0.3 archive, avoiding the v2.0.4/v2.0.5 feature-tab extractions associated with the refresh-login regression.
