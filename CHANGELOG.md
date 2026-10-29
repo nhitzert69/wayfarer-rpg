@@ -1,3 +1,10 @@
+# Wayfarer v2.0.3 — Fix Bloodthirst page background (2026-10-29)
+
+- Fixed the default Dungeon-background CSS selector so it explicitly excludes the equipped Bloodthirst theme.
+- Kept the existing Bloodthirst background artwork, dark crimson overlay, palette, character art, soundtrack, perks, and theme/equipment logic unchanged.
+- Updated the Debug report version and service-worker cache namespace to v2.0.3.
+- Validation performed: CSS selector assertions, asset-path checks, JavaScript syntax, version/cache/changelog consistency, and ZIP integrity. Browser rendering, Supabase, and deployment were not tested.
+
 # Wayfarer v2.0.2 — Bloodthirst, theme upgrades, and Sandbox-only Debug mutations (2026-10-29)
 
 - Added the Bloodthirst theme assets, crimson/ember/antique-gold visual identity, character portraits, soundtrack, registry metadata, equipped-theme rendering, and Debug baseline. It is not Store-purchasable; its kill threshold remains unset rather than invented. Sandbox “Unlock all items” can grant it for testing.

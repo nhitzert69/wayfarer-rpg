@@ -1,3 +1,8 @@
+## Bloodthirst background regression (v2.0.3 — mandatory)
+- The default Dungeon background selector must explicitly exclude `body.bloodthirstTheme`, just as it excludes every other theme with a dedicated background. Verify that equipping Bloodthirst displays `assets/images/bloodthirst-background.webp`, and that switching to another theme restores that theme's own background.
+- Do not fix this by changing the Bloodthirst art, palette, equipment state, or theme registry when the root cause is CSS selector specificity/exclusion.
+- Distinguish CSS/static checks from browser-verified background rendering.
+
 ## v2.0.2 Bloodthirst, theme upgrade levels, and Sandbox-only resource/reset tools (mandatory)
 - Bloodthirst is a special, non-purchasable theme. `unlockKills` must remain unset until a kill-count source and threshold are explicitly configured. It grants +2 XP and +2 gold on every skill quest while equipped and requires its own icon, background, male/female portraits, soundtrack, registry metadata, equipped rendering, and independent Debug baseline.
 - Skill themes offer one next upgrade at a time: unlock levels 3/8/13/18/23, XP bonuses +5/+10/+15/+20/+25, gold bonuses +0/+2/+4/+6/+8, and prices 100/200/300/400/500 coins. Level 5 is the cap and must not appear as a further Store upgrade. Keep stable item IDs and ownership/equipment references.
