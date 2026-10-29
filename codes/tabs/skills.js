@@ -39,7 +39,7 @@ window.WayfarerTabRenderers.skills.renderSkillCatalog = function(){
  }));
  root.querySelectorAll("[data-skill-priority]").forEach(select=>select.addEventListener("change",()=>{
    state.skillPriorities[select.dataset.skillPriority]=select.value;
-   if(!debugSandboxActive){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(error){console.error("Could not persist skill priority:",error);}}
+   save(true);
    renderSkillCatalog();
  }));
 }
@@ -59,13 +59,10 @@ if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
  }
  ensureSelectedSkills();
  try{
-   if(!debugSandboxActive){
-     const revision=nextSaveRevision();
-     localStorage.setItem(KEY,JSON.stringify(state));
-     try{localStorage.setItem(STATE_UPDATED_KEY,String(revision));}catch(e){}
-     if(cloudUser&&!cloudHydrating)syncCurrentState(revision);
-   }
+   // Core save owns local/cloud persistence and enforces Sandbox isolation.
+   save(true);
    renderSkillProgress();
+   renderSkillCatalog();
    window.scrollTo({top: 0, behavior: "smooth"});
    toast(`✓ Saved ${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"}.`);
    }catch(error){

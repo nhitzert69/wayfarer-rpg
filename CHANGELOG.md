@@ -1,3 +1,12 @@
+# Wayfarer v2.1.2 — Sandbox save boundary and tab refresh fixes (2026-10-29)
+
+- Fixed the Character renderer dispatch: the renderer registry stores Character as an object, so the old core call attempted to invoke the object as a function and could abort the rest of `render()`. It now calls `renderCharacterOverview()` explicitly, allowing equipped theme art/classes and inventory to refresh immediately.
+- Refresh shared skill-progress cards on every core render, not only while the Skills tab is active.
+- Routed To Do and Skills writes through the core `save()` boundary instead of writing directly to localStorage/cloud from tab modules. This preserves temporary Sandbox state and normal account persistence rules.
+- Added a second guard in `syncCurrentState()` so an active Sandbox cannot enqueue cloud writes even if a future caller bypasses `save()`.
+- Updated the service-worker cache namespace to `wayfarer-v2.1.2`.
+- Validation: JavaScript syntax, core/module persistence-path checks, cache/version consistency, and ZIP integrity. Live browser testing of login/refresh, theme activation, and live-vs-Sandbox isolation remains INCONCLUSIVE and must be tested in the deployed app.
+
 # Wayfarer v2.1.1 — account-aware tab module preload and Skills refresh fix (2026-10-29)
 
 - Added a central tab-module registry with loading/loaded/failed status, and a one-time loader for all nine tab modules.

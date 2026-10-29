@@ -40,7 +40,8 @@ function saveTodoTask(){
    const id=(window.crypto&&typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2);
    state.todo.push({id,...data,completed:false,createdAt:now.toISOString()});
   }
-  localStorage.setItem(KEY,JSON.stringify(state));
+  // Route persistence through the core save boundary so Sandbox data never touches the live save.
+  save();
   resetTodoForm();
   render();
   toast(wasEditing?"Task updated.":"Task saved.");
