@@ -1,3 +1,11 @@
+# Wayfarer v1.19.5 — index-level Supabase auth bootstrap (2026-10-29)
+
+- Moved Supabase client creation and the first persisted-session restoration check into `index.html`, before any modular Wayfarer scripts execute.
+- Reused the same pre-created Supabase client and preflight session promise in `core-account.js`, avoiding duplicate client/session restoration races.
+- Kept the existing loading gate and bounded recovery behaviour; timeouts do not clear account data or overwrite cloud saves.
+- Updated service-worker cache namespace and Debug version identifiers; retained full changelog history and both required rules files.
+- Validation: JavaScript syntax, HTML bootstrap placement, shared-client references, release/cache/changelog consistency, and ZIP integrity. Real browser/Supabase refresh testing remains required.
+
 # Wayfarer v1.19.4 — independent startup watchdog (2026-10-29)
 
 - Added a page-level watchdog independent of the Supabase startup promise, so a stalled callback or early script failure cannot leave the loading overlay unchanged forever.

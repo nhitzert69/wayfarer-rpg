@@ -302,6 +302,28 @@ window.setTimeout(function(){
 </dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// Authentication bootstrap lives in index.html so it starts before any Wayfarer
+// modules. core-account.js reuses this exact client and this exact session check.
+(function(){
+  const url="https://zpyspmmbcopmsjmsqyhx.supabase.co";
+  const key="sb_publishable_k0wIbWAz6lWzXiRvbFZPwg_lXK0m-u5";
+  window.wayfarerAuthPreflight=null;
+  window.wayfarerSupabaseClient=null;
+  if(!window.supabase||!url.startsWith("https://")||!key||key==="YOUR_SUPABASE_ANON_KEY")return;
+  try{
+    window.wayfarerSupabaseClient=window.supabase.createClient(url,key,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storage:window.localStorage}
+    });
+    const client=window.wayfarerSupabaseClient;
+    window.wayfarerAuthPreflight=Promise.race([
+      client.auth.getSession(),
+      new Promise((_,reject)=>window.setTimeout(()=>reject(new Error("Session restoration timed out. Your saved device progress has been preserved; retry sign-in.")),12000))
+    ]);
+    window.wayfarerAuthPreflight.catch(function(error){console.warn("Wayfarer index auth preflight did not complete",error);});
+  }catch(error){console.error("Wayfarer index auth bootstrap failed",error);}
+})();
+</script>
 <script src="./codes/core-account.js"></script>
 <script src="./codes/themes-store.js"></script>
 <script src="./codes/theme-music.js"></script>

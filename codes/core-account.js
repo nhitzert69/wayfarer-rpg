@@ -118,15 +118,10 @@ let cloudConfigured = false;
 // Hold the visible app behind a startup gate until Supabase has definitively restored auth and account state.
 let authInitializationPending = true;
 if (window.supabase && WAYFARER_SUPABASE_URL.startsWith("https://") && WAYFARER_SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
-  cloudClient = window.supabase.createClient(WAYFARER_SUPABASE_URL, WAYFARER_SUPABASE_ANON_KEY, {
-    // Keep username/PIN sessions across page refreshes. Explicit settings avoid
-    // relying on SDK defaults after the modular script migration.
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: false,
-      storage: window.localStorage
-    }
+  // Prefer the client created by index.html before any modular app code ran.
+  // This prevents different modules from racing separate auth clients/session restores.
+  cloudClient = window.wayfarerSupabaseClient || window.supabase.createClient(WAYFARER_SUPABASE_URL, WAYFARER_SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storage: window.localStorage }
   });
   cloudConfigured = true;
 }
@@ -304,7 +299,7 @@ if(cloudClient){
    enforceAccountGate();
    if(typeof renderDebugPanel==="function")renderDebugPanel();
  });
- withStartupTimeout(cloudClient.auth.getSession(),12000,"restoring sign-in").then(async({data,error})=>{
+ withStartupTimeout(window.wayfarerAuthPreflight || cloudClient.auth.getSession(),13000,"restoring sign-in").then(async({data,error})=>{
    authRestoreComplete=true;
    if(error){
      console.error("Wayfarer session restore failed",error);
