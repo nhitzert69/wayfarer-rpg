@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="stylesheet" href="./codes/styles.css">
+<meta name="theme-color" content="#101315">
+<meta name="description" content="A fantasy-inspired real-life quest tracker for habits, adventures, relationships, reading, and skills.">
+<link rel="manifest" href="manifest.json">
+<title>Wayfarer — Real-Life RPG</title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="crest dungeonCrest" role="img" aria-label="Dungeon icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 43V21C7 10 14 4 24 4s17 6 17 17v22" fill="#15191b" stroke="#d4a15f" stroke-width="2.2"/><path d="M12 43V22c0-8 5-13 12-13s12 5 12 13v21" fill="#282522" stroke="#786047" stroke-width="1.5"/><path d="M17 43V23c0-5 3-8 7-8s7 3 7 8v20" fill="#090c0e" stroke="#bd884c" stroke-width="1.5"/><path d="M13 22l-3-5 4 1 2-5 2 7M35 22l3-5-4 1-2-5-2 7" fill="#f2a34e" stroke="#efc783" stroke-width="1"/><path d="M20 43V30h8v13" fill="#1d1712" stroke="#9b7446" stroke-width="1.2"/></svg></div><div><p class="eyebrow">A life worth adventuring</p><h1>WAYFARER</h1></div></div>
+  <span class="pill" id="dateLabel">Quest journal</span>
+</header>
+
+<section class="hero characterHero">
+  <div class="heroTop">
+    <div>
+      <p class="eyebrow">Your character</p>
+      <h2 style="font:700 28px Georgia,serif;margin:4px 0 6px">The Wayfarer</h2>
+      <div class="sub">Your skills grow as you complete real-life quests.</div>
+    </div>
+    <div style="text-align:right">
+      <p class="eyebrow">Today's progress</p>
+      <div style="font:700 24px Georgia,serif" id="dailyCount">0 / 0</div>
+      <div class="sub">quests completed</div>
+    </div>
+  </div>
+  <div class="characterSkills">
+    <div class="sectionHead" style="margin:18px 0 14px"><div><h2 style="font-size:22px;margin:0">Your Skills</h2><p style="margin-top:5px">Earn skill XP by taking action.</p></div></div>
+    <div class="card" id="mainSkillCards" style="background:rgba(16,12,9,.45);display:grid;gap:14px"><div class="empty">Choose skills in the Skills tab to see them here.</div></div>
+  </div>
+  <div class="stats" style="margin-top:14px">
+    <div class="stat"><b id="streak">0 days</b><span>Quest days</span></div>
+    <div class="stat"><b id="completedCount">0</b><span>Quests completed</span></div>
+    <div class="stat"><b id="journalCount">0</b><span>Journal entries</span></div>
+  </div>
+</section>
+
+<nav class="tabs" aria-label="Main navigation">
+  <button class="tab active" data-tab="quests">⚜ Quest Board</button>
+  <button class="tab" data-tab="character" type="button">🧙 Character</button>
+  <button class="tab" data-tab="store" type="button">🏪 Store</button>
+  <button class="tab" data-tab="skills">✧ Skills</button>
+  <button class="tab" data-tab="todo" type="button">☑ To Do</button>
+  <button class="tab" data-tab="groceries" type="button">🛒 Groceries</button>
+  <button class="tab" data-tab="journal">📜 Journal</button>
+  <button class="tab" data-tab="settings">⚙ Settings</button>
+  <button class="tab" id="debugTabButton" data-tab="debug" type="button">🛠 Debug</button>
+</nav>
+
+<main>
+<section class="section active" id="section-quests">
+  <div class="sectionHead"><div><h2>Today's Quest Board</h2><p id="shiftNote">Small steps forge a different life.</p></div></div>
+  <div class="notice">Earn XP for taking action, not for having a perfect experience. Missed quests never cost XP. Start small; rest when you need it.</div>
+  <div class="sectionHead" style="margin:18px 0 8px"><div><h2 style="font-size:22px;margin:0">👑 Main Quests</h2><p class="sub">Your priority skills</p></div></div>
+  <div class="grid" id="mainQuestGrid"></div>
+  <div class="sectionHead" style="margin:22px 0 8px"><div><h2 style="font-size:22px;margin:0">✦ Side Quests</h2><p class="sub">Your secondary skills</p></div></div>
+  <div class="grid" id="sideQuestGrid"></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn secondary" id="generateBtn">✦ Generate quests</button><button class="btn secondary" id="generateAdventureBtn" aria-expanded="false" aria-controls="adventureChooser">🧭 Generate adventure</button></div>
+  <div id="campaignPlanner" class="card" style="display:none;margin-top:14px;padding:18px;border:1px solid var(--gold);border-radius:16px;background:rgba(35,25,16,.94)" aria-hidden="true">
+    <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px"><div><h3 style="margin:0 0 5px">🧭 Plan Your Campaign</h3><p class="sub" style="margin:0">Tell Wayfarer how much time and energy you have. It will build a connected plan using your existing quest library.</p></div><button class="btn ghost small" type="button" id="closeCampaignPlanner">✕</button></div>
+    <div class="formgrid" style="margin-top:16px">
+      <div class="field wide"><label for="campaignTime">Available free time</label><select id="campaignTime"><option value="15">15 minutes · Quick session</option><option value="30">30 minutes · Short session</option><option value="60" selected>1 hour · Focused session</option><option value="120">2 hours · Extended outing</option><option value="240">4+ hours · Major adventure</option></select><small class="sub">The plan intentionally leaves some time unfilled for travel, breaks and spontaneity.</small></div>
+      <div class="field"><label for="campaignEnergy">Energy level</label><select id="campaignEnergy"><option value="low">Low · Keep it gentle</option><option value="normal" selected>Normal · Balanced</option><option value="high">High · More challenging</option></select></div>
+      <div class="field"><label for="campaignFocus">Campaign focus</label><select id="campaignFocus"><option value="balanced" selected>Balanced · My priority skills</option><option value="adventure">Adventure · Explore outside</option><option value="social">Social · Connect with people</option><option value="productive">Productive · Hobbies and growth</option></select></div>
+      <div class="field wide"><label for="campaignPlace">Where should quests take place?</label><select id="campaignPlace"><option value="either" selected>A mix of home and outside</option><option value="home">At home</option><option value="out">Outside the home</option></select></div>
+      <div class="wide" id="campaignPreview" role="status" class="notice">A one-hour campaign aims for around 45–50 minutes of activities, leaving breathing room.</div>
+      <div class="wide row" style="gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" id="buildCampaignBtn">✦ Build my campaign</button><button class="btn ghost" type="button" id="cancelCampaignBtn">Cancel</button></div>
+    </div>
+  </div>
+  <div id="adventureChooser" class="card" style="display:none;margin-top:14px;padding:18px;border:1px solid var(--gold);border-radius:16px;background:rgba(35,25,16,.88)" aria-hidden="true">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px">
+      <div><h3 style="margin:0 0 6px">Choose your adventure</h3><p class="sub" style="margin:0">Pick how much time you want to give the journey.</p></div>
+      <button class="btn ghost small" id="closeAdventureChooser" aria-label="Close adventure choices">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:14px">
+      <button type="button" class="btn secondary adventure-choice" data-adventure-type="short" style="min-height:100px;text-align:left;white-space:normal;padding:16px">
+        <span style="display:block;font-size:17px;font-weight:700">🌿 Short Adventure</span>
+        <span style="display:block;font-size:14px;font-weight:400;line-height:1.45;margin-top:7px">About a 15-minute drive, then a compact mission</span>
+      </button>
+      <button type="button" class="btn secondary adventure-choice" data-adventure-type="day" style="min-height:100px;text-align:left;white-space:normal;padding:16px">
+        <span style="display:block;font-size:17px;font-weight:700">🏔️ Day Adventure</span>
+        <span style="display:block;font-size:14px;font-weight:400;line-height:1.45;margin-top:7px">A bigger expedition, with up to 2 hours of travel each way</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="section-character">
+  <div class="sectionHead"><div><h2>Your Character</h2><p>Your adventurer, equipment and collected items will live here.</p></div></div>
+  <div class="characterLayout">
+    <div class="card characterPortraitCard">
+      <div class="characterPortrait" aria-label="Starting adventurer illustration"><img id="characterArtwork" class="characterArtwork" src="./assets/images/male-dungeon.webp" alt="Male Dungeon character portrait"></div>
+      <h3 id="characterNameLabel" style="text-align:center;margin:8px 0 3px">Wayfarer</h3>
+      <p class="sub" id="characterGenderLabel" style="text-align:center;margin:0">Starting adventurer</p>
+      <div class="characterLevelLine"><span>Character XP</span><strong id="characterXpLabel">0 XP</strong></div>
+    </div>
+    <div class="card characterOptionsCard">
+      <h3>Character Details</h3><p class="sub">Choose your atmosphere, artifacts, and companions.</p>
+      <div class="equipmentGrid characterSlotGrid">
+        <div class="equipmentSlot characterOptionSlot" id="characterThemeSlot"><div class="slotCopy"><strong>Theme</strong><small id="characterThemeLabel">Dungeon</small></div><img id="characterThemeEquippedIcon" class="slotPreview themePreview equippedThemePreview" src="./assets/images/dungeon-theme.webp" alt="Dungeon theme equipped"></div>
+        <div class="equipmentSlot characterOptionSlot" id="characterArtifactsSlot"><div class="slotCopy"><strong>Artifacts</strong><small id="characterArtifactsLabel">No artifacts equipped</small></div><span class="slotPreview artifactPreview" aria-hidden="true"></span></div>
+        <div class="equipmentSlot characterOptionSlot" id="characterPetsSlot"><div class="slotCopy"><strong>Pets</strong><small id="characterPetLabel">No pet equipped</small></div><span class="slotPreview artifactPreview petPreview" aria-hidden="true">🐾</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card characterInventoryCard" style="margin-top:12px"><div class="sectionHead" style="margin:0 0 8px"><div><h3 style="margin:0">Inventory</h3><p class="sub">Tap an item to equip it.</p></div><span class="tag" id="inventoryCount">1 item</span></div><p class="sub" style="margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(181,138,74,.10)">✨ XP and Gold bonuses activate when you generate your next quests. Changing equipment won’t change rewards on quests already generated.</p><div class="characterInventoryColumns"><section class="inventoryCategory"><h4>Theme</h4><div id="themeInventory" class="inventoryItems"></div></section><section class="inventoryCategory"><h4>Artifacts</h4><div id="artifactInventory" class="inventoryItems"><div class="inventoryEmpty">No artifacts yet.</div></div></section><section class="inventoryCategory"><h4>Pets</h4><div id="petInventory" class="inventoryItems"><div class="inventoryEmpty">No pets yet.</div></div></section></div></div>
+  <div class="card" style="margin-top:12px"><h3>Character Attributes</h3><p class="sub">Each quest builds a specific skill. Skill XP is tracked separately from your overall character XP.</p><div class="statList" id="attributeList"></div></div>
+  <div class="grid" style="margin-top:12px">
+    <div class="card"><h3>Leveling rules</h3><p>Every 100 XP earns one level. XP is awarded when a quest is completed, and never removed for a missed day.</p><div class="tag">No penalties · Keep going</div></div>
+    <div class="card"><h3>Campaign principles</h3><p>Leave the house before you decide whether the outing is worth it. Social courage counts even when an interaction feels awkward. Rest is part of the campaign.</p><div class="tag">Action over perfection</div></div>
+  </div>
+</section>
+
+<section class="section" id="section-store">
+  <div class="sectionHead"><div><h2>Adventurer's Store</h2><p>Spend Gold on equipment, clothing, weapons and collectibles.</p></div></div>
+  <div class="storeBalance card"><div><span class="sub">Your balance</span><h2 style="margin:4px 0">🪙 <span id="storeGoldBalance">0</span> Gold</h2></div><span class="tag">No real-money purchases</span></div>
+  <div class="storeCategoryTabs" role="tablist" aria-label="Store categories">
+    <button class="storeCategoryTab" type="button" role="tab" id="storeTabThemes" data-store-category="themes" aria-controls="storePanelThemes" aria-selected="true">🎨 Themes</button>
+    <button class="storeCategoryTab" type="button" role="tab" id="storeTabArtifacts" data-store-category="artifacts" aria-controls="storePanelArtifacts" aria-selected="false">🛡️ Artifacts</button>
+    <button class="storeCategoryTab" type="button" role="tab" id="storeTabPets" data-store-category="pets" aria-controls="storePanelPets" aria-selected="false">🐾 Pets</button>
+  </div>
+  <div id="storePanelThemes" class="storeCategoryPanel" role="tabpanel" aria-labelledby="storeTabThemes"><div id="storeThemeCatalog" aria-live="polite"></div></div>
+  <div id="storePanelArtifacts" class="storeCategoryPanel" role="tabpanel" aria-labelledby="storeTabArtifacts" hidden><div id="storeArtifactCatalog" aria-live="polite"></div></div>
+  <div id="storePanelPets" class="storeCategoryPanel" role="tabpanel" aria-labelledby="storeTabPets" hidden><div id="storePetCatalog" aria-live="polite"></div></div>
+</section>
+
+<section class="section" id="section-todo">
+<div class="sectionHead"><div><h2>Personal To Do</h2><p>Everyday tasks, separate from your real-life quests.</p></div><button class="btn primary" id="addTodoBtn" type="button">+ Add task</button></div>
+<div class="card"><form id="todoForm" class="formGrid">
+<div class="wide"><label for="todoTitle">Task</label><input id="todoTitle" maxlength="180" placeholder="e.g. Buy groceries, call family..." required /></div>
+<div><label for="todoDue">Due date (optional)</label><input id="todoDue" type="date" /></div>
+<div><label for="todoPriority">Priority</label><select id="todoPriority"><option value="normal" selected>Normal</option><option value="high">High</option><option value="low">Low</option></select></div>
+<div class="wide"><label for="todoNotes">Notes (optional)</label><textarea id="todoNotes" rows="2" placeholder="Any details to remember..."></textarea></div>
+<div class="wide row" style="flex-wrap:wrap;gap:8px"><button class="btn primary" id="todoSubmitBtn" type="button">Save task</button><button class="btn" id="cancelTodoEditBtn" type="button" style="display:none">Cancel edit</button></div>
+</form></div>
+<div class="card" style="margin-top:14px"><div class="row" style="align-items:center;justify-content:space-between"><h3 style="margin:0">Your tasks</h3><span class="tag" id="todoCount">0 open</span></div><div id="todoList" style="margin-top:10px"><div class="empty">No tasks yet. Add something you want to remember.</div></div></div>
+</section>
+<section class="section" id="section-groceries">
+  <div class="sectionHead"><div><h2>Grocery List</h2><p>Keep your shopping list handy and check items off as you shop.</p></div></div>
+  <div class="card">
+    <form id="groceryForm" class="row" style="gap:8px;align-items:stretch;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px"><label for="groceryItem">Item</label><input id="groceryItem" maxlength="120" placeholder="e.g. Milk, apples, rice…" required /></div>
+      <div style="width:105px"><label for="groceryQty">Quantity</label><input id="groceryQty" maxlength="40" placeholder="e.g. 2" /></div>
+      <button class="btn primary" type="submit" style="align-self:flex-end">+ Add item</button>
+    </form>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="row" style="align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><h3 style="margin:0">Shopping list</h3><span class="tag" id="groceryCount">0 items</span></div>
+    <div id="groceryList" style="margin-top:10px"><div class="empty">Your list is empty. Add what you need to buy.</div></div>
+    <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap"><button class="btn small" id="clearBoughtGroceries" type="button">Remove checked items</button><button class="btn small" id="clearGroceries" type="button">Clear list</button></div>
+  </div>
+</section>
+<section class="section" id="section-skills">
+  <div class="sectionHead"><div><h2>Choose Your Skills</h2><p>Select what you want to develop. Your choices appear on the Quest Board and guide quest generation.</p></div></div>
+  <div class="notice">Choose as many as you like, or start with a few. Your existing XP is kept if you deselect a skill; you can select it again later.</div>
+  <div id="skillCatalog"></div>
+  <div class="row" style="margin-top:14px;flex-wrap:wrap">
+    <span class="sub" id="selectedSkillCount">0 skills selected</span>
+    <button class="btn" id="saveSkillsBtn">Save selected skills</button>
+  </div>
+</section>
+
+<section class="section" id="section-journal">
+  <div class="sectionHead"><div><h2>Adventure Journal</h2><p>Record the life you're building, not just the tasks you complete.</p></div></div>
+  <div class="card">
+    <form id="journalForm" class="formgrid">
+      <div class="field"><label for="entryTitle">Entry title</label><input id="entryTitle" placeholder="A new café, a good conversation…" required></div>
+      <div class="field"><label for="entryType">Entry type</label><select id="entryType">
+        <option>Lifestyle &amp; personal growth</option>
+        <option>Instruments &amp; music</option>
+        <option>Fitness &amp; movement</option>
+        <option>Faith</option>
+         <option>Finance</option>
+      </select></div>
+      <div class="field wide"><label for="entryText">What happened? What did you learn?</label><textarea id="entryText" placeholder="Even ordinary days count."></textarea></div>
+      <div class="wide row" style="flex-wrap:wrap;gap:8px"><button class="btn" id="journalSubmitBtn" type="submit">Save journal entry</button><button class="btn" id="cancelJournalEditBtn" type="button" style="display:none">Cancel edit</button></div>
+    </form>
+  </div>
+  <div class="card" style="margin-top:12px"><h3>Chronicle</h3><div id="journalList"></div></div>
+</section>
+
+<section class="section" id="section-settings">
+  <div class="sectionHead"><div><h2>Campaign Settings</h2><p>Simple rules, steady progress.</p></div></div>
+  <div class="card">
+    <h3>Account & cloud saves</h3>
+    <p class="sub">Create an account with a username and PIN to sync your Wayfarer progress across devices.</p>
+    <div id="cloudStatus" class="sub" role="status" style="margin:10px 0">Cloud saves are not configured yet.</div>
+    <div id="accountRequiredNotice" class="notice" style="display:none;margin:10px 0">Create an account or log in to unlock Wayfarer.</div><div id="accountModeChooser" class="wide" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="btn" id="chooseCreateAccountBtn" type="button">Create account</button><button class="btn secondary" id="chooseSignInBtn" type="button">Log in</button></div>
+    <form id="accountForm" class="formgrid" autocomplete="on">
+      <div class="field wide" id="accountUsernameField" style="display:none"><label for="accountUsername">Username</label><input id="accountUsername" name="username" autocomplete="username" minlength="3" maxlength="20" pattern="[A-Za-z0-9_-]{3,20}" placeholder="e.g. wayfarer_01" required></div>
+      <div class="field wide" id="accountPinField" style="display:none"><label for="accountPin">8-digit PIN</label><input id="accountPin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" minlength="8" maxlength="32" pattern="[0-9]{8,32}" placeholder="At least 8 digits" required></div>
+      <div class="field wide" id="accountGenderField" style="display:none"><label>Choose your character</label><p class="sub" style="margin:0 0 8px">This choice is saved to your character. You won't be asked again when signing in.</p><div class="genderChoices"><label class="genderChoice"><input type="radio" name="characterGender" value="male"><span>♂ Male</span></label><label class="genderChoice"><input type="radio" name="characterGender" value="female"><span>♀ Female</span></label></div></div>
+      <div class="wide" id="accountActionButtons" style="display:none;gap:8px;flex-wrap:wrap"><button class="btn" id="createAccountBtn" type="button">Create account</button><button class="btn secondary" id="signInBtn" type="submit">Log in</button><button class="btn secondary" id="backAccountModeBtn" type="button">Back</button><button class="btn secondary" id="signOutBtn" type="button" style="display:none">Sign out</button></div>
+    </form>
+    <p class="sub" style="margin-top:12px">Use a unique PIN, not your phone unlock or banking PIN. Username + PIN has no recovery option if forgotten.</p>
+  </div>
+  <div class="card" style="margin-top:12px" id="musicSettingsCard">
+    <h3>Music settings</h3>
+    <p class="sub">Choose whether Wayfarer plays background music. The soundtrack follows your equipped theme.</p>
+    <div class="field" style="margin:12px 0">
+      <label style="display:flex;align-items:center;gap:10px"><input id="musicEnabled" type="checkbox" style="width:auto"> Music enabled</label>
+      <p class="sub" style="margin:5px 0 0">Play or pause music whenever you want. On mobile, press Play music once to allow audio playback.</p>
+    </div>
+    <div class="field" style="margin:12px 0">
+      <label for="musicVolume">Music volume <span id="musicVolumeValue">35%</span></label>
+      <input id="musicVolume" type="range" min="0" max="100" step="1" value="35" style="width:100%">
+    </div>
+    <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn" id="musicPlayButton" type="button">▶ Play music</button>
+      <span class="sub" id="musicStatus" role="status" aria-live="polite">Music paused</span>
+    </div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <h3>Quest rewards</h3>
+    <p>Every completed quest awards <strong>15 XP + 5 coins</strong>. Reading quests ask for 10 pages, and piano quests ask for 10 minutes of practice.</p>
+    <p class="sub">Choose your skills and generate quests whenever you're ready. There are no difficulty settings or difficulty-based rewards.</p>
+  </div>
+</section>
+<section class="section" id="section-debug">
+  <div class="sectionHead"><div><h2>Debug Workshop</h2><p>Admin-only testing tools. Sandbox changes never write to your real character.</p></div></div>
+  <div class="debugSandboxBanner"><strong id="debugSandboxStatus">Sandbox inactive</strong><p class="sub">Start a sandbox to test XP, quests, dates, and planner behavior against a temporary copy. Exiting discards sandbox changes.</p><div class="debugTools"><button class="btn" id="debugStartSandbox">Start isolated sandbox</button><button class="btn secondary" id="debugExitSandbox">Exit sandbox</button></div><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugAllowThemeUnequip" type="checkbox" style="margin-top:3px" disabled><span><strong>Allow unequipped theme</strong><small style="display:block;color:var(--muted)">Sandbox testing only. Allows the required theme to be temporarily removed.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugOverrideQuestRules" type="checkbox" style="margin-top:3px" disabled><span><strong>Override quest safeguards</strong><small style="display:block;color:var(--muted)">Sandbox only. Bypass the 4-hour quest-generation cooldown and skip quest-completion confirmations for testing.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugUnlockAllItems" type="checkbox" style="margin-top:3px" disabled><span><strong>Unlock all items</strong><small style="display:block;color:var(--muted)">Sandbox only. Grants every registered unlockable item for testing, including future themes, pets and artifacts.</small></span></label></div>
+  <div class="card legacy-debug-panel-hidden" aria-hidden="true"><h3>Theme Integration Tests</h3><p class="sub">Runs theme-by-theme asset, CSS, computed-style, full-page panel, background and equipped-state checks. Any failed surface is reported separately. Read-only; does not alter saved progress.</p><div class="debugTools"><button class="btn secondary" id="debugRunThemeTests" type="button">Run theme integration tests</button></div><pre id="debugThemeTestResults" class="debugLog">No theme tests run yet.</pre></div>
+  <div class="card legacy-debug-panel-hidden" aria-hidden="true"><h3>Feature Isolation Switches</h3><p class="sub">Sandbox only. Temporarily lock individual effects to the Dungeon theme while other equipped-theme effects remain active. Sandbox only; these switches do not change saved settings.</p><div class="debugTools"><label><input type="checkbox" id="debugDisableBackground"> Lock background to Dungeon</label><label><input type="checkbox" id="debugDisableColors"> Lock colors to Dungeon</label><label><input type="checkbox" id="debugDisablePortrait"> Lock character/theme images to Dungeon</label><label><input type="checkbox" id="debugDisableMusic"> Lock music to Dungeon</label></div><p id="debugFeatureSwitchStatus" class="sub" aria-live="polite">All theme effects enabled.</p></div>
+  <div class="card"><h3>Character Recovery &amp; Test Grants</h3><p class="sub">Admin tools. XP and gold grants can be used in live mode or Sandbox. Reset affects character progression and inventory/equipment only; Journal, To Do and Groceries are preserved. A one-step backup can restore the character after a reset.</p><div class="debugTools"><label>XP <input type="number" id="debugGrantXp" min="0" max="100000" value="100"></label><label>Gold <input type="number" id="debugGrantGold" min="0" max="100000" value="100"></label><button class="btn secondary" id="debugGrantResources">Grant XP &amp; gold</button><button class="btn danger" id="debugRemoveResources">Remove XP &amp; gold</button><button class="btn secondary" id="debugRestoreCharacter">Undo/restore character snapshot</button><button class="btn danger" id="debugResetCharacter">Reset main character…</button></div><p id="debugCharacterToolsStatus" class="sub" aria-live="polite">No reset snapshot stored.</p></div>
+  <div class="card"><h3>Live Quest Controls</h3><p class="sub">Admin-only live account action. Use this to clear the four-hour Generate Quests cooldown without entering Sandbox. It does not delete, replace, or modify existing quests, skills, XP, coins, or inventory. Disabled while Sandbox is active.</p><div class="debugTools"><button class="btn secondary" id="debugResetQuestCooldown" type="button">Reset Generate Quests cooldown (Live)</button></div><p id="debugQuestCooldownStatus" class="sub" aria-live="polite">Live cooldown unchanged.</p></div>
+  <div class="card legacy-debug-panel-hidden" aria-hidden="true"><h3>Quest System Tests</h3><p class="sub">Sandbox only. Runs isolated quest-generation and completion reward checks for every registered skill, plus Store unlock/purchase checks for every registered theme.</p><div class="debugTools"><button class="btn secondary" id="debugRunQuestTests">Run quest system tests</button><button class="btn secondary" id="debugRunStoreTests">Run Store tests</button></div><div class="debugTools" style="margin-top:10px"><label><input type="checkbox" id="debugFailAcademyUnlock"> Inject theme unlock failure</label><label><input type="checkbox" id="debugFailAcademyPurchase"> Inject theme purchase failure</label><label><input type="checkbox" id="debugFailAcademyBonus"> Inject theme bonus XP failure</label><label>Target skill <select id="debugFaultSkillSelect"><option value="">Choose skill…</option></select></label></div><p class="sub">Sandbox-only fault injection. The selected skill scopes unlock/purchase failures to themes gated by that skill and XP-bonus failures to that skill. Tests exercise the relevant behavior and inspect the outcome.</p><pre id="debugQuestStoreResults" class="debugLog">No quest/store tests run yet.</pre></div>
+  <div class="card"><h3>Character Gender Test</h3><p class="sub">Switch the signed-in account character between male and female to test both portrait variants. This updates the real saved character profile (not just the sandbox), so use it intentionally.</p><div class="debugTools"><select id="debugAccountGender"><option value="male">Male character</option><option value="female">Female character</option></select><button class="btn secondary" id="debugApplyAccountGender" type="button">Apply gender to account</button></div>
+  <div class="card" id="debugEquipmentLifecycle"><h3>Equipment Lifecycle Test Suite</h3><p class="sub">Sandbox-only. Discovers registered equipables and simulates unlock, purchase/acquisition, Inventory visibility, equip state, related quest generation/completion and declared effects against isolated test state.</p><div class="debugTools"><button class="btn" id="debugRunEquipmentLifecycle" type="button">Run all equipable lifecycle tests</button><label><input id="debugInjectRequirementFailure" type="checkbox"> Inject Test theme unlock failure</label><label><input id="debugInjectPurchaseFailure" type="checkbox"> Inject Test theme purchase failure</label><label><input id="debugInjectEquipFailure" type="checkbox"> Inject Test theme equip failure</label><label><input id="debugInjectBonusFailure" type="checkbox"> Inject Test theme XP bonus failure</label></div><pre id="debugEquipmentLifecycleResults" class="debugLog" style="white-space:pre-wrap;overflow-wrap:anywhere">No equipment lifecycle tests run yet.</pre></div>
+<p class="sub" id="debugAccountGenderStatus" aria-live="polite">Current character gender: —</p></div>
+  <div class="card"><h3>Time Machine</h3><p class="sub">Shift the active campaign date in the sandbox only.</p><div class="debugTools"><button class="btn secondary" data-debug-days="1">+1 day</button><button class="btn secondary" data-debug-days="7">+7 days</button><button class="btn secondary" data-debug-days="30">+30 days</button><button class="btn secondary" data-debug-days="365">+365 days</button></div><div class="debugMetric"><span>Active date</span><strong id="debugActiveDate">—</strong></div></div>
+  <div class="card"><h3>XP & Level Lab</h3><p class="sub">Set overall XP or a skill's XP while sandbox mode is active. Changes update the character and skill UI immediately; no quest completion is needed.</p><div class="debugTools"><input id="debugOverallXp" type="number" min="0" placeholder="Overall XP"><button class="btn secondary" id="debugSetOverallXp">Set overall XP</button><select id="debugSkillSelect"><option value="">Choose skill…</option></select><input id="debugSkillXp" type="number" min="0" placeholder="Skill XP"><button class="btn secondary" id="debugSetSkillXp">Set skill XP</button></div><div class="debugMetric"><span>Calculated overall level</span><strong id="debugLevel">—</strong></div><div class="debugMetric"><span>Skill progression thresholds</span><strong>60 / 90 / 120 / 150 / 180 / 225 / 270 / 300 XP per level band</strong></div></div>
+  <div class="card"><h3>Coin Lab</h3><p class="sub">Add coins to the temporary sandbox balance and refresh the Store/Character UI immediately. This does not change the real account balance.</p><div class="debugTools"><input id="debugAddCoinsAmount" type="number" min="1" step="1" value="100" placeholder="Coins to add"><button class="btn secondary" id="debugAddCoins" type="button">Add coins</button></div><div class="debugMetric"><span>Current sandbox coins</span><strong id="debugCoinBalance">—</strong></div></div>
+  <div class="card"><h3>Quest Lab</h3><p class="sub">Inspect current quests, inject a disposable test quest, or test the completion animation in the sandbox.</p><div class="debugTools"><button class="btn secondary" id="debugAddQuest">Add test quest</button><button class="btn secondary" id="debugRefreshQuests">Refresh inspection</button></div><div id="debugQuestList" class="debugLog">Start sandbox to inspect quests.</div></div>
+  <div class="card"><h3>Campaign Planner Test Bench</h3><p class="sub">Run the planner with preset combinations; results are isolated in the sandbox.</p><div class="debugTools"><select id="debugPlannerTime"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60" selected>1 hour</option><option value="120">2 hours</option><option value="240">4+ hours</option></select><select id="debugPlannerEnergy"><option value="low">Low energy</option><option value="normal" selected>Normal energy</option><option value="high">High energy</option></select><select id="debugPlannerFocus"><option value="balanced">Balanced</option><option value="adventure">Adventure</option><option value="social">Social</option><option value="productive">Productive</option></select><select id="debugPlannerLocation"><option value="either">Either location</option><option value="home">Home</option><option value="outside">Outside</option></select><button class="btn" id="debugRunPlanner">Run planner preset</button></div><div id="debugPlannerResult" class="debugLog">No planner test run yet.</div></div>
+  <div class="card"><h3>Version History</h3><p class="sub">Release notes loaded from <code>CHANGELOG.md</code>. Keep this file updated with every release.</p><div class="debugTools"><button class="btn secondary" id="debugReloadChangelog" type="button">Reload changelog</button></div><pre id="debugChangelogContent" class="debugLog" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:560px;overflow:auto">Loading CHANGELOG.md…</pre></div>
+  <div class="card"><h3>Save Inspector & Event Log</h3><p class="sub">Read-only state summary. No raw PINs or authentication secrets are displayed.</p><div class="debugTools"><button class="btn secondary" id="debugInspectSave">Inspect sandbox save</button><button class="btn secondary" id="debugClearLog">Clear event log</button></div><div id="debugSaveInspector" class="debugLog">Start sandbox to inspect state.</div><div id="debugEventLog" class="debugLog">Debug workshop ready. Authentication and cloud configuration are unchanged.</div></div>
+</section>
+</main>
+<footer>WAYFARER · Your real life is the campaign. · Progress is saved on this device.</footer>
+</div>
+<div id="toast" role="status"></div>
+
+<dialog id="questDialog" style="border:1px solid #8b6738;border-radius:16px;background:#211a14;color:#f4e8cf;width:min(520px,calc(100% - 28px));box-shadow:0 24px 70px #0009">
+<form id="questForm" class="formgrid">
+  <div class="wide"><p class="eyebrow">Write a new mission</p><h2 style="font:700 22px Georgia,serif;margin-bottom:14px">Add a Quest</h2></div>
+  <div class="field wide"><label for="qTitle">Quest name</label><input id="qTitle" required placeholder="Explore a new place"></div>
+  <div class="field wide"><label for="qDesc">Description</label><textarea id="qDesc" placeholder="What counts as completing it?"></textarea></div>
+  <div class="field"><label for="qCategory">Category</label><select id="qCategory"><option>Adventure</option><option>Social</option><option>Skill</option><option>Knowledge</option><option>Relationships</option><option>Daily</option><option>Side quest</option><option>Boss quest</option></select></div>
+  <div class="field"><label for="qSkill">Skill improved</label><select id="qSkill"><option>Social Interactions</option><option>Adventure</option><option>Discipline</option><option>Relationships</option><option>Knowledge</option><option>Creativity</option></select></div>
+  <div class="field"><label for="qXp">XP reward</label><select id="qXp"><option value="10">10 XP · Easy</option><option value="25" selected>25 XP · Normal</option><option value="50">50 XP · Hard</option><option value="100">100 XP · Boss</option></select></div>
+  <div class="wide" style="display:flex;gap:8px"><button class="btn" type="submit">Add to board</button><button class="btn secondary" type="button" id="cancelQuest">Cancel</button></div>
+</form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./codes/core-account.js"></script>
+<script src="./codes/themes-store.js"></script>
+<script src="./codes/theme-music.js"></script>
+<script src="./codes/app-render-quests.js"></script>
+<script src="./codes/skills.js"></script>
+<script src="./codes/todo.js"></script>
+<script src="./codes/journal.js"></script>
+<script src="./codes/skill-navigation.js"></script>
+<script src="./codes/groceries.js"></script>
+<script src="./codes/adventures.js"></script>
+<script src="./codes/app-startup.js"></script>
+<script src="./codes/quest-generation.js"></script>
+<script src="./codes/debug.js"></script>
+
+</body>
+</html>
