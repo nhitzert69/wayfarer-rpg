@@ -3,6 +3,31 @@
 /* Wayfarer tab renderers loaded on demand. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.character = window.WayfarerTabRenderers.character || {};
+
+/* Load the game in its own folder only when the player presses Play. */
+const kingdomsPlayButton = document.getElementById("kingdomsPlayButton");
+if (kingdomsPlayButton && !kingdomsPlayButton.dataset.wayfarerGameBound) {
+  kingdomsPlayButton.dataset.wayfarerGameBound = "true";
+  kingdomsPlayButton.addEventListener("click", () => {
+    if (window.KingdomsOfTheUnknown) { window.KingdomsOfTheUnknown.open(); return; }
+    kingdomsPlayButton.disabled = true;
+    kingdomsPlayButton.textContent = "LOADING KINGDOMS OF THE UNKNOWN…";
+    const script = document.createElement("script");
+    script.src = "./codes/game/game.js";
+    script.onload = () => {
+      kingdomsPlayButton.disabled = false;
+      kingdomsPlayButton.textContent = "▶ PLAY KINGDOMS OF THE UNKNOWN";
+      if (window.KingdomsOfTheUnknown) window.KingdomsOfTheUnknown.open();
+      else toast("The game could not initialize. Please reload and try again.");
+    };
+    script.onerror = () => {
+      kingdomsPlayButton.disabled = false;
+      kingdomsPlayButton.textContent = "▶ PLAY KINGDOMS OF THE UNKNOWN";
+      toast("Could not load the game files. Check that codes/game/game.js is deployed.");
+    };
+    document.head.appendChild(script);
+  });
+}
 /* Wayfarer character tab module. Shared state remains in the core; module initializes its view on demand. */
 window.WayfarerTabRenderers.character.renderCharacterInventory = function(){
  const items=Array.isArray(state.inventory)?state.inventory:[];

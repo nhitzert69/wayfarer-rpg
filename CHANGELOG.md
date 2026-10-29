@@ -1,3 +1,11 @@
+# Wayfarer v2.3.15 — Kingdoms of the Unknown launcher and Sandbox startup fix (2026-10-29)
+- Added a red Play button beneath the Character portrait. The Character module lazily loads the game from `codes/game/`, keeping game logic separate from the tab.
+- Added the Kingdoms of the Unknown title/loading overlay using the approved fantasy title artwork, a top-left menu, and a Return to Main Menu action that closes the overlay and restores focus to the Character launcher.
+- Added a mobile portrait-orientation fallback: the game stage is gated by a rotate-phone prompt until the viewport is landscape. The app does not rely on browser orientation-lock support.
+- Hardened Sandbox startup with safe rollback and visible diagnostics if initialization fails, and bind Debug controls as soon as the Debug module loads instead of waiting for a later tab activation.
+- Updated the mandatory update rules, Debug report versions, and service-worker cache namespace/precache assets to v2.3.15.
+- Validation: JavaScript syntax, game launcher/overlay and orientation-gate static checks, Sandbox startup rollback/handler binding checks, precache existence, version consistency, and ZIP integrity. Live browser interactions, Sandbox behavior in the deployed app, and Supabase persistence remain INCONCLUSIVE.
+
 # Wayfarer v2.3.14 — Store structural completion (2026-10-29)
 
 - Completed the Store feature-ownership audit: catalog rendering, category selection, theme purchase/upgrade handling, and purchase validation live in `codes/tabs/store.js`; the core retains authentication, shared account state, Sandbox save isolation, persistence, and global render coordination.

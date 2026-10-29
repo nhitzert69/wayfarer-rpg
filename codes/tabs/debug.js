@@ -80,18 +80,30 @@ function initializeDebugTabControls(){
  bindDebugAction("debugStartSandbox","click",()=>{
   if(!debugIsAdmin()){toast("Sign in using the exact username Admin.");return;}
   if(debugSandboxActive){toast("Sandbox is already active.");return;}
-  debugLiveStateBackup=JSON.parse(JSON.stringify(state));
-  debugSandboxState=JSON.parse(JSON.stringify(state));
-  debugSandboxCharacterSnapshot=null;
-  state=debugSandboxState;
-  debugSandboxActive=true;
-  document.body.classList.add("sandbox-active");
-  debugAllowThemeUnequip=false;debugOverrideQuestRules=false;debugUnlockAllItems=false;
-  persistDebugSandboxSession();
-  debugLog("Sandbox started from a copy of the current character.");
-  render();window.WayfarerTabRenderers.debug.renderDebugPanel();
-  if(typeof window.applyDebugFeatureSwitches==="function")window.applyDebugFeatureSwitches();
-  debugInspect();toast("Isolated sandbox started.");
+  try {
+   if(!state||typeof state!=="object")throw new Error("Character state is not ready.");
+   const liveSnapshot=JSON.parse(JSON.stringify(state));
+   const temporarySnapshot=JSON.parse(JSON.stringify(state));
+   debugLiveStateBackup=liveSnapshot;
+   debugSandboxState=temporarySnapshot;
+   debugSandboxCharacterSnapshot=null;
+   state=debugSandboxState;
+   debugSandboxActive=true;
+   document.body.classList.add("sandbox-active");
+   debugAllowThemeUnequip=false;debugOverrideQuestRules=false;debugUnlockAllItems=false;
+   persistDebugSandboxSession();
+   render();window.WayfarerTabRenderers.debug.renderDebugPanel();
+   if(typeof window.applyDebugFeatureSwitches==="function")window.applyDebugFeatureSwitches();
+   debugInspect();debugLog("Sandbox started from an isolated copy of the current character.");toast("Isolated sandbox started.");
+  } catch(error) {
+   state=debugLiveStateBackup||state;
+   debugLiveStateBackup=null;debugSandboxState=null;debugSandboxCharacterSnapshot=null;debugSandboxActive=false;
+   clearDebugSandboxSession();document.body.classList.remove("sandbox-active");
+   console.error("Wayfarer Sandbox failed to initialize:",error);
+   debugLog("Sandbox startup failed safely: "+String(error?.message||error));
+   toast("Sandbox could not start: "+String(error?.message||error));
+   window.WayfarerTabRenderers.debug.renderDebugPanel();
+  }
  });
  bindDebugAction("debugExitSandbox","click",()=>{
   if(!debugIsAdmin()){toast("Admin access required.");return;}
@@ -250,7 +262,7 @@ window.runThemeIntegrationTests = async function(){
  if(lockState.debugDisablePortrait){const art=document.getElementById("characterArtwork"),icon=document.querySelector(".themeIcon"),actualArt=(art?.getAttribute("src")||art?.src||"").split("/").pop(),actualIcon=(icon?.getAttribute("src")||icon?.src||"").split("/").pop(),gender=state?.profile?.gender==="female"?"female":"male",expectedArt=active?.character?.[gender]||null,expectedIcon=active?.icon?(active.icon.split("/").pop()):null,matches=!!expectedArt&&actualArt===expectedArt&&!!expectedIcon&&actualIcon===expectedIcon;add("Feature lock: equipped theme character and theme images still match",!isNonDungeon||matches,`Equipped=${current}; character=${actualArt}; expected character=${expectedArt||"missing debugCharacter metadata"}; theme icon=${actualIcon}; expected icon=${expectedIcon||"missing icon metadata"}`,"debug-lock-detection",expectedArt&&expectedIcon?undefined:"INCONCLUSIVE");}
  if(lockState.debugDisableMusic){const expected=active?.music||null,observed=themeMusicSource,matches=!!expected&&observed===expected;add("Feature lock: selected theme music remains applied",!isNonDungeon||matches,`Equipped=${current}; active music source=${observed||"not started"}; expected=${expected||"missing debugMusic metadata"}`,"debug-lock-detection",expected?undefined:"INCONCLUSIVE");}
  const passed=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").length,inconclusive=results.filter(x=>x.status==="INCONCLUSIVE").length;
- const report={version:"v2.3.14",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
+ const report={version:"v2.3.15",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
  const out=document.getElementById("debugThemeTestResults");if(out)out.textContent=JSON.stringify(report,null,2);debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed, "+inconclusive+" inconclusive.");return report;
 }
 document.getElementById("debugRunThemeTests")?.addEventListener("click",window.runThemeIntegrationTests);
@@ -332,10 +344,12 @@ window.runEquipmentLifecycleTests = function(){
   if(type==="theme"&&item.perkSkill){const calculated=calculateThemeBonus(item.id,item.perkSkill),bonusOk=calculated>0;check(`${item.name}: effect/XP bonus`,bonusOk,`Expected positive ${item.perkSkill} bonus; shared calculation returned ${calculated} XP.`);const pool=buildQuestPool(item.perkSkill),template=pool.find(q=>q.skill===item.perkSkill)||null;const generated=!!template&&template.skill===item.perkSkill;check(`${item.name}: related quest generation`,generated,generated?`Shared quest-template pool produced ${template.title} for ${item.perkSkill}.`:`No eligible quest template for ${item.perkSkill}.`);if(generated){const base=Number(template.xp)||15;const bonus=calculateThemeBonus(item.id,item.perkSkill);const quest={...template,baseXp:base,xp:base+bonus,perkBonusXp:bonus};const before=Number(sandbox.skillXp[item.perkSkill])||0;const award=awardQuestRewards(sandbox,quest);const observed=(Number(sandbox.skillXp[item.perkSkill])||0)-before;const expected=base+bonus;check(`${item.name}: quest completion reward`,observed===expected,`Shared reward helper awarded ${observed} ${item.perkSkill} XP; expected ${expected} (${base} base + ${bonus} bonus).`);}}
   else check(`${item.name}: defined item effects`,true,"No theme XP-perk contract declared; type-specific effect coverage is not defined.");
  }
- const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v2.3.14",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
+ const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v2.3.15",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
 }
 document.getElementById("debugRunEquipmentLifecycle")?.addEventListener("click",window.runEquipmentLifecycleTests);
 
+/* Bind once as soon as this module loads; tab activation can safely call it again. */
+initializeDebugTabControls();
 window.WayfarerTabModules.debug = function() { initializeDebugTabControls(); window.WayfarerTabRenderers.debug.renderDebugPanel(); };
 
 /* v2.1.8: Sandbox theme isolation switches are owned by Debug; core invokes the exported refresh hook. */
