@@ -1,15 +1,7 @@
-## v2.0.1 Debug Sandbox hard boundary (mandatory; supersedes older live-mode Debug allowance)
-- Every Debug option must be disabled or non-operative unless the authenticated Admin has explicitly started Sandbox. This includes XP/gold grants and removals, character/account reset and restore, cooldown resets, character-gender testing, inventory grants, theme/equipment fault injection, quest manipulation, save inspection, and diagnostic controls. Only the controls needed to open Debug and start Sandbox may work outside Sandbox.
-- Enforce this twice: disable controls in the rendered Debug UI and check `debugRequireSandbox()` inside every mutating/test action handler. Keep a central capture-phase interaction guard as defense-in-depth, not as the sole control.
-- Sandbox must operate on temporary state and must never write its changes to the real account's local save or Supabase cloud save. Reset/restore tools must target only the temporary Sandbox character. Preserve the live account backup until Sandbox exits.
-- Do not treat an old snapshot alone as an active Sandbox session. Test Sandbox start, each resource/reset action, refresh where supported, explicit exit, and return to unchanged live state. Report static/syntax checks separately from browser-verified behavior.
-
-## Modular code organization (v1.18.5 — mandatory)
-- Keep application code in the root-level `codes/` folder, loaded by `index.html` in a documented, stable order. `index.html` remains the application entry point.
-- Keep each major system in a clearly named file: account/persistence/core, skills and quests, Store and theme registry/music, To Do, Journal, groceries/adventures, quest generation, and Debug/Sandbox. Split further into dedicated tab/system files as each area is safely migrated; do not collapse the architecture back into a monolithic inline script.
-- Preserve classic-script shared global behavior during the staged migration unless a separately tested migration to ES modules is explicitly performed. Do not change declaration order or execution order casually.
-- When adding, renaming, or moving code files, update `index.html`, the service-worker precache list, version/cache identifiers, and tests. Confirm every referenced file exists and is served with the correct path.
-- Refactor incrementally and validate each step. Do not claim a system is independently modular if it still shares a file with unrelated systems; document remaining consolidation work accurately.
+## v2.0.1 conservative code separation (mandatory for future updates)
+- Use the supplied v1.18.4 project as the baseline for this release. The first separation pass is limited to moving the existing CSS into one external stylesheet while preserving rule order and relative asset resolution. Keep the interconnected application JavaScript in its original inline script and execution order.
+- Do not split JavaScript by arbitrary line ranges or merely by visual section. Before extracting a module, map its globals, initialization order, event listeners, shared state, storage/save paths, and callers. Separate only a genuinely bounded component whose behavior can be preserved and verified. Expand modularization incrementally in later releases.
+- Every separation must preserve behavior and existing account/login configuration, account isolation, saved progress, Sandbox boundaries, theme/store/equipment/reward integration, and PWA behavior. Validate each extraction and report static checks separately from browser-tested behavior.
 
 ## Store category organization and compact mobile cards (v1.18.4 — mandatory)
 - Keep Store navigation separated into Themes, Artifacts, and Pets categories. Selecting a category must show only its corresponding catalog panel, visibly identify the active tab, and preserve the selected category during Store re-renders.
@@ -103,17 +95,3 @@ Quest generation coverage rule (permanent): The campaign time selection is a pri
 - Run targeted tests for every change plus appropriate regression tests for critical systems, including login/account isolation, persistence, navigation, skills/quests, themes, Store, Inventory/equipment, rewards, Debug and Sandbox where relevant. Distinguish syntax/archive checks from actual browser testing and state exactly what was and was not verified.
 - Before packaging, validate JavaScript syntax, required files and asset references, ZIP integrity, and release-version consistency. The app/build and diagnostic report versions, service-worker cache, top changelog entry, and ZIP filename must identify the same release unless an intentional difference is documented. Keep `CHANGELOG.md` in the service-worker asset list and preserve all older entries.
 - Documentation-only/rules-only releases still require a new top changelog entry and matching release/cache metadata, but must not change unrelated gameplay behavior. Deliver the complete project ZIP, not isolated project files. Do not claim live-browser testing or deployment unless actually performed.
-
-
-## Skill-theme upgrade progression and Bloodthirst (v1.18.6 — mandatory)
-- Skill themes progress independently through five levels. Level 1 unlocks at skill level 3; Level 2 at 8; Level 3 at 13; Level 4 at 18; Level 5 at 23. Each level adds +5 XP and +2 gold to the matching skill's quest reward, so levels 1–5 provide +5/+0, +10/+2, +15/+4, +20/+6, and +25/+8. Preserve existing stable theme IDs and upgrade the owned item in place unless a migration is explicitly tested.
-- The Store shows the next upgrade for owned skill themes, and no further upgrade after Level 5. Verify price, skill requirement, purchase transaction, Inventory name/perks, equip state, save, and refresh behavior.
-- Bloodthirst is a special non-purchasable theme. Its unlock is based on a configurable kill count, but the threshold remains unset until specified. Do not make up a threshold. It grants +2 XP and +2 gold to every skill quest, uses its own icon, male/female art, background and music, and must be included in Sandbox Give All Items without affecting live account ownership.
-- Theme XP and coin bonuses are locked at quest generation and awarded exactly once by the shared completion path. Test skill-specific upgrades and Bloodthirst global bonuses, including saved rewards after changing equipment.
-
-
-## Skill-theme upgrade pricing (v1.18.7 — mandatory)
-- The first/original skill theme keeps its registered base price. Every upgrade above Level 1 costs an additional 100 coins over the immediately previous level: price = original base price + 100 × (theme level − 1).
-- Keep this price calculation in the shared theme Store path so the displayed price, purchase button, affordability check, currency deduction, and Debug lifecycle tests all use the same amount.
-- Example for a theme with a 200-coin base price: Levels 1–5 cost 200, 300, 400, 500, and 600 coins. For the existing 100-coin base themes, Levels 1–5 cost 100, 200, 300, 400, and 500 coins.
-- Test both price display and actual purchase deduction at all five levels, including insufficient funds, Sandbox isolation, and preserving the upgraded owned item/equipment ID.
