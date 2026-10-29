@@ -1,3 +1,10 @@
+# Wayfarer v3.0.2 — CHATGPT live testing permissions (2026-10-30)
+
+- Restrict live XP and gold grants to the signed-in CHATGPT test account with confirmation. Admin grants remain Sandbox-only.
+- Permit CHATGPT to reset its own live character with two confirmations; Admin cannot reset its live character. Preserve Journal, To Do and Groceries.
+- Preserve both accounts’ existing Sandbox grants, resets, and snapshot restoration.
+- Update mandatory rules, Debug report version, and service-worker cache. Static validation only; deployed browser and Supabase sync behavior require verification.
+
 # Wayfarer v3.0.1 — Character launcher styling and CHATGPT Debug access (2026-10-30)
 
 - Load the Kingdoms of the Unknown stylesheet with the main page so the Character tab Play button is red from first render; mark the stylesheet to avoid dynamically adding a duplicate when the game starts.

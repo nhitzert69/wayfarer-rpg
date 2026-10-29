@@ -70,6 +70,12 @@ A change is done only when:
 
 A tab is not considered functionally complete solely because its code is in a separate file. Report structural ownership and live functional verification separately.
 
+## v3.0.2 Debug account permissions (mandatory)
+- Only the signed-in CHATGPT test account may grant XP/gold or reset its own live character. Live actions require explicit confirmation and use normal account saving.
+- Admin cannot grant live XP/gold or reset its live character. Both Debug accounts retain Sandbox grants, Sandbox resets, and Sandbox snapshot restoration.
+- A live CHATGPT reset requires two confirmations and preserves Journal, To Do and Groceries. Sandbox changes must remain isolated.
+- Client-side username gates are convenience restrictions, not backend security authorization; never grant privileged backend access on username alone.
+
 ---
 
 ## v2.3.15 Kingdoms of the Unknown launcher and Sandbox startup (mandatory)
