@@ -1,3 +1,8 @@
+## v2.1.9 theme equip compatibility fix (mandatory)
+- Theme ownership and equip validation must recognize theme entries case-insensitively from either `type` or `category`, including older saved inventory records. Use one shared `isThemeInventoryItem` predicate in theme normalization, service validation, and Character click handling. Do not accept arbitrary non-theme equipable items into the theme slot.
+- Preserve theme registry/service/music boundaries, appearance refresh, existing theme IDs and saved inventory. Keep account state and persistence in the core.
+- Update Debug report version, service-worker cache namespace, and top changelog entry together. Check JavaScript syntax, mixed-case type/category cases, every precache path, release-version consistency, and ZIP integrity. Mark live browser/Supabase behavior INCONCLUSIVE unless actually tested.
+
 ## v2.1.8 theme and Debug ownership follow-up (mandatory)
 - Theme appearance classes must be derived from registered theme metadata, not maintained in a hard-coded list in `theme-service.js`.
 - Registered themes must declare their soundtrack in `codes/theme-registry.js`; `codes/theme-music.js` must use that metadata first and may retain only non-registered legacy aliases plus a safe Dungeon fallback.

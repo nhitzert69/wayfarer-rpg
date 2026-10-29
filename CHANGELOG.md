@@ -1,3 +1,11 @@
+# Wayfarer v2.1.9 — fix theme equipping compatibility (2026-10-29)
+
+- Fixed theme equip state validation to recognize legacy inventory entries whose `type` or `category` uses different capitalization (for example, `Theme` versus `theme`). The shared theme service now uses one case-insensitive predicate for owned-theme normalization and equip validation.
+- Updated Character inventory click validation to use the shared theme-item predicate, preventing the UI from rejecting otherwise valid owned themes before the equip service is called.
+- Preserved the theme registry/service split, theme music mapping, visual application, account state, and save/Sandbox boundaries.
+- Updated Debug diagnostic report versions and the service-worker cache namespace to v2.1.9.
+- Validation: JavaScript syntax, mixed-case theme inventory checks, handler ownership, service-worker precache paths, release-version consistency, and ZIP integrity checked. Live browser equip flow and Supabase persistence remain INCONCLUSIVE unless actually run.
+
 # Wayfarer v2.1.8 — finish theme ownership boundaries and move Debug feature handlers (2026-10-29)
 
 - Made theme appearance activation data-driven: active body classes are derived from registered theme metadata rather than a hard-coded class list in the theme service.
