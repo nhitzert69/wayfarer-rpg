@@ -1,3 +1,12 @@
+# Wayfarer v2.3.2 — repair Quest Board renderer registration and tighten tab ownership (2026-10-29)
+
+- Fixed a critical Quest Board module initialization error: the summary renderer was assigned to `WayfarerTabRenderers.quests` before that property existed, and the renderer is subsequently a function. The summary hook is now attached to the registered renderer function after its definition, allowing the tab script to initialize and the quest counters to update.
+- Removed the unused legacy starter-quest array from `index.html`; generated quest behavior and rendering remain in `codes/tabs/quests.js`.
+- Character pet equipment now uses the shared normalized inventory classifier, avoiding a separate case-sensitive pet type/category check.
+- Store category clicks now use a single delegated, idempotently registered listener on the stable document root instead of attaching listeners to every category button.
+- Bumped the service-worker cache namespace and embedded Debug report versions to v2.3.2.
+- Validation: JavaScript syntax and module-registration/summary-hook checks, all service-worker precache paths, version consistency, and ZIP integrity. Real browser interactions, theme equipping, and Supabase persistence remain INCONCLUSIVE because they were not exercised in a live browser.
+
 # Wayfarer v2.3.1 — delegate summary rendering to tab modules (2026-10-29)
 
 - Moved Quest Board summary rendering (daily completion count, lifetime completions, streak, date label, and shift-aware note) from `index.html` into `codes/tabs/quests.js`.

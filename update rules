@@ -1,3 +1,9 @@
+## v2.3.2 Quest Board registration and tab ownership (mandatory)
+- `codes/tabs/quests.js` must register the callable Quest Board renderer first, then attach `renderSummary` to that function. Do not assign a summary property before the `quests` renderer exists or overwrite a renderer object after attaching its hooks.
+- Keep generated quest logic and rendering in the Quest Board module; remove unused legacy quest data from core rather than duplicating it.
+- Character inventory type/category checks must use `codes/inventory-service.js` helpers. Store category controls must use idempotent/delegated event binding so rerenders do not accumulate handlers.
+- Update the changelog top entry, Debug report version, and service-worker cache namespace together. Check module initialization, renderer summary ownership, JavaScript syntax, all precache paths, version consistency, and ZIP integrity. Mark browser/Supabase behavior INCONCLUSIVE unless actually tested.
+
 ## v2.3.1 tab-owned summary rendering (mandatory)
 - Build from v2.3.0. Quest Board summary DOM updates (daily count, completed count, streak, date label, and shift-aware note) belong to `codes/tabs/quests.js`; Journal count belongs to `codes/tabs/journal.js`. The core `render()` may coordinate module summary hooks but must not manipulate those tab-specific elements directly.
 - Journal edit navigation must use the core tab navigation API so active-tab persistence remains consistent.

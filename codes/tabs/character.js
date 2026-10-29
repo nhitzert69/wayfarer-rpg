@@ -3,7 +3,6 @@
 /* Wayfarer tab renderers loaded on demand. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.character = window.WayfarerTabRenderers.character || {};
-window.WayfarerTabRenderers.character = window.WayfarerTabRenderers.character || {};
 /* Wayfarer character tab module. Shared state remains in the core; module initializes its view on demand. */
 window.WayfarerTabRenderers.character.renderCharacterInventory = function(){
  const items=Array.isArray(state.inventory)?state.inventory:[];
@@ -34,5 +33,5 @@ window.WayfarerTabModules.character = function() { window.WayfarerTabRenderers.c
 
 /* Character Inventory/equipment click handlers extracted in v2.1.1. */
 document.getElementById("themeInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;if(!state.inventory.some(item=>item&&item.id===itemId&&(isThemeInventoryItem(item)||item.equipable===true)))return;if(state.equipment?.theme===itemId) {if(debugSandboxActive&&debugAllowThemeUnequip){state.equipment.theme=null;debugLog("Unequipped theme in sandbox test mode.");toast("Theme unequipped (sandbox only).");}else{toast("A theme must always be equipped. Enable the sandbox exception to test unequipped state.");return;}}else{const equipResult=equipThemeItem(itemId,state);if(!equipResult.ok){toast("Could not equip this theme: "+equipResult.reason+".");debugLog("Theme equip operation failed for "+itemId+": "+equipResult.reason);return;}const themeName=getThemeDefinition(itemId)?.name||"Dungeon";debugLog(debugSandboxActive?"Equipped "+themeName+" theme in sandbox.":"Equipped "+themeName+" theme.");toast(themeName+" theme equipped.");}applyThemeMusic({userInitiated:true});save();renderDebugPanel();});
-document.getElementById("petInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;const pet=(state.inventory||[]).find(item=>item&&String(item.id)===String(itemId)&&(item.type==="pet"||String(item.category||"").toLowerCase()==="pet"));if(!pet)return;if(state.equipment?.pet===itemId){state.equipment.pet=null;toast((pet.name||"Pet")+" unequipped.");}else{state.equipment.pet=itemId;toast((pet.name||"Pet")+" equipped.");}save();renderDebugPanel();});
+document.getElementById("petInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;const pet=(state.inventory||[]).find(item=>item&&String(item.id)===String(itemId)&&isPetInventoryItem(item));if(!pet)return;if(state.equipment?.pet===itemId){state.equipment.pet=null;toast((pet.name||"Pet")+" unequipped.");}else{state.equipment.pet=itemId;toast((pet.name||"Pet")+" equipped.");}save();renderDebugPanel();});
 })();

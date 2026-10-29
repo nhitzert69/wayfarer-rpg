@@ -50,5 +50,10 @@ window.WayfarerTabModules.store = function() { window.WayfarerTabRenderers.store
 
 
 /* Store category interaction extracted in v2.1.1. */
-document.querySelectorAll("[data-store-category]").forEach(button=>button.addEventListener("click",()=>setStoreCategory(button.dataset.storeCategory)));
+// Delegate category clicks once from the stable document root so rerendering tab
+// content never duplicates listeners or leaves detached buttons with stale handlers.
+if(!document.documentElement.dataset.wayfarerStoreCategoryBound){
+ document.documentElement.dataset.wayfarerStoreCategoryBound="true";
+ document.addEventListener("click",event=>{const button=event.target.closest("[data-store-category]");if(button)setStoreCategory(button.dataset.storeCategory);});
+}
 })();
