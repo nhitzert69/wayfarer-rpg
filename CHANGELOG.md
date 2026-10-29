@@ -1,3 +1,12 @@
+# Wayfarer v1.19.0 — authentication startup gate (2026-10-29)
+
+- Added a blocking startup screen so Wayfarer does not render the signed-out state while Supabase is still restoring the saved session.
+- Made `getSession()` completion the explicit startup decision point. The app opens only after the session check and, when signed in, account save hydration have completed; transient null auth callbacks cannot expose the login screen early.
+- Added a catch path for unexpected startup/auth failures that preserves the device copy, restores the UI, and reports a retryable status instead of leaving startup half-initialized.
+- Moved startup cloud writes to the background after account state is ready, so a slow save request does not keep the app behind the loading screen.
+- Updated Debug report version strings, the service-worker cache key, and mandatory update rules.
+- Validation: JavaScript syntax checks, targeted startup-flow assertions, version/cache/changelog consistency, required rules files, and ZIP integrity. Live browser refresh and Supabase end-to-end testing remain necessary; this release is not claimed verified against the deployed site.
+
 # Wayfarer v1.18.9 — persistent session restoration and Debug Sandbox isolation (2026-10-29)
 
 - Hardened startup auth restoration: getSession() is authoritative, initial/transient null auth callbacks no longer clear account state before restoration completes, and restore errors retain the device copy and report status.

@@ -115,6 +115,8 @@ let cloudClient = null;
 let cloudUser = null;
 let cloudHydrating = false;
 let cloudConfigured = false;
+// Hold the visible app behind a startup gate until Supabase has definitively restored auth and account state.
+let authInitializationPending = true;
 if (window.supabase && WAYFARER_SUPABASE_URL.startsWith("https://") && WAYFARER_SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
   cloudClient = window.supabase.createClient(WAYFARER_SUPABASE_URL, WAYFARER_SUPABASE_ANON_KEY, {
     // Keep username/PIN sessions across page refreshes. Explicit settings avoid
@@ -232,7 +234,8 @@ async function finishSignIn(username,pin,create,gender=null){
  enforceAccountGate();
  if(typeof renderDebugPanel === "function") renderDebugPanel();
 }
-function enforceAccountGate(){const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=signedIn||btn.dataset.tab==='settings';btn.style.display=allowed?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=signedIn?'':(sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
+function finishAuthInitialization(){authInitializationPending=false;const gate=document.getElementById("authStartupGate");if(gate)gate.style.display="none";enforceAccountGate();}
+function enforceAccountGate(){const gate=document.getElementById("authStartupGate");if(authInitializationPending){if(gate)gate.style.display="flex";return;}if(gate)gate.style.display="none";const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=signedIn||btn.dataset.tab==='settings';btn.style.display=allowed?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=signedIn?'':(sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
 let accountFlowMode=null;
 function showAccountMode(mode){accountFlowMode=mode;document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="block";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display=mode==="create"?"inline-flex":"none";document.getElementById("signInBtn").style.display=mode==="login"?"inline-flex":"none";hideGenderChoice();if(mode==="create"){const field=document.getElementById("accountGenderField");if(field)field.style.display="block";}}
 function resetAccountMode(){accountFlowMode=null;hideGenderChoice();document.getElementById("accountModeChooser").style.display="flex";document.getElementById("accountUsernameField").style.display="none";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="none";}
@@ -268,13 +271,109 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  wayfarerSignedInUsername="";
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
-if(cloudClient){let authRestoreComplete=false;cloudClient.auth.onAuthStateChange((event,session)=>{if(session?.user){cloudUser=session.user;wayfarerSignedInUsername=restoreWayfarerUsername(session.user);}else if(event==="SIGNED_OUT"&&authRestoreComplete){cloudUser=null;wayfarerSignedInUsername="";try{localStorage.removeItem("wayfarer-last-username");}catch(e){}}else if(!session&&!authRestoreComplete&&event!=="INITIAL_SESSION"){/* Wait for getSession() before treating an early null callback as a real sign-out. */}enforceAccountGate();if(typeof renderDebugPanel==="function")renderDebugPanel();});cloudClient.auth.getSession().then(async({data,error})=>{authRestoreComplete=true;if(error){console.error("Wayfarer session restore failed",error);setCloudStatus("Could not restore your sign-in session. Your device copy is retained; please retry sign-in.");enforceAccountGate();return;}if(data.session){cloudUser=data.session.user;wayfarerSignedInUsername=restoreWayfarerUsername(data.session.user);cloudHydrating=true;const {data:row,error}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();if(!error&&row&&row.app_state){
- const localUpdatedAt=Number(localStorage.getItem(STATE_UPDATED_KEY)||0);
- const cloudUpdatedAt=Date.parse(row.updated_at||"")||0;
- const localState=load();
- if(localState&&localUpdatedAt>cloudUpdatedAt){state=localState;setCloudStatus("Restored newer local progress and syncing it to your cloud save.");}
- else state=row.app_state;
- if(!state.settings)state.settings={...defaultSettings};if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};if(!Array.isArray(state.inventory))state.inventory=[];if(!state.equipment||typeof state.equipment!=="object")state.equipment={};if(!Object.prototype.hasOwnProperty.call(state.equipment,"pet"))state.equipment.pet=null;if(!Number.isFinite(Number(state.gold)))state.gold=0;if(!Array.isArray(state.quests))state.quests=[];if(!Array.isArray(state.journal))state.journal=[];if(!Array.isArray(state.todo))state.todo=[];if(!Array.isArray(state.groceries))state.groceries=[];if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};repairProfileGender(cloudUser);localStorage.setItem(KEY,JSON.stringify(state));try{localStorage.setItem(STATE_UPDATED_KEY,String(Math.max(Date.now(),localUpdatedAt,cloudUpdatedAt)));}catch(e){}render();if(localState&&localUpdatedAt>cloudUpdatedAt){cloudHydrating=false;await syncCurrentState();cloudHydrating=true;}else setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");}else if(error){setCloudStatus("Signed in, but cloud data could not be loaded. Check the database setup.");}else{state=freshState();localStorage.setItem(KEY,JSON.stringify(state));try{localStorage.setItem(STATE_UPDATED_KEY,String(Date.now()));}catch(e){}render();cloudHydrating=false;await syncCurrentState();cloudHydrating=true;setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");}cloudHydrating=false;await syncCurrentState();restoreDebugSandboxSession();document.getElementById("signOutBtn").style.display="inline-flex";document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display="none";document.getElementById("signInBtn").style.display="none";document.getElementById("backAccountModeBtn").style.display="none";if(typeof renderDebugPanel === "function")renderDebugPanel();enforceAccountGate();if(typeof renderDebugPanel === "function")renderDebugPanel();}else{enforceAccountGate();}});}
+if(cloudClient){
+ let authRestoreComplete=false;
+ cloudClient.auth.onAuthStateChange((event,session)=>{
+   if(session?.user){cloudUser=session.user;wayfarerSignedInUsername=restoreWayfarerUsername(session.user);}
+   else if(event==="SIGNED_OUT"&&authRestoreComplete){cloudUser=null;wayfarerSignedInUsername="";try{localStorage.removeItem("wayfarer-last-username");}catch(e){}}
+   // Null events before getSession completes are not proof that the user is signed out.
+   enforceAccountGate();
+   if(typeof renderDebugPanel==="function")renderDebugPanel();
+ });
+ cloudClient.auth.getSession().then(async({data,error})=>{
+   authRestoreComplete=true;
+   if(error){
+     console.error("Wayfarer session restore failed",error);
+     setCloudStatus("Could not restore your sign-in session. Your device copy is retained; please retry sign-in.");
+     finishAuthInitialization();
+     return;
+   }
+   if(data.session){
+     cloudUser=data.session.user;
+     wayfarerSignedInUsername=restoreWayfarerUsername(data.session.user);
+     cloudHydrating=true;
+     const {data:row,error:rowError}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();
+     if(!rowError&&row&&row.app_state){
+       const localUpdatedAt=Number(localStorage.getItem(STATE_UPDATED_KEY)||0);
+       const cloudUpdatedAt=Date.parse(row.updated_at||"")||0;
+       const localState=load();
+       if(localState&&localUpdatedAt>cloudUpdatedAt){state=localState;setCloudStatus("Restored newer local progress and syncing it to your cloud save.");}
+       else state=row.app_state;
+       if(!state.settings)state.settings={...defaultSettings};
+       if(!state.profile||typeof state.profile!=="object")state.profile={gender:null};
+       if(!Array.isArray(state.inventory))state.inventory=[];
+       if(!state.equipment||typeof state.equipment!=="object")state.equipment={};
+       if(!Object.prototype.hasOwnProperty.call(state.equipment,"pet"))state.equipment.pet=null;
+       if(!Number.isFinite(Number(state.gold)))state.gold=0;
+       if(!Array.isArray(state.quests))state.quests=[];
+       if(!Array.isArray(state.journal))state.journal=[];
+       if(!Array.isArray(state.todo))state.todo=[];
+       if(!Array.isArray(state.groceries))state.groceries=[];
+       if(!Array.isArray(state.selectedSkills))state.selectedSkills=[];
+       if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
+       if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};
+       repairProfileGender(cloudUser);
+       localStorage.setItem(KEY,JSON.stringify(state));
+       try{localStorage.setItem(STATE_UPDATED_KEY,String(Math.max(Date.now(),localUpdatedAt,cloudUpdatedAt)));}catch(e){}
+       render();
+       if(!(localState&&localUpdatedAt>cloudUpdatedAt))setCloudStatus("Signed in. Cloud save loaded from "+new Date(row.updated_at).toLocaleString()+".");
+     }else if(rowError){
+       // Keep the cached account copy intact if the cloud read fails.
+       const localState=load();
+       if(localState)state=localState;
+       setCloudStatus("Signed in, but cloud data could not be loaded. Your device copy is retained; check the connection and retry.");
+       render();
+     }else{
+       state=freshState();
+       localStorage.setItem(KEY,JSON.stringify(state));
+       try{localStorage.setItem(STATE_UPDATED_KEY,String(Date.now()));}catch(e){}
+       render();
+       setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");
+     }
+     cloudHydrating=false;
+     restoreDebugSandboxSession();
+     document.getElementById("signOutBtn").style.display="inline-flex";
+     document.getElementById("accountModeChooser").style.display="none";
+     document.getElementById("accountUsernameField").style.display="block";
+     document.getElementById("accountPinField").style.display="none";
+     document.getElementById("accountActionButtons").style.display="flex";
+     document.getElementById("createAccountBtn").style.display="none";
+     document.getElementById("signInBtn").style.display="none";
+     document.getElementById("backAccountModeBtn").style.display="none";
+     if(typeof renderDebugPanel==="function")renderDebugPanel();
+     finishAuthInitialization();
+     // Open the app as soon as account state is restored; cloud writes run in the background.
+     // This prevents a slow save request from holding the user on the startup screen.
+     if(!rowError)syncCurrentState().catch(error=>console.error("Background startup sync failed",error));
+   }else{
+     // Only show the login flow after getSession explicitly confirms no session.
+     finishAuthInitialization();
+   }
+ }).catch(error=>{
+   authRestoreComplete=true;
+   cloudHydrating=false;
+   console.error("Wayfarer startup/auth restoration failed",error);
+   if(cloudUser){
+     const cached=load();if(cached)state=cached;
+     render();
+     document.getElementById("signOutBtn").style.display="inline-flex";
+     document.getElementById("accountModeChooser").style.display="none";
+     document.getElementById("accountUsernameField").style.display="block";
+     document.getElementById("accountPinField").style.display="none";
+     document.getElementById("accountActionButtons").style.display="flex";
+     document.getElementById("createAccountBtn").style.display="none";
+     document.getElementById("signInBtn").style.display="none";
+     document.getElementById("backAccountModeBtn").style.display="none";
+   }
+   setCloudStatus("Could not finish restoring your session. Your device copy is retained; retry sign-in when ready.");
+   finishAuthInitialization();
+ });
+}else{
+ authInitializationPending=false;
+ const gate=document.getElementById("authStartupGate");if(gate)gate.style.display="none";
+ enforceAccountGate();
+}
+
 function nextSaveRevision(){
  let previous=0;try{previous=Number(localStorage.getItem(STATE_UPDATED_KEY))||0;}catch(e){}
  return Math.max(Date.now(),previous+1);

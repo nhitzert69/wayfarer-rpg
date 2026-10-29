@@ -1,3 +1,9 @@
+## Authentication startup gate (v1.19.0 — mandatory)
+- Keep the application behind a visible loading gate until `getSession()` has definitively resolved. Do not expose the login screen, call the user signed out, or render account-specific content while auth restoration is pending.
+- If a session exists, restore the matching account's cloud save (or preserve its local copy if the cloud read fails) before releasing the gate. Treat transient null auth callbacks as non-authoritative until initial restoration completes.
+- Unexpected restoration exceptions must release the gate with a retryable status, preserve local progress, and reset hydration flags safely. Never silently reset an account because startup failed.
+- Background cloud sync must not block app readiness after account state has been restored. Test hard refresh and browser restart with a real signed-in session before claiming the issue fixed.
+
 ## Debug Sandbox hard boundary and auth restoration (v1.18.9 — mandatory)
 - Every Debug control that changes gameplay, account state, progression, inventory, equipment, dates, cooldowns, feature flags, fault injection, or test fixtures must be blocked unless the exact Admin account is signed in and Sandbox is active. The only outside-Sandbox action allowed is entering Sandbox; leaving Sandbox is allowed only while active.
 - Enforce this both in each action handler and with a central capture-phase interaction guard. Do not rely on hidden/disabled UI alone. Do not let resource grants, removals, character reset/restore, cooldown reset, gender changes, unlock-all, or fault injection touch live state.
