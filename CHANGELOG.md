@@ -1,3 +1,11 @@
+# Wayfarer v2.0.4 — incremental JavaScript separation (2026-10-29)
+
+- Built from the v2.0.3 archive, preserving the Bloodthirst background fix and the v2.0.2 theme/leveling/Sandbox feature set.
+- Kept core account/login/save logic, app-startup service-worker registration, and Debug inline as requested.
+- Extracted themes/store, theme music, quest rendering, skills, to-do, journal, skill navigation, groceries, adventures, and quest generation into separate classic-script files under `codes/`, preserving the established load order.
+- Updated the service-worker cache namespace and release metadata.
+- Validation performed: JavaScript syntax, script path/order checks, required-file and asset references, release/cache/changelog consistency, and ZIP integrity. Browser runtime, Supabase persistence, and deployed-app behavior were not tested.
+
 # Wayfarer v2.0.3 — Fix Bloodthirst page background (2026-10-29)
 
 - Fixed the default Dungeon-background CSS selector so it explicitly excludes the equipped Bloodthirst theme.

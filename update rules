@@ -1,3 +1,8 @@
+## v2.0.4 incremental JavaScript separation (mandatory)
+- `core-account`, `app-startup`, and `debug` remain inline in `index.html`. Feature modules may be external files under `codes/` and must load in the documented classic-script order.
+- v2.0.4 separates `themes-store.js`, `theme-music.js`, `app-render-quests.js`, `skills.js`, `todo.js`, `journal.js`, `skill-navigation.js`, `groceries.js`, `adventures.js`, and `quest-generation.js`. Do not move or split the three retained blocks without explicit approval.
+- Treat this as an extraction, not a feature rewrite: preserve shared global bindings, initialization order, event listeners, theme registration and upgrade/reward calculations, account state, Sandbox isolation, and the Bloodthirst background exclusion. Run syntax checks on every external and inline script, check all local script/style/asset paths, verify cache/version/changelog consistency, and state clearly that browser behavior is unverified unless actually tested in a browser.
+
 ## Bloodthirst background regression (v2.0.3 — mandatory)
 - The default Dungeon background selector must explicitly exclude `body.bloodthirstTheme`, just as it excludes every other theme with a dedicated background. Verify that equipping Bloodthirst displays `assets/images/bloodthirst-background.webp`, and that switching to another theme restores that theme's own background.
 - Do not fix this by changing the Bloodthirst art, palette, equipment state, or theme registry when the root cause is CSS selector specificity/exclusion.
