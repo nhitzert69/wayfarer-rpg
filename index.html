@@ -765,48 +765,6 @@ function debugCharacterDataSnapshot(){return JSON.parse(JSON.stringify({xp:state
 function debugApplySnapshot(snapshot){if(!debugRequireSandbox())return;for(const k of Object.keys(snapshot||{}))state[k]=JSON.parse(JSON.stringify(snapshot[k]));save();render();renderDebugPanel();}
 function debugCanUseCharacterTools(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated Sandbox first. No live-account changes are allowed.");return false;}return true;}
 let debugSandboxCharacterSnapshot=null;
-document.getElementById("debugResetQuestCooldown")?.addEventListener("click",()=>{
- const status=document.getElementById("debugQuestCooldownStatus");
- if(!debugIsAdmin()){toast("Admin access required.");if(status)status.textContent="Denied: Admin access required.";return;}
- if(!debugSandboxActive){toast("Start the isolated Sandbox first.");if(status)status.textContent="Blocked: Sandbox is required.";return;}
- if(!window.confirm("Reset the Sandbox Generate Quests cooldown? This affects only the temporary character."))return;
- state.questGenerationCooldownUntil=0;save();updateGenerateButtonStatus();
- const message="Sandbox Generate Quests cooldown reset. Live progress is unchanged.";if(status)status.textContent=message;
- debugLog("Sandbox quest-generation cooldown reset by Admin.");toast("Sandbox quest cooldown reset.");
-});
-document.getElementById("debugGrantResources")?.addEventListener("click",()=>{
- if(!debugCanUseCharacterTools())return;
- const xp=Math.max(0,Math.min(100000,Number(document.getElementById("debugGrantXp")?.value)||0));
- const gold=Math.max(0,Math.min(100000,Number(document.getElementById("debugGrantGold")?.value)||0));
- state.xp=(Number(state.xp)||0)+xp;state.gold=(Number(state.gold)||0)+gold;
- save();renderDebugPanel();document.getElementById("debugCharacterToolsStatus").textContent=`Granted ${xp} XP and ${gold} gold to the temporary Sandbox character. Live progress is unchanged.`;debugLog(`Admin grant: +${xp} XP, +${gold} gold (${debugSandboxActive?"sandbox":"live"}).`);
-});
-document.getElementById("debugRemoveResources")?.addEventListener("click",()=>{
- if(!debugCanUseCharacterTools())return;
- const xp=Math.max(0,Math.min(100000,Math.floor(Number(document.getElementById("debugGrantXp")?.value)||0)));
- const gold=Math.max(0,Math.min(100000,Math.floor(Number(document.getElementById("debugGrantGold")?.value)||0)));
- if(xp===0&&gold===0){toast("Enter an XP or gold amount greater than zero.");return;}
- if(!window.confirm(`Remove ${xp} XP and ${gold} gold from the temporary Sandbox character? You can restore the Sandbox snapshot if needed.`))return;
- state.xp=Math.max(0,(Number(state.xp)||0)-xp);state.gold=Math.max(0,(Number(state.gold)||0)-gold);
- save();render();renderDebugPanel();
- const status=document.getElementById("debugCharacterToolsStatus");if(status)status.textContent=`Removed up to ${xp} XP and ${gold} gold from the Sandbox. Remaining: ${Number(state.xp)||0} XP, ${Number(state.gold)||0} gold. Live progress is unchanged.`;
- debugLog(`Admin resource removal: -${xp} XP and -${gold} gold (${debugSandboxActive?"sandbox":"live"}); remaining XP=${Number(state.xp)||0}, gold=${Number(state.gold)||0}.`);
-});
-document.getElementById("debugResetCharacter")?.addEventListener("click",()=>{
- if(!debugCanUseCharacterTools())return;
- if(!window.confirm("Are you sure you want to reset your Sandbox character? This clears XP, gold, skill XP, selected skills, quests, inventory and equipment. Journal, To Do and Groceries will be preserved. A one-step restore snapshot will be saved."))return;
- debugSandboxCharacterSnapshot=debugCharacterDataSnapshot();
- state.xp=0;state.gold=0;state.skillXp={};state.selectedSkills=[];state.skillPriorities={};state.inventory=[];state.equipment={theme:"dungeon-theme"};state.quests=[];state.completedTotal=0;state.questGenerationCooldownUntil=0;state.lastGeneratedSkills=[];state.questHistory={};state.questDays=[];state.characterXp=0;state.level=1;
- if(typeof ensureDungeonThemeState==="function")ensureDungeonThemeState();
- save();renderDebugPanel();document.getElementById("debugCharacterToolsStatus").textContent="Sandbox character reset. Journal, To Do and Groceries were preserved. Use Restore snapshot to undo.";debugLog("Character progression reset; journal, To Do and groceries preserved.");
-});
-document.getElementById("debugRestoreCharacter")?.addEventListener("click",()=>{
- if(!debugCanUseCharacterTools())return;
- const snap=debugSandboxCharacterSnapshot;
- if(!snap){toast("No Sandbox character snapshot is available.");return;}
- if(!window.confirm("Restore the saved Sandbox character snapshot? This replaces the temporary character state only."))return;
- debugApplySnapshot(snap);document.getElementById("debugCharacterToolsStatus").textContent="Sandbox character snapshot restored.";debugLog("Sandbox character snapshot restored.");
-});
 function restoreWayfarerUsername(user){const metadataName=String(user?.user_metadata?.wayfarer_username||"").trim();if(metadataName){try{localStorage.setItem("wayfarer-last-username",metadataName);}catch(e){}return metadataName;}const email=String(user?.email||"").trim();const localPart=email.includes("@")?email.slice(0,email.indexOf("@")):email;if(localPart.trim()){try{localStorage.setItem("wayfarer-last-username",localPart.trim());}catch(e){}return localPart.trim();}try{return String(localStorage.getItem("wayfarer-last-username")||"").trim();}catch(e){return "";}} function debugIsAdmin(){return String(wayfarerSignedInUsername||"").trim().toLowerCase()==="admin";}
 function debugRequireSandbox(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated sandbox first.");return false;}return true;}
 
@@ -821,15 +779,6 @@ function clearDebugSandboxSession(){try{sessionStorage.removeItem(DEBUG_SANDBOX_
 function restoreDebugSandboxSession(){if(!debugIsAdmin())return false;try{const raw=sessionStorage.getItem(DEBUG_SANDBOX_SESSION_KEY);if(!raw)return false;const saved=JSON.parse(raw);if(saved.username&&wayfarerSignedInUsername&&saved.username.toLowerCase()!==wayfarerSignedInUsername.toLowerCase())return false;if(!saved.live||!saved.sandbox)return false;debugLiveStateBackup=saved.live;debugSandboxState=saved.sandbox;debugSandboxCharacterSnapshot=saved.snapshot||null;state=debugSandboxState;debugSandboxActive=true;document.body.classList.add("sandbox-active");debugAllowThemeUnequip=false;debugOverrideQuestRules=false;debugUnlockAllItems=false;render();renderDebugPanel();debugInspect();debugLog("Restored the temporary Sandbox session after page refresh; live account data was not replaced.");return true;}catch(e){clearDebugSandboxSession();return false;}}
 document.getElementById("debugStartSandbox")?.addEventListener("click",()=>{if(!debugIsAdmin()){toast("Sign in using the exact username Admin.");return;}if(debugSandboxActive){toast("Sandbox is already active.");return;}debugLiveStateBackup=JSON.parse(JSON.stringify(state));debugSandboxState=JSON.parse(JSON.stringify(state));debugSandboxCharacterSnapshot=null;state=debugSandboxState;debugSandboxActive=true;document.body.classList.add("sandbox-active");debugAllowThemeUnequip=false;debugOverrideQuestRules=false;debugUnlockAllItems=false;persistDebugSandboxSession();debugLog("Sandbox started from a copy of the current character.");render();renderDebugPanel();if(typeof window.applyDebugFeatureSwitches==="function")window.applyDebugFeatureSwitches();debugInspect();toast("Isolated sandbox started.");});
 document.getElementById("debugExitSandbox")?.addEventListener("click",()=>{if(!debugSandboxActive){toast("Sandbox is not active.");return;}state=debugLiveStateBackup;debugLiveStateBackup=null;debugSandboxState=null;debugSandboxCharacterSnapshot=null;debugSandboxActive=false;clearDebugSandboxSession();document.body.classList.remove("sandbox-active");debugAllowThemeUnequip=false;debugOverrideQuestRules=false;debugUnlockAllItems=false;if(typeof window.resetDebugFeatureSwitches==="function")window.resetDebugFeatureSwitches();render();renderDebugPanel();if(typeof window.applyDebugFeatureSwitches==="function")window.applyDebugFeatureSwitches();debugInspect();debugLog("Sandbox discarded; original in-memory character restored.");toast("Sandbox discarded. Real progress restored.");});
-document.querySelectorAll("[data-debug-days]").forEach(b=>b.addEventListener("click",()=>{if(!debugRequireSandbox())return;const d=Number(b.dataset.debugDays)||1;const date=new Date((state.activeDate||today())+"T12:00:00");date.setDate(date.getDate()+d);state.activeDate=date.toLocaleDateString("en-CA");debugLog(`Time Machine shifted sandbox date by +${d} days to ${state.activeDate}.`);renderDebugPanel();debugInspect();}));
-document.getElementById("debugSetOverallXp")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;state.xp=Math.max(0,Number(document.getElementById("debugOverallXp").value)||0);render();renderDebugPanel();debugInspect();debugLog("Set sandbox overall XP to "+state.xp+"; all XP-dependent UI refreshed immediately.");toast("Overall XP updated.");});
-document.getElementById("debugSetSkillXp")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;const skill=document.getElementById("debugSkillSelect").value;if(!skill){toast("Choose a skill first.");return;}if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};state.skillXp[skill]=Math.max(0,Number(document.getElementById("debugSkillXp").value)||0);render();renderDebugPanel();debugInspect();debugLog("Set sandbox XP for "+skill+" to "+state.skillXp[skill]+"; skill cards and progression UI refreshed immediately.");toast(skill+" XP updated.");});
-document.getElementById("debugAddCoins")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;const input=document.getElementById("debugAddCoinsAmount");const amount=Math.floor(Number(input?.value)||0);if(amount<=0){toast("Enter a coin amount greater than zero.");return;}state.gold=Math.max(0,Number(state.gold)||0)+amount;render();renderDebugPanel();debugInspect();debugLog("Added "+amount+" coins to sandbox; new balance is "+state.gold+".");toast("Added "+amount+" coins to the sandbox.");});
-document.getElementById("debugAddQuest")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;if(!Array.isArray(state.quests))state.quests=[];state.quests.unshift({id:"debug-"+Date.now(),title:"[TEST] Debug Workshop quest",description:"Disposable sandbox-only quest for checking quest cards and completion behavior.",category:"Skill",skill:state.selectedSkills?.[0]||"Adventure",xp:15,done:false,source:"debug-sandbox"});debugLog("Added disposable test quest to sandbox.");render();debugRenderQuests();});
-document.getElementById("debugRefreshQuests")?.addEventListener("click",()=>{debugRenderQuests();debugLog("Quest inspection refreshed.");});
-document.getElementById("debugRunPlanner")?.addEventListener("click",()=>{if(!debugRequireSandbox())return;const opts={time:Number(document.getElementById("debugPlannerTime").value),energy:document.getElementById("debugPlannerEnergy").value,focus:document.getElementById("debugPlannerFocus").value,place:document.getElementById("debugPlannerLocation").value};try{const result=generateQuests(opts);const el=document.getElementById("debugPlannerResult");if(el)el.textContent=JSON.stringify({preset:opts,result:result??"Planner invoked; inspect quest board below.",quests:(state.quests||[]).map(q=>({title:q.title,skill:q.skill,done:q.done,source:q.source}))},null,2);debugLog("Ran planner preset: "+JSON.stringify(opts));render();}catch(e){document.getElementById("debugPlannerResult").textContent="Planner error: "+String(e?.stack||e);debugLog("Planner test failed: "+String(e));}});
-document.getElementById("debugInspectSave")?.addEventListener("click",()=>{debugInspect();debugLog("State summary inspected; secrets omitted.");});
-document.getElementById("debugClearLog")?.addEventListener("click",()=>{debugLogEntries=[];document.getElementById("debugEventLog").textContent="Log cleared.";});
 // Keep sandbox changes out of localStorage and Supabase. The regular save path is temporarily shadowed while sandbox mode is active.
 const debugOriginalSave=save;
 save=function(skipRender=false){if(debugSandboxActive){persistDebugSandboxSession();if(!skipRender)render();return;}return debugOriginalSave(skipRender);};

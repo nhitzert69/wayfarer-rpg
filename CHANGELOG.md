@@ -1,10 +1,11 @@
-# Wayfarer v2.1.9 — fix theme equipping compatibility (2026-10-29)
+# Wayfarer v2.2.0 — extract remaining Debug action handlers (2026-10-29)
 
-- Fixed theme equip state validation to recognize legacy inventory entries whose `type` or `category` uses different capitalization (for example, `Theme` versus `theme`). The shared theme service now uses one case-insensitive predicate for owned-theme normalization and equip validation.
-- Updated Character inventory click validation to use the shared theme-item predicate, preventing the UI from rejecting otherwise valid owned themes before the equip service is called.
-- Preserved the theme registry/service split, theme music mapping, visual application, account state, and save/Sandbox boundaries.
-- Updated Debug diagnostic report versions and the service-worker cache namespace to v2.1.9.
-- Validation: JavaScript syntax, mixed-case theme inventory checks, handler ownership, service-worker precache paths, release-version consistency, and ZIP integrity checked. Live browser equip flow and Supabase persistence remain INCONCLUSIVE unless actually run.
+- Built from the user-confirmed working v2.1.9 release. Moved the remaining Debug action handlers for Sandbox quest cooldown, resource grants/removal, character reset/restore, Time Machine, XP labs, coin grants, disposable test quests, planner runs, save inspection, and event-log clearing into `codes/tabs/debug.js`.
+- Added an idempotent Debug action binder so reinitializing the module cannot duplicate click handlers. Core Sandbox lifecycle controls (Start/Exit), account identity, shared state, and persistence authority remain in `index.html` intentionally.
+- Kept Settings music controls in the dedicated `codes/theme-music.js` audio system; Settings account/authentication controls remain core-owned. This avoids incorrectly moving shared account or audio responsibilities into the Settings tab.
+- Continued the theme ownership audit: the registry/service/music architecture remains in `codes/`, and theme styles remain in the stylesheet layer. No theme equip/purchase rules were changed in this release.
+- Updated diagnostic report version and service-worker cache namespace to v2.2.0.
+- Validation: JavaScript syntax, handler ownership/uniqueness, Sandbox guard presence, precache paths, version/cache consistency, and ZIP integrity checked. Live browser/Supabase behavior remains INCONCLUSIVE unless actually tested.
 
 # Wayfarer v2.1.8 — finish theme ownership boundaries and move Debug feature handlers (2026-10-29)
 

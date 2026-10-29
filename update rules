@@ -1,7 +1,9 @@
-## v2.1.9 theme equip compatibility fix (mandatory)
-- Theme ownership and equip validation must recognize theme entries case-insensitively from either `type` or `category`, including older saved inventory records. Use one shared `isThemeInventoryItem` predicate in theme normalization, service validation, and Character click handling. Do not accept arbitrary non-theme equipable items into the theme slot.
-- Preserve theme registry/service/music boundaries, appearance refresh, existing theme IDs and saved inventory. Keep account state and persistence in the core.
-- Update Debug report version, service-worker cache namespace, and top changelog entry together. Check JavaScript syntax, mixed-case type/category cases, every precache path, release-version consistency, and ZIP integrity. Mark live browser/Supabase behavior INCONCLUSIVE unless actually tested.
+## v2.2.0 remaining Debug action extraction (mandatory)
+- Build from the user-confirmed working v2.1.9 archive. Debug-owned event handlers for Sandbox quest cooldown, resource grants/removal, character reset/restore, Time Machine, XP labs, coin grants, disposable test quests, planner runs, save inspection, and event-log clearing belong in `codes/tabs/debug.js`.
+- Use idempotent event binding; do not register duplicate handlers when a tab module initializes more than once. The core retains Admin identity/account context, Sandbox Start/Exit lifecycle, authoritative shared state, and save/cloud-sync isolation.
+- Do not move music playback/settings out of `codes/theme-music.js` or account/authentication controls out of the core merely to inflate tab extraction percentages. Settings module owns Settings-specific presentation/controls only.
+- Preserve all v2.1.6 gender and active-tab persistence fixes, v2.1.6 Quest Board consolidation, theme registry/service/audio separation, and the v2.1.9 theme equipment fix.
+- Update Debug report version, service-worker cache namespace, and top changelog entry together. Check syntax, ensure migrated handlers are absent from `index.html` and present in Debug, ensure all moved listeners are idempotent, check all precache paths/version consistency/ZIP integrity. Mark browser/Supabase behavior INCONCLUSIVE unless actually tested.
 
 ## v2.1.8 theme and Debug ownership follow-up (mandatory)
 - Theme appearance classes must be derived from registered theme metadata, not maintained in a hard-coded list in `theme-service.js`.

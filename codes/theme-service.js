@@ -2,7 +2,6 @@
    Account state and persistence remain owned by index.html; this module only operates on state supplied by the core. */
 /* Theme-specific fault injection is evaluated here so the shared theme service owns all theme gates. */
 function lifecycleFaultEnabled(kind,item){if(!debugIsAdmin()||!debugSandboxActive||item?.id!=="v0-test-theme")return false;const ids={requirement:"debugInjectRequirementFailure",purchase:"debugInjectPurchaseFailure",equip:"debugInjectEquipFailure",bonus:"debugInjectBonusFailure"};return !!document.getElementById(ids[kind])?.checked;}
-function isThemeInventoryItem(item){return !!item&&(String(item.type||"").toLowerCase()==="theme"||String(item.category||"").toLowerCase()==="theme");}
 function ensureDungeonThemeState(){
  let changed=false;
  if(!Array.isArray(state.inventory))state.inventory=[];
@@ -10,7 +9,7 @@ function ensureDungeonThemeState(){
  const savedDungeonTheme=state.inventory.find(item=>item&&item.id==="dungeon-theme");if(!savedDungeonTheme){state.inventory.unshift({...DUNGEON_THEME_ITEM});changed=true;}else if(savedDungeonTheme.icon!==DUNGEON_THEME_ITEM.icon){savedDungeonTheme.icon=DUNGEON_THEME_ITEM.icon;changed=true;}
  if(!state.equipment||typeof state.equipment!=="object"){state.equipment={};changed=true;}
  if(!Object.prototype.hasOwnProperty.call(state.equipment,"theme")){state.equipment.theme="dungeon-theme";changed=true;}
- const ownedThemes=state.inventory.filter(isThemeInventoryItem).map(item=>item.id);
+ const ownedThemes=state.inventory.filter(item=>item&&item.type==="theme").map(item=>item.id);
  if(state.equipment.theme!==null&&!ownedThemes.includes(state.equipment.theme)){state.equipment.theme="dungeon-theme";changed=true;}
  if(state.equipment.theme==null&&!(debugSandboxActive&&debugAllowThemeUnequip)){state.equipment.theme="dungeon-theme";changed=true;}
  return changed;
@@ -20,7 +19,7 @@ function themeBonusAllowed(themeId,skill){const item=UNLOCKABLE_ITEMS.find(x=>x.
 function getOwnedThemeLevel(themeId,target=state){const owned=(target?.inventory||[]).find(item=>item&&item.id===themeId);return Math.max(1,Math.min(5,Math.floor(Number(owned?.themeLevel)||1)));}
 function calculateThemeBonus(themeId,skill){if(themeId==="bloodthirst-theme")return 2;return THEME_PERK_SKILLS[themeId]===skill&&themeBonusAllowed(themeId,skill)?5*getOwnedThemeLevel(themeId):0;}
 function calculateThemeGoldBonus(themeId,skill){if(themeId==="bloodthirst-theme")return 2;const item=UNLOCKABLE_ITEMS.find(x=>x.id===themeId);return item&&item.perkSkill===skill&&themeBonusAllowed(themeId,skill)?2*(getOwnedThemeLevel(themeId)-1):0;}
-function equipThemeItem(itemId,targetState=state){const item=(targetState.inventory||[]).find(x=>x&&x.id===itemId);if(!item||!isThemeInventoryItem(item))return {ok:false,reason:"not-equipable-or-not-owned"};if(lifecycleFaultEnabled("equip",item))return {ok:false,reason:"injected-equip-failure"};if(!targetState.equipment||typeof targetState.equipment!=="object")targetState.equipment={};targetState.equipment.theme=itemId;return {ok:true,slot:"theme"};}
+function equipThemeItem(itemId,targetState=state){const item=(targetState.inventory||[]).find(x=>x&&x.id===itemId);if(!item||!(item.type==="theme"||String(item.category||"").toLowerCase()==="theme"||item.equipable===true))return {ok:false,reason:"not-equipable-or-not-owned"};if(lifecycleFaultEnabled("equip",item))return {ok:false,reason:"injected-equip-failure"};if(!targetState.equipment||typeof targetState.equipment!=="object")targetState.equipment={};targetState.equipment.theme=itemId;return {ok:true,slot:"theme"};}
 
 function getThemeDefinition(themeId){return UNLOCKABLE_ITEMS.find(item=>item&&item.id===themeId)||(themeId==="dungeon-theme"?DUNGEON_THEME_ITEM:null);}
 function applyEquippedThemeAppearance({themeId,gender,artwork,icon,crest}={}){
