@@ -1,3 +1,11 @@
+# Wayfarer v1.19.9 — index-level Admin tab sync and quicker Sandbox resume (2026-10-29)
+
+- Added an index-level Admin tab visibility synchronizer that reacts immediately after the authenticated account gate publishes verified Admin status. The index helper cannot grant access; it only reflects the trusted flag set by `core-account.js`.
+- Added a same-tab Sandbox resume hint in `index.html`, showing a clearer resume message only after the shared Supabase session promise confirms a session and the stored Sandbox snapshot appears to match Admin. This hint does not bypass authentication or itself restore state.
+- On a validated Admin session with a matching Sandbox snapshot, `core-account.js` now attempts to restore the temporary Sandbox immediately before releasing the startup gate and continues to skip normal cloud-save hydration for that path.
+- Updated service-worker cache namespace and Debug report version strings.
+- Validation: JavaScript syntax, HTML script placement, Admin-only gate wiring, Sandbox resume branch, rules-file presence, and ZIP integrity. Live browser/Supabase timing and account-isolation tests remain required.
+
 # Wayfarer v1.19.8 — reliable Admin tab visibility and faster Sandbox resume (2026-10-29)
 
 - Fixed the shared account gate resetting the Debug tab's visibility after the Debug panel had already rendered. Admin-only visibility is now enforced after general tab visibility updates and re-applied after authentication initialization.

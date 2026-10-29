@@ -249,7 +249,7 @@ window.wayfarerStartupFailsafe=function(){
  }catch(error){console.error("Wayfarer startup recovery encountered an error",error);}
  finally{finishAuthInitialization();}
 };
-function enforceAccountGate(){const gate=document.getElementById("authStartupGate");if(authInitializationPending){if(gate)gate.style.display="flex";return;}if(gate)gate.style.display="none";const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=signedIn||btn.dataset.tab==='settings';btn.style.display=allowed?'':'none';btn.disabled=!allowed;});const debugTab=document.getElementById('debugTabButton');if(debugTab){const admin=signedIn&&String(wayfarerSignedInUsername||'').trim().toLowerCase()==='admin';debugTab.style.display=admin?'inline-flex':'none';debugTab.disabled=!admin;}document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=signedIn?'':(sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
+function enforceAccountGate(){const gate=document.getElementById("authStartupGate");if(authInitializationPending){if(gate)gate.style.display="flex";return;}if(gate)gate.style.display="none";const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=signedIn||btn.dataset.tab==='settings';btn.style.display=allowed?'':'none';btn.disabled=!allowed;});const admin=signedIn&&String(wayfarerSignedInUsername||'').trim().toLowerCase()==='admin';window.wayfarerAdminAuthenticated=!!admin;const debugTab=document.getElementById('debugTabButton');if(debugTab){debugTab.style.display=admin?'inline-flex':'none';debugTab.disabled=!admin;}document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=signedIn?'':(sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';window.dispatchEvent(new Event('wayfarer-admin-status-changed'));}
 let accountFlowMode=null;
 function showAccountMode(mode){accountFlowMode=mode;document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="block";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display=mode==="create"?"inline-flex":"none";document.getElementById("signInBtn").style.display=mode==="login"?"inline-flex":"none";hideGenderChoice();if(mode==="create"){const field=document.getElementById("accountGenderField");if(field)field.style.display="block";}}
 function resetAccountMode(){accountFlowMode=null;hideGenderChoice();document.getElementById("accountModeChooser").style.display="flex";document.getElementById("accountUsernameField").style.display="none";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="none";}
@@ -321,8 +321,11 @@ if(cloudClient){
      }catch(sandboxError){console.warn("Wayfarer Sandbox resume snapshot could not be inspected; using normal cloud restore.",sandboxError);}
      if(sandboxResume){
        state=sandboxResume.live;
-       render();
-       setCloudStatus("Admin Sandbox session found. Restoring the temporary test state; live account data remains isolated.");
+       // Restore the isolated temporary state immediately, before releasing the
+       // startup gate; do not hydrate the ordinary cloud save on this path.
+       if(typeof restoreDebugSandboxSession==="function")restoreDebugSandboxSession();
+       else render();
+       setCloudStatus("Admin Sandbox resumed. Live account data remains isolated.");
      }else{
      cloudHydrating=true;
      const {data:row,error:rowError}=await withStartupTimeout(cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle(),12000,"loading saved progress");

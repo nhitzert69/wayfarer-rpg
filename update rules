@@ -1,3 +1,9 @@
+## Index-level Admin tab sync and Sandbox startup (v1.19.9 — mandatory)
+- `index.html` may show a possible Sandbox-resume status only after the shared Supabase preflight resolves with a session and a same-tab Admin snapshot appears to match. This is a hint only; it must never bypass the authoritative auth check or independently restore/authorize Sandbox.
+- `core-account.js` is authoritative for verified Admin status and must publish `window.wayfarerAdminAuthenticated`; index-level tab sync may only reflect that flag. Never grant Admin based on localStorage/sessionStorage alone.
+- For a valid authenticated Admin Sandbox snapshot, restore the isolated sandbox before releasing the startup gate and skip ordinary cloud-save hydration on that path. Keep the live backup separate and never sync temporary state to the live account.
+- Update changelog, service-worker cache namespace, and Debug report versions together. Verify immediate Admin tab visibility, same-tab Sandbox refresh, normal signed-in refresh, signed-out startup, and account isolation in a real browser.
+
 ## Admin tab visibility and Sandbox resume (v1.19.8 — mandatory)
 - Apply Admin-only Debug tab visibility after the general account gate updates tab styles, and after authentication initialization. A signed-in Admin must not need to click another tab to refresh Debug visibility; non-Admin accounts must never see or access it.
 - On refresh, always verify the Supabase session before resuming a Sandbox. If same-tab sessionStorage contains a valid Sandbox snapshot whose username exactly matches authenticated Admin, restore its temporary state and live-state backup before releasing the startup gate; do not wait on cloud-save hydration unnecessarily.
