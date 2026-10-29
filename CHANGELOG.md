@@ -1,3 +1,14 @@
+# Wayfarer v2.1.8 — finish theme ownership boundaries and move Debug feature handlers (2026-10-29)
+
+- Made theme appearance activation data-driven: active body classes are derived from registered theme metadata rather than a hard-coded class list in the theme service.
+- Removed duplicate theme-to-soundtrack mappings for registered themes. `codes/theme-music.js` now uses each registered theme's `debugMusic` metadata and retains only legacy aliases plus a Dungeon fallback.
+- Moved the shared theme lifecycle fault-injection gate into `codes/theme-service.js`; `index.html` no longer owns that theme-specific decision.
+- Made Debug's Sandbox portrait lock use registered `debugCharacter` metadata instead of a second hard-coded theme-ID-to-filename map.
+- Moved Debug theme fault-injection and Sandbox theme/quest-rule switch handlers into `codes/tabs/debug.js` with idempotent listener registration. Core still owns the Sandbox/save isolation boundary and calls Debug's exported reset/apply hooks at lifecycle transitions.
+- Preserved the account-specific active-tab and gender persistence fixes, Quest Board consolidation, theme level 1–5 grants, and all registered theme definitions and CSS.
+- Updated the diagnostic report version and service-worker cache namespace to v2.1.8.
+- Validation: JavaScript syntax, theme metadata references, duplicate soundtrack mapping removal, migrated handler ownership, all service-worker precache paths, release-version consistency, and ZIP integrity checked. Live browser/Supabase checks remain INCONCLUSIVE unless actually run.
+
 # Wayfarer v2.1.7 — extract shared theme implementation (2026-10-29)
 
 - Moved all registered theme item definitions and the independent theme Debug baseline from `index.html` into `codes/theme-registry.js`, including CEO, Fitness/Roman Discipline, Orthodox/Faith, Mozart's Salon, Bloodthirst, and the remaining registered themes. `UNLOCKABLE_ITEMS` and theme perk skill mapping now have a shared module source.

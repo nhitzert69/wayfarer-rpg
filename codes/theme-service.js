@@ -1,5 +1,7 @@
 /* Wayfarer theme service — lifecycle, appearance, unlock rules, and perk calculations.
    Account state and persistence remain owned by index.html; this module only operates on state supplied by the core. */
+/* Theme-specific fault injection is evaluated here so the shared theme service owns all theme gates. */
+function lifecycleFaultEnabled(kind,item){if(!debugIsAdmin()||!debugSandboxActive||item?.id!=="v0-test-theme")return false;const ids={requirement:"debugInjectRequirementFailure",purchase:"debugInjectPurchaseFailure",equip:"debugInjectEquipFailure",bonus:"debugInjectBonusFailure"};return !!document.getElementById(ids[kind])?.checked;}
 function ensureDungeonThemeState(){
  let changed=false;
  if(!Array.isArray(state.inventory))state.inventory=[];
@@ -22,7 +24,7 @@ function equipThemeItem(itemId,targetState=state){const item=(targetState.invent
 function getThemeDefinition(themeId){return UNLOCKABLE_ITEMS.find(item=>item&&item.id===themeId)||(themeId==="dungeon-theme"?DUNGEON_THEME_ITEM:null);}
 function applyEquippedThemeAppearance({themeId,gender,artwork,icon,crest}={}){
  const id=themeId||"dungeon-theme";const theme=getThemeDefinition(id)||DUNGEON_THEME_ITEM;const female=gender==="female";
- const classes=["bloodthirstTheme","adventureTheme","academyTheme","socialInteractionsTheme","relationshipsTheme","orthodoxTheme","fitnessTheme","spartanEnduranceTheme","v0TestTheme","mozartSalonTheme","ceoTheme"];
+ const classes=[...new Set((Array.isArray(UNLOCKABLE_ITEMS)?UNLOCKABLE_ITEMS:[]).map(item=>item?.debugThemeClass).filter(Boolean))];
  const activeClass=theme.debugThemeClass||null;for(const className of classes)document.body.classList.toggle(className,className===activeClass);
  const artFile=theme.debugCharacter?.[female?"female":"male"]||DUNGEON_THEME_ITEM.debugCharacter[female?"female":"male"];
  if(artwork){artwork.src="./assets/images/"+artFile;artwork.alt=(female?"Female ":"Male ")+theme.name+" character portrait";}
