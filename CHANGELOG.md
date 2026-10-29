@@ -1,3 +1,36 @@
+# Wayfarer v2.0.1 — stable rebuild, safe code organization, Bloodthirst, leveling, and Sandbox-only Debug (2026-10-29)
+
+- Rebuilt from the v1.18.4 stable baseline lineage, carrying forward the staged modular organization from v1.18.5 and the Bloodthirst/theme-level progression from v1.18.6–v1.18.7, while intentionally avoiding the v1.19+ loading-screen/auth-startup changes.
+- Kept `index.html` as the entry point, with application systems in ordered `codes/` files and styling in `codes/styles.css`. Authentication/session logic remains at the pre-loading-screen baseline for this release.
+- Preserved the independent skill-level quest XP scaling and reward-locking behavior, theme upgrade levels/prices/perks, Bloodthirst theme artwork/background/icon/music, and +2 XP/+2 gold Bloodthirst perk. Corrected the male/female Bloodthirst image payload assignments.
+- Added explicit quest-card text for both Bloodthirst bonus XP and Bloodthirst bonus gold without changing the quest's already-locked reward totals.
+- Hardened Debug so all Debug controls and state-changing tools require Admin Sandbox mode. XP/gold grant/removal, reset/restore, cooldown reset, gender test changes, fault injectors, and diagnostic actions cannot intentionally mutate live account state. The central interaction guard is defense-in-depth; action handlers also enforce the Sandbox requirement.
+- Preserved username/PIN Supabase login configuration, account isolation, existing save paths, Store category tabs, and prior changelog history. The Bloodthirst kill-count threshold remains unconfigured because this baseline has no authoritative kill-counter system; Bloodthirst remains a special unlock, not a Store purchase.
+- Validation: ZIP integrity, inline/external JavaScript syntax, required asset paths, version/cache/changelog alignment, Sandbox guard presence, and theme/music asset registration checked. No live-browser, live-Supabase, or GitHub deployment test is claimed.
+
+# Wayfarer v1.18.7 — Skill-theme upgrade pricing (2026-10-29)
+
+- Added a 100-coin price increase for each skill-theme upgrade above Level 1. The original theme retains its registered base price; Levels 2–5 cost base +100, +200, +300, and +400 coins respectively.
+- Centralized the price calculation in the Store catalog so the displayed price, purchase affordability check, and shared purchase transaction use the same price. Added a Debug regression check for the five-level price curve using a 200-coin base example.
+- Updated the mandatory project rules and service-worker cache version to v1.18.7.
+- Validation: JavaScript syntax, upgrade-price formula assertions, required asset references, version/cache/changelog consistency, and ZIP integrity checked. Live browser, Supabase, and deployed-site tests were not performed.
+
+# Wayfarer v1.18.6 — Bloodthirst theme and skill-theme upgrade progression (2026-10-29)
+
+- Added the Bloodthirst icon, supplied male/female character artwork, landscape background, and compressed 128 kbps MP3 soundtrack (about 3.1 MB). The theme is not sold in the Store; its kill threshold remains intentionally unconfigured until the game is ready. Its registered perk is +2 XP and +2 gold for every skill quest.
+- Added skill-theme upgrade progression for registered skill themes: Level 1 unlocks at skill level 3; Levels 2–5 unlock at levels 8, 13, 18, and 23. Each upgrade adds +5 XP and +2 gold per matching-skill quest, reaching +25 XP and +8 gold at Level 5. The owned theme is upgraded in place so stable equipment IDs remain intact; Level 5 ends its Store progression.
+- Locked theme XP and gold bonuses into newly generated quests and awarded saved coin bonuses through the shared quest-reward helper. Existing quest rewards are not recalculated.
+- Added Bloodthirst theme registration, music mapping, crimson/ember/antique-gold palette, background overlay, and Sandbox registry inclusion. The configured kill-count unlock mechanic is pending a final threshold and integration with a kill counter (not present in this baseline).
+- Validation: JavaScript syntax, required asset references, version/cache/changelog consistency, and ZIP integrity checked. Browser gameplay, live Supabase, and deployed-site tests were not performed.
+
+# Wayfarer v1.18.5 — staged code organization in `codes/` (2026-10-29)
+
+- Removed the large inline application script from `index.html` and split the existing JavaScript, in its original execution order, into named files under `codes/`: core/account, themes/store, theme music, app rendering/quest rewards, skills, To Do, Journal, skill/navigation UI, groceries, adventures, app startup, quest generation, and Debug/Sandbox.
+- Extracted inline CSS blocks into `codes/styles.css`. `index.html` remains the entry point and loads the files in order.
+- Updated service-worker cache version and precache entries for every new code file and stylesheet.
+- Added permanent modular-architecture rules. This is a conservative first-stage extraction: some systems remain grouped in shared files and can be separated further in later tested updates.
+- Validation: checked all extracted JavaScript files for syntax, verified extracted script contents preserve source order, checked referenced files and version/changelog/cache consistency, and verified ZIP integrity. Live-browser, Supabase, and GitHub deployment tests were not performed.
+
 # Wayfarer v1.18.4 — Store category tabs and compact item cards (2026-10-28)
 
 - Organized the Store into separate Themes, Artifacts, and Pets tabs with clear active-state and accessible tab/panel semantics.
