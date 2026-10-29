@@ -727,9 +727,33 @@ function render(){
  renderSkillProgress();
  renderSkillCatalog();
 
-  renderTodoList();
-  renderGroceryList();
-  renderJournalList();
+ const todoListEl=document.getElementById("todoList");
+ const todoCountEl=document.getElementById("todoCount");
+ const openTodoCount=state.todo.filter(t=>!t.completed).length;
+ if(todoCountEl)todoCountEl.textContent=`${openTodoCount} open`;
+ if(todoListEl)todoListEl.innerHTML=state.todo.length?[...state.todo].sort((a,b)=>Number(a.completed)-Number(b.completed)||(a.dueDate||"9999-12-31").localeCompare(b.dueDate||"9999-12-31")||(b.createdAt||"").localeCompare(a.createdAt||"")).map(t=>`<div class="logItem" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"><div class="row" style="align-items:flex-start;gap:8px"><label style="display:flex;align-items:flex-start;gap:8px;flex:1"><input type="checkbox" data-todo-complete="${esc(t.id)}" ${t.completed?"checked":""} style="width:auto;margin-top:5px"/><span style="${t.completed?"text-decoration:line-through;opacity:.7":""}"><strong>${esc(t.title)}</strong>${t.dueDate?`<span class="sub" style="display:block">Due ${esc(t.dueDate)}</span>`:""}${t.notes?`<span class="sub" style="display:block;white-space:pre-wrap">${esc(t.notes)}</span>`:""}</span></label><span class="tag">${esc(t.priority||"normal")}</span></div><div class="row" style="margin-top:10px;gap:8px"><button class="btn small" type="button" data-edit-todo="${esc(t.id)}">Edit</button><button class="btn small" type="button" data-delete-todo="${esc(t.id)}">Delete</button></div></div>`).join(""):'<div class="empty">No tasks yet. Add something you want to remember.</div>';
+ if(todoListEl){
+ todoListEl.querySelectorAll("[data-todo-complete]").forEach(el=>el.addEventListener("change",()=>{const t=state.todo.find(x=>String(x.id)===String(el.dataset.todoComplete));if(t){t.completed=el.checked;save();}}));
+ todoListEl.querySelectorAll("[data-edit-todo]").forEach(el=>el.addEventListener("click",()=>editTodo(el.dataset.editTodo)));
+ todoListEl.querySelectorAll("[data-delete-todo]").forEach(el=>el.addEventListener("click",()=>deleteTodo(el.dataset.deleteTodo)));
+ }
+
+ const groceryListEl=document.getElementById("groceryList");
+ const groceryCountEl=document.getElementById("groceryCount");
+ const openGroceries=state.groceries.filter(g=>!g.checked).length;
+ if(groceryCountEl)groceryCountEl.textContent=`${openGroceries} to buy · ${state.groceries.length} total`;
+ if(groceryListEl)groceryListEl.innerHTML=state.groceries.length?[...state.groceries].sort((a,b)=>Number(a.checked)-Number(b.checked)||(a.createdAt||"").localeCompare(b.createdAt||"")).map(g=>`<div class="logItem" style="margin-top:8px;padding:11px;border:1px solid var(--line);border-radius:12px"><div class="row" style="align-items:center;gap:8px"><label style="display:flex;align-items:center;gap:10px;flex:1;min-width:0"><input type="checkbox" data-grocery-check="${esc(g.id)}" ${g.checked?"checked":""} style="width:auto;flex-shrink:0"/><span style="${g.checked?"text-decoration:line-through;opacity:.6":""}"><strong>${esc(g.name)}</strong>${g.quantity?` <span class="sub">· ${esc(g.quantity)}</span>`:""}</span></label><button class="btn small" type="button" data-grocery-delete="${esc(g.id)}">Remove</button></div></div>`).join(""):'<div class="empty">Your list is empty. Add what you need to buy.</div>';
+ if(groceryListEl){
+  groceryListEl.querySelectorAll("[data-grocery-check]").forEach(el=>el.addEventListener("change",()=>{const item=state.groceries.find(g=>String(g.id)===String(el.dataset.groceryCheck));if(item){item.checked=el.checked;save();}}));
+  groceryListEl.querySelectorAll("[data-grocery-delete]").forEach(el=>el.addEventListener("click",()=>{state.groceries=state.groceries.filter(g=>String(g.id)!==String(el.dataset.groceryDelete));save();}));
+ }
+
+ const journalListEl=document.getElementById("journalList");
+ if(journalListEl) journalListEl.innerHTML=state.journal.length?[...state.journal].sort((a,b)=>(b.createdAt||b.date||"").localeCompare(a.createdAt||a.date||"")).map(j=>`<div class="logItem" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"><div class="row" style="align-items:flex-start"><strong>${esc(j.title)}</strong><span class="tag">${esc(j.type)}</span></div><div class="sub">${esc(j.displayDate||j.date||"Date unknown")}</div><p style="margin:7px 0 0;color:#d2c2a6;white-space:pre-wrap">${esc(j.text||"")}</p><div class="row" style="margin-top:10px;gap:8px"><button class="btn small" type="button" data-edit-journal="${esc(j.id||"")}">Edit</button><button class="btn small" type="button" data-delete-journal="${esc(j.id||"")}">Delete</button></div></div>`).join(""):'<div class="empty">Your chronicles will appear here.</div>';
+ if(journalListEl){
+   journalListEl.querySelectorAll("[data-edit-journal]").forEach(button=>button.addEventListener("click",()=>editJournalEntry(button.dataset.editJournal)));
+   journalListEl.querySelectorAll("[data-delete-journal]").forEach(button=>button.addEventListener("click",()=>deleteJournalEntry(button.dataset.deleteJournal)));
+ }
  for(const [id,val] of Object.entries(state.settings)){const el=document.getElementById(id);if(el&&el.type!=="checkbox"&&el.type!=="range")el.value=val}
 updateMusicControls();
 renderCharacterOverview();}
@@ -832,10 +856,109 @@ if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
 
 
 
-// To-Do handlers live in codes/todo.js.
+let todoEditingId=null;
+const todoForm=document.getElementById("todoForm"),todoSubmitBtn=document.getElementById("todoSubmitBtn"),cancelTodoEditBtn=document.getElementById("cancelTodoEditBtn");
+function resetTodoForm(){todoEditingId=null;if(todoForm)todoForm.reset();if(todoSubmitBtn)todoSubmitBtn.textContent="Save task";if(cancelTodoEditBtn)cancelTodoEditBtn.style.display="none";}
+function editTodo(id){const t=state.todo.find(x=>String(x.id)===String(id));if(!t)return;todoEditingId=t.id;document.getElementById("todoTitle").value=t.title||"";document.getElementById("todoDue").value=t.dueDate||"";document.getElementById("todoPriority").value=t.priority||"normal";document.getElementById("todoNotes").value=t.notes||"";todoSubmitBtn.textContent="Update task";cancelTodoEditBtn.style.display="inline-flex";document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab==="todo"));document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-todo"));window.scrollTo({top:0,behavior:"smooth"});}
+function deleteTodo(id){const t=state.todo.find(x=>String(x.id)===String(id));if(!t||!confirm(`Delete task "${t.title}"?`))return;state.todo=state.todo.filter(x=>String(x.id)!==String(id));if(String(todoEditingId)===String(id))resetTodoForm();save();toast("Task deleted.");}
+function saveTodoTask(){
+ const wasEditing=todoEditingId!==null;
+ try{
+  const titleEl=document.getElementById("todoTitle");
+  const title=titleEl.value.trim();
+  if(!title){titleEl.focus();toast("Please enter a task name.");return;}
+  const now=new Date();
+  const data={title,dueDate:document.getElementById("todoDue").value,priority:document.getElementById("todoPriority").value,notes:document.getElementById("todoNotes").value.trim(),updatedAt:now.toISOString()};
+  if(todoEditingId!==null){
+   const task=state.todo.find(x=>String(x.id)===String(todoEditingId));
+   if(!task){resetTodoForm();toast("That task could not be found.");return;}
+   Object.assign(task,data);
+  }else{
+   const id=(window.crypto&&typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2);
+   state.todo.push({id,...data,completed:false,createdAt:now.toISOString()});
+  }
+  localStorage.setItem(KEY,JSON.stringify(state));
+  resetTodoForm();
+  render();
+  toast(wasEditing?"Task updated.":"Task saved.");
+ }catch(error){
+  console.error("Could not save To Do task",error);
+  toast("Couldn't save task. Please try again.");
+ }
+}
+todoSubmitBtn.addEventListener("click",saveTodoTask);
+todoForm.addEventListener("submit",function(event){event.preventDefault();saveTodoTask();});
+cancelTodoEditBtn.addEventListener("click",resetTodoForm);
+document.getElementById("addTodoBtn").addEventListener("click",()=>document.getElementById("todoTitle").focus());
 
 
-// Journal handlers live in codes/journal.js.
+// Journal entries are saved locally with a timestamp and can be edited or deleted.
+let journalEditingId = null;
+const journalForm = document.getElementById("journalForm");
+const journalSubmitBtn = document.getElementById("journalSubmitBtn");
+const cancelJournalEditBtn = document.getElementById("cancelJournalEditBtn");
+function resetJournalForm(){
+  journalEditingId = null;
+  if(journalForm) journalForm.reset();
+  if(journalSubmitBtn) journalSubmitBtn.textContent = "Save journal entry";
+  if(cancelJournalEditBtn) cancelJournalEditBtn.style.display = "none";
+}
+function editJournalEntry(id){
+  const entry = state.journal.find(item => String(item.id) === String(id));
+  if(!entry) return;
+  journalEditingId = entry.id;
+  document.getElementById("entryTitle").value = entry.title || "";
+  document.getElementById("entryType").value = entry.type || "Lifestyle & personal growth";
+  document.getElementById("entryText").value = entry.text || "";
+  if(journalSubmitBtn) journalSubmitBtn.textContent = "Update journal entry";
+  if(cancelJournalEditBtn) cancelJournalEditBtn.style.display = "inline-flex";
+  document.querySelectorAll(".tab").forEach(tab=>tab.classList.toggle("active",tab.dataset.tab==="journal"));
+  document.querySelectorAll(".section").forEach(section=>section.classList.toggle("active",section.id==="section-journal"));
+ }
+function deleteJournalEntry(id){
+  const entry = state.journal.find(item => String(item.id) === String(id));
+  if(!entry) return;
+  if(!window.confirm(`Delete journal entry "${entry.title}"? This cannot be undone.`)) return;
+  state.journal = state.journal.filter(item => String(item.id) !== String(id));
+  if(String(journalEditingId) === String(id)) resetJournalForm();
+  save();
+  toast("Journal entry deleted.");
+}
+if(journalForm){
+  journalForm.addEventListener("submit",function(event){
+    event.preventDefault();
+    const title = document.getElementById("entryTitle").value.trim();
+    const type = document.getElementById("entryType").value;
+    const text = document.getElementById("entryText").value.trim();
+    if(!title){ document.getElementById("entryTitle").focus(); return; }
+    const now = new Date();
+    const displayDate = now.toLocaleString(undefined,{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+    if(journalEditingId !== null){
+      const entry = state.journal.find(item => String(item.id) === String(journalEditingId));
+      if(!entry){ resetJournalForm(); toast("That journal entry could not be found."); return; }
+      entry.title = title;
+      entry.type = type;
+      entry.text = text;
+      entry.updatedAt = now.toISOString();
+      entry.updatedDisplayDate = displayDate;
+      // Preserve the original creation date/time when editing.
+      entry.displayDate = entry.displayDate || entry.date || displayDate;
+      save();
+      resetJournalForm();
+      render();
+      toast("Journal entry updated.");
+    } else {
+      const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(36).slice(2);
+      state.journal.push({id,title,type,text,createdAt:now.toISOString(),date:now.toISOString(),displayDate});
+      save();
+      resetJournalForm();
+      render();
+      toast("Journal entry saved.");
+    }
+  });
+}
+if(cancelJournalEditBtn) cancelJournalEditBtn.addEventListener("click",function(){resetJournalForm();toast("Edit cancelled.");});
+
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
  document.querySelectorAll(".section").forEach(s=>s.classList.toggle("active",s.id==="section-"+b.dataset.tab));
@@ -890,7 +1013,23 @@ document.addEventListener("click", function(event) {
 
 
 
-// Grocery event handlers live in codes/groceries.js.
+// Grocery list: saved alongside the user's existing local Wayfarer data.
+const groceryForm=document.getElementById("groceryForm");
+if(groceryForm)groceryForm.addEventListener("submit",function(event){
+ event.preventDefault();
+ const name=document.getElementById("groceryItem").value.trim();
+ const quantity=document.getElementById("groceryQty").value.trim();
+ if(!name)return;
+ state.groceries.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name,quantity,checked:false,createdAt:new Date().toISOString()});
+ groceryForm.reset();
+ save();
+ document.getElementById("groceryItem").focus();
+});
+const clearBoughtGroceries=document.getElementById("clearBoughtGroceries");
+if(clearBoughtGroceries)clearBoughtGroceries.addEventListener("click",()=>{state.groceries=state.groceries.filter(g=>!g.checked);save();toast("Checked items removed.");});
+const clearGroceries=document.getElementById("clearGroceries");
+if(clearGroceries)clearGroceries.addEventListener("click",()=>{if(!state.groceries.length)return;if(!confirm("Clear your entire grocery list?"))return;state.groceries=[];save();toast("Grocery list cleared.");});
+
 // Adventure chooser: generate a location-independent mission and add it to the quest board.
 const adventureToggle=document.getElementById("generateAdventureBtn");
 const adventureChooser=document.getElementById("adventureChooser");
@@ -1512,7 +1651,7 @@ async function runThemeIntegrationTests(){
  if(lockState.debugDisablePortrait){const art=document.getElementById("characterArtwork"),icon=document.querySelector(".themeIcon"),actualArt=(art?.getAttribute("src")||art?.src||"").split("/").pop(),actualIcon=(icon?.getAttribute("src")||icon?.src||"").split("/").pop(),gender=state?.profile?.gender==="female"?"female":"male",expectedArt=active?.character?.[gender]||null,expectedIcon=active?.icon?(active.icon.split("/").pop()):null,matches=!!expectedArt&&actualArt===expectedArt&&!!expectedIcon&&actualIcon===expectedIcon;add("Feature lock: equipped theme character and theme images still match",!isNonDungeon||matches,`Equipped=${current}; character=${actualArt}; expected character=${expectedArt||"missing debugCharacter metadata"}; theme icon=${actualIcon}; expected icon=${expectedIcon||"missing icon metadata"}`,"debug-lock-detection",expectedArt&&expectedIcon?undefined:"INCONCLUSIVE");}
  if(lockState.debugDisableMusic){const expected=active?.music||null,observed=themeMusicSource,matches=!!expected&&observed===expected;add("Feature lock: selected theme music remains applied",!isNonDungeon||matches,`Equipped=${current}; active music source=${observed||"not started"}; expected=${expected||"missing debugMusic metadata"}`,"debug-lock-detection",expected?undefined:"INCONCLUSIVE");}
  const passed=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").length,inconclusive=results.filter(x=>x.status==="INCONCLUSIVE").length;
- const report={version:"v2.0.5",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
+ const report={version:"v2.0.3",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
  const out=document.getElementById("debugThemeTestResults");if(out)out.textContent=JSON.stringify(report,null,2);debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed, "+inconclusive+" inconclusive.");return report;
 }
 document.getElementById("debugRunThemeTests")?.addEventListener("click",runThemeIntegrationTests);
@@ -1665,7 +1804,7 @@ function runEquipmentLifecycleTests(){
   if(type==="theme"&&item.perkSkill){const calculated=calculateThemeBonus(item.id,item.perkSkill),bonusOk=calculated>0;check(`${item.name}: effect/XP bonus`,bonusOk,`Expected positive ${item.perkSkill} bonus; shared calculation returned ${calculated} XP.`);const pool=buildQuestPool(item.perkSkill),template=pool.find(q=>q.skill===item.perkSkill)||null;const generated=!!template&&template.skill===item.perkSkill;check(`${item.name}: related quest generation`,generated,generated?`Shared quest-template pool produced ${template.title} for ${item.perkSkill}.`:`No eligible quest template for ${item.perkSkill}.`);if(generated){const base=Number(template.xp)||15;const bonus=calculateThemeBonus(item.id,item.perkSkill);const quest={...template,baseXp:base,xp:base+bonus,perkBonusXp:bonus};const before=Number(sandbox.skillXp[item.perkSkill])||0;const award=awardQuestRewards(sandbox,quest);const observed=(Number(sandbox.skillXp[item.perkSkill])||0)-before;const expected=base+bonus;check(`${item.name}: quest completion reward`,observed===expected,`Shared reward helper awarded ${observed} ${item.perkSkill} XP; expected ${expected} (${base} base + ${bonus} bonus).`);}}
   else check(`${item.name}: defined item effects`,true,"No theme XP-perk contract declared; type-specific effect coverage is not defined.");
  }
- const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v2.0.5",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
+ const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v2.0.3",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
 }
 document.getElementById("debugRunEquipmentLifecycle")?.addEventListener("click",runEquipmentLifecycleTests);
 // Fault switches affect shared theme gates, so refresh the actual theme/store/inventory surfaces immediately.
@@ -1735,11 +1874,8 @@ async function loadWayfarerChangelog(){
 document.getElementById("debugReloadChangelog")?.addEventListener("click",loadWayfarerChangelog);
 loadWayfarerChangelog();
 render();
-enforceAccountGate();</script>
-<script src="./codes/todo.js"></script>
-<script src="./codes/journal.js"></script>
-<script src="./codes/groceries.js"></script>
-
+enforceAccountGate();
+</script>
 
 </body>
 </html>

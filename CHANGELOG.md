@@ -1,11 +1,3 @@
-# Wayfarer v2.0.5 — To-Do, Journal, and Groceries extraction; Bloodthirst background fix (2026-10-29)
-
-- Based on the supplied v2.0.3 ZIP, not the broken v2.0.4 extraction.
-- Extracted only To-Do, Journal, and Groceries rendering/handlers into `codes/todo.js`, `codes/journal.js`, and `codes/groceries.js`; kept Core Account, App Startup, and Debug inline. Existing shared state/save/render functions are reused rather than duplicated.
-- Added explicit final Bloodthirst body-background rules after the legacy background rules, retaining the existing background asset and crimson overlay.
-- Updated script references, service-worker cache namespace, and version identifiers.
-- Validation: JavaScript syntax and archive/static path checks performed. Live browser refresh/login persistence, feature interactions, and visual background rendering remain unverified.
-
 # Wayfarer v2.0.3 — Fix Bloodthirst page background (2026-10-29)
 
 - Fixed the default Dungeon-background CSS selector so it explicitly excludes the equipped Bloodthirst theme.

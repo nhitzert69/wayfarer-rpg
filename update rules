@@ -1,10 +1,3 @@
-## v2.0.5 feature extraction and Bloodthirst background (mandatory)
-- Extract To-Do, Journal, and Groceries only as classic scripts loaded before the main inline application script. Their functions may reference shared app state and save/render helpers, but must not duplicate shared account or persistence logic.
-- Keep Core Account, App Startup, and Debug inline. Do not clear account state, sign out, or change session restoration as a side effect of feature initialization.
-- When rendering each feature, call its extracted render function from the existing shared render path. Preserve existing data shapes, local/cloud save paths, and user interactions.
-- Bloodthirst background must use the existing `assets/images/bloodthirst-background.webp` with a legibility overlay and must win over the legacy global body background. Verify the actual equipped body class and computed background in a browser; static checks alone are inconclusive.
-- After each extraction, test login and refresh persistence before extracting further features.
-
 ## Bloodthirst background regression (v2.0.3 — mandatory)
 - The default Dungeon background selector must explicitly exclude `body.bloodthirstTheme`, just as it excludes every other theme with a dedicated background. Verify that equipping Bloodthirst displays `assets/images/bloodthirst-background.webp`, and that switching to another theme restores that theme's own background.
 - Do not fix this by changing the Bloodthirst art, palette, equipment state, or theme registry when the root cause is CSS selector specificity/exclusion.
