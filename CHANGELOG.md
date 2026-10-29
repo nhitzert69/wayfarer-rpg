@@ -1,3 +1,26 @@
+# Wayfarer v1.19.3 — bounded authentication and save restoration (2026-10-29)
+
+- Added a 12-second timeout around Supabase session restoration and cloud-save loading so an unresolved request cannot leave the startup gate visible forever.
+- On timeout or unexpected failure, the startup gate releases into a retryable recovery state and retains the local device copy rather than silently resetting account data.
+- Clarified the loading message to indicate that a recovery path will appear if startup takes too long.
+- Updated Debug report version strings, service-worker cache key, and mandatory update rules.
+- Validation: JavaScript syntax, startup timeout/source assertions, version/cache/changelog consistency, required rules files, and ZIP integrity. Browser/Supabase end-to-end testing remains required.
+
+# Wayfarer v1.19.2 — correct Bloodthirst character artwork mapping (2026-10-29)
+
+- Swapped the contents of `male-bloodthirst.webp` and `female-bloodthirst.webp` so the filenames and existing gender-based theme mappings match the intended character artwork.
+- Kept the existing asset paths and theme registry references stable; no theme progression or account data logic changed.
+- Updated the service-worker cache key and Debug test report version strings.
+- Validation: JavaScript syntax, asset existence, version/cache/changelog consistency, required rules files, and ZIP integrity. Visual verification in the live browser remains necessary.
+
+# Wayfarer v1.19.1 — strict Debug Sandbox-only controls (2026-10-29)
+
+- Removed the misleading live-mode wording from Character Recovery & Test Grants and converted the quest cooldown control to a Sandbox-only test.
+- Added render-time disabling for every Debug input and button outside an active Admin Sandbox, retaining handler-level guards and the capture-phase interaction barrier.
+- Added Sandbox guards to inspection/refresh/log actions and moved character reset snapshots from localStorage to a Sandbox-only sessionStorage key.
+- Updated the mandatory update rules and Debug report version.
+- Validation: JavaScript syntax, source assertions for Sandbox guards, version/cache/changelog consistency, required rules files, and ZIP integrity. Live browser testing remains required; no claim is made that the deployed site is fixed until verified.
+
 # Wayfarer v1.19.0 — authentication startup gate (2026-10-29)
 
 - Added a blocking startup screen so Wayfarer does not render the signed-out state while Supabase is still restoring the saved session.

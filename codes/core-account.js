@@ -271,6 +271,11 @@ document.getElementById("signOutBtn")?.addEventListener("click",async()=>{
  wayfarerSignedInUsername="";
  setCloudStatus("Signed out. This page has been cleared; each account keeps its own cloud save.");
 });
+function withStartupTimeout(promise, ms, operation){
+ let timer;
+ const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("Wayfarer startup timed out while "+operation+". Please check your connection and retry.")),ms);});
+ return Promise.race([Promise.resolve(promise),timeout]).finally(()=>clearTimeout(timer));
+}
 if(cloudClient){
  let authRestoreComplete=false;
  cloudClient.auth.onAuthStateChange((event,session)=>{
@@ -280,7 +285,7 @@ if(cloudClient){
    enforceAccountGate();
    if(typeof renderDebugPanel==="function")renderDebugPanel();
  });
- cloudClient.auth.getSession().then(async({data,error})=>{
+ withStartupTimeout(cloudClient.auth.getSession(),12000,"restoring sign-in").then(async({data,error})=>{
    authRestoreComplete=true;
    if(error){
      console.error("Wayfarer session restore failed",error);
@@ -292,7 +297,7 @@ if(cloudClient){
      cloudUser=data.session.user;
      wayfarerSignedInUsername=restoreWayfarerUsername(data.session.user);
      cloudHydrating=true;
-     const {data:row,error:rowError}=await cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle();
+     const {data:row,error:rowError}=await withStartupTimeout(cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle(),12000,"loading saved progress");
      if(!rowError&&row&&row.app_state){
        const localUpdatedAt=Number(localStorage.getItem(STATE_UPDATED_KEY)||0);
        const cloudUpdatedAt=Date.parse(row.updated_at||"")||0;
@@ -365,7 +370,7 @@ if(cloudClient){
      document.getElementById("signInBtn").style.display="none";
      document.getElementById("backAccountModeBtn").style.display="none";
    }
-   setCloudStatus("Could not finish restoring your session. Your device copy is retained; retry sign-in when ready.");
+   setCloudStatus(error?.message?.includes("timed out") ? error.message+" Your device copy is retained; retry sign-in when ready." : "Could not finish restoring your session. Your device copy is retained; retry sign-in when ready.");
    finishAuthInitialization();
  });
 }else{

@@ -1,3 +1,18 @@
+## Bounded authentication startup recovery (v1.19.3 — mandatory)
+- Neither Supabase session restoration nor cloud-save hydration may hold the startup gate indefinitely. Wrap each startup network operation in a bounded timeout and release the gate into a retryable recovery state on timeout.
+- A timeout is not proof that the user is signed out. Preserve the device copy and never reset account state because auth or cloud reads are slow/unavailable.
+- If `getSession()` definitively resolves with no session, release the gate to the normal login screen. If session restoration times out, show a recoverable status and permit sign-in retry.
+- Keep background sync outside the critical path after account state is restored. Verify both signed-in and signed-out refresh paths in a real browser before claiming the issue fixed.
+
+## Bloodthirst character artwork mapping (v1.19.2 — mandatory)
+- Keep `male-bloodthirst.webp` mapped to the intended male artwork and `female-bloodthirst.webp` mapped to the intended female artwork. Existing runtime references use these filenames; when correcting artwork assignments, verify the actual image contents, not just the filename strings.
+
+## Debug Sandbox-only actions (v1.19.1 — mandatory)
+- No Debug option may mutate live account state. All Debug controls, including resource grants/removals, character reset/restore, cooldown reset, gender tests, fault injection, inspection, and test runners, require the exact Admin account and an active isolated Sandbox. Only Start Sandbox is available outside Sandbox; Exit Sandbox is available only while active.
+- Enforce Sandbox access in individual event handlers and with the central capture-phase interaction guard. Render-time disabled controls are supplemental only, never the sole protection.
+- Character reset snapshots are sandbox-scoped and stored in sessionStorage, never in the live account's localStorage. Reset/restore cannot overwrite or restore a live-account snapshot.
+- UI descriptions must never imply that Debug grants or recovery controls work in live mode. Any new Debug control must default disabled until Sandbox is active.
+
 ## Authentication startup gate (v1.19.0 — mandatory)
 - Keep the application behind a visible loading gate until `getSession()` has definitively resolved. Do not expose the login screen, call the user signed out, or render account-specific content while auth restoration is pending.
 - If a session exists, restore the matching account's cloud save (or preserve its local copy if the cloud read fails) before releasing the gate. Treat transient null auth callbacks as non-authoritative until initial restoration completes.
