@@ -1,3 +1,13 @@
+# Wayfarer v2.1.7 — extract shared theme implementation (2026-10-29)
+
+- Moved all registered theme item definitions and the independent theme Debug baseline from `index.html` into `codes/theme-registry.js`, including CEO, Fitness/Roman Discipline, Orthodox/Faith, Mozart's Salon, Bloodthirst, and the remaining registered themes. `UNLOCKABLE_ITEMS` and theme perk skill mapping now have a shared module source.
+- Added `codes/theme-service.js` for Dungeon state normalization, unlock and fault-injection gates, theme XP/gold perk calculations, equipment validation, and theme appearance application (body class, portrait, equipped icon, and crest). Character rendering now calls the shared service instead of maintaining its own theme-to-art/class/name mapping.
+- Theme music now resolves the soundtrack from registered theme metadata first, with the existing audio mapping retained for reserved aliases and fallback. Theme CSS remains in the stylesheet layer.
+- Moved Debug Sandbox theme-isolation switch behavior and its event listeners into `codes/tabs/debug.js`; the core invokes the exported refresh hook for Sandbox lifecycle events.
+- Continued modularization without moving authentication, account hydration, shared state ownership, Sandbox isolation, or persistence out of `index.html`. Preserved the v2.1.6 gender and selected-tab fixes and Quest Board consolidation.
+- Updated Debug report version and service-worker cache namespace to v2.1.7; added both new theme modules to the precache list.
+- Validation: JavaScript syntax, registry-reference, appearance/perk smoke tests, service-worker path, version consistency, and ZIP integrity checks. Live browser/Supabase checks remain INCONCLUSIVE unless actually performed.
+
 # Wayfarer v2.1.6 — persistent Admin gender and remembered active tab (2026-10-29)
 
 - Fixed Admin gender persistence by treating `state.profile.gender` as authoritative when valid and using auth metadata only as a fallback for legacy saves. Moved the gender-change click handler into `codes/tabs/debug.js` with idempotent registration; live changes continue through the core save/sync path, while Sandbox changes remain temporary.
