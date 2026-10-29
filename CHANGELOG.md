@@ -1,3 +1,12 @@
+# Wayfarer v2.1.5 — move Debug diagnostic suites into the Debug module (2026-10-29)
+
+- Moved Theme Integration Tests, Quest System Tests, Store tests, and Equipment Lifecycle Test Suite orchestration from `index.html` into `codes/tabs/debug.js`.
+- Moved Store purchase/upgrade transaction decision and state mutation logic into `codes/tabs/store.js`; the core still owns saving, cloud synchronization, shared account state, and Sandbox isolation.
+- Kept authentication, account hydration, shared gameplay decision helpers, save/cloud synchronization, and Sandbox isolation authority in the core. The migrated diagnostics use isolated or synthetic inputs and do not save test mutations.
+- Debug test controls now register with the Debug module after account-aware module loading; the module initializer remains idempotent through the existing once-only tab loader.
+- Updated embedded diagnostic report versions and service-worker cache namespace to v2.1.5.
+- Validation: JavaScript syntax, migrated-handler ownership, service-worker precache paths, and ZIP integrity checked. Live browser/Supabase behavior remains INCONCLUSIVE because it was not run here.
+
 # Wayfarer v2.1.4 — remove theme reset and expand tab-module ownership (2026-10-29)
 
 - Removed the Admin “Reset all themes to Store” button and its handler, as requested.

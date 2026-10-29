@@ -10,6 +10,27 @@ function setStoreCategory(category){
  document.querySelectorAll("[data-store-category]").forEach(button=>{const active=button.dataset.storeCategory===category;button.setAttribute("aria-selected",active?"true":"false");button.tabIndex=active?0:-1;});
  document.querySelectorAll(".storeCategoryPanel").forEach(panel=>{panel.hidden=panel.id!==({themes:"storePanelThemes",artifacts:"storePanelArtifacts",pets:"storePanelPets"}[category]);});
 }
+/* Store-owned transaction rules moved from index.html in v2.1.5.
+   Persistence remains with the core save boundary; target state is explicit for isolated tests. */
+function themePurchaseAllowed(item,level,gold){if(!item)return false;const eligible=Number(level)>=Number(item.unlockLevel??Infinity)&&Number(gold)>=Number(item.price);if(!eligible)return false;return !(lifecycleFaultEnabled("purchase",item)||(debugFaultEnabled("debugFailAcademyPurchase")&&debugFaultSkill()&&item.unlockSkill===debugFaultSkill()));}
+window.attemptThemePurchase = function(item,target,level){
+ if(!item||!target)return {ok:false,reason:"invalid-item"};
+ if(item.specialUnlock||item.id==="bloodthirst-theme")return {ok:false,reason:"special-unlock"};
+ if(!Array.isArray(target.inventory))target.inventory=[];
+ const owned=target.inventory.find(entry=>entry&&entry.id===item.id);
+ const isUpgrade=!!item.upgradeOf;
+ if(owned&&!isUpgrade)return {ok:false,reason:"already-owned"};
+ if(isUpgrade&&(!owned||Number(owned.themeLevel||1)!==Number(item.themeLevel)-1))return {ok:false,reason:"invalid-upgrade"};
+ const actualLevel=Number(level??getSkillLevel(item.unlockSkill));
+ if(!themeUnlockAllowed(item,actualLevel))return {ok:false,reason:"locked"};
+ const gold=Math.max(0,Number(target.gold)||0);
+ if(gold<Number(item.price))return {ok:false,reason:"insufficient-gold"};
+ if(!themePurchaseAllowed(item,actualLevel,gold))return {ok:false,reason:"injected-purchase-failure"};
+ target.gold=gold-Number(item.price);
+ if(isUpgrade){Object.assign(owned,{name:item.name,themeLevel:item.themeLevel,perkXp:item.perkXp,perkGold:item.perkGold,unlockLevel:item.unlockLevel,price:item.price,description:item.description,perkSkill:item.perkSkill});}
+ else target.inventory.push({...item,themeLevel:1,perkXp:5,perkGold:0});
+ return {ok:true,reason:isUpgrade?"upgraded":"purchased",goldRemaining:target.gold};
+};
 /* Wayfarer store tab module. Shared state remains in the core; module initializes its view on demand. */
 window.WayfarerTabRenderers.store.renderStoreCatalog = function(){
  const root=document.getElementById("storeThemeCatalog");if(!root)return;
