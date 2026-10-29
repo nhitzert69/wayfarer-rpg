@@ -1,11 +1,3 @@
-# Wayfarer v1.18.5 — staged code organization in `codes/` (2026-10-29)
-
-- Removed the large inline application script from `index.html` and split the existing JavaScript, in its original execution order, into named files under `codes/`: core/account, themes/store, theme music, app rendering/quest rewards, skills, To Do, Journal, skill/navigation UI, groceries, adventures, app startup, quest generation, and Debug/Sandbox.
-- Extracted inline CSS blocks into `codes/styles.css`. `index.html` remains the entry point and loads the files in order.
-- Updated service-worker cache version and precache entries for every new code file and stylesheet.
-- Added permanent modular-architecture rules. This is a conservative first-stage extraction: some systems remain grouped in shared files and can be separated further in later tested updates.
-- Validation: checked all extracted JavaScript files for syntax, verified extracted script contents preserve source order, checked referenced files and version/changelog/cache consistency, and verified ZIP integrity. Live-browser, Supabase, and GitHub deployment tests were not performed.
-
 # Wayfarer v1.18.4 — Store category tabs and compact item cards (2026-10-28)
 
 - Organized the Store into separate Themes, Artifacts, and Pets tabs with clear active-state and accessible tab/panel semantics.

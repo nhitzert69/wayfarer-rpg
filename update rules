@@ -1,10 +1,3 @@
-## Modular code organization (v1.18.5 — mandatory)
-- Keep application code in the root-level `codes/` folder, loaded by `index.html` in a documented, stable order. `index.html` remains the application entry point.
-- Keep each major system in a clearly named file: account/persistence/core, skills and quests, Store and theme registry/music, To Do, Journal, groceries/adventures, quest generation, and Debug/Sandbox. Split further into dedicated tab/system files as each area is safely migrated; do not collapse the architecture back into a monolithic inline script.
-- Preserve classic-script shared global behavior during the staged migration unless a separately tested migration to ES modules is explicitly performed. Do not change declaration order or execution order casually.
-- When adding, renaming, or moving code files, update `index.html`, the service-worker precache list, version/cache identifiers, and tests. Confirm every referenced file exists and is served with the correct path.
-- Refactor incrementally and validate each step. Do not claim a system is independently modular if it still shares a file with unrelated systems; document remaining consolidation work accurately.
-
 ## Store category organization and compact mobile cards (v1.18.4 — mandatory)
 - Keep Store navigation separated into Themes, Artifacts, and Pets categories. Selecting a category must show only its corresponding catalog panel, visibly identify the active tab, and preserve the selected category during Store re-renders.
 - Every registered purchasable item must appear in the category matching its stable item type/category without duplicating or bypassing shared unlock, purchase, ownership, or save logic.
