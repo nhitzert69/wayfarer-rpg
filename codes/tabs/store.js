@@ -1,3 +1,5 @@
+/* v2.1.1: IIFE isolates tab-local declarations so modules can preload together. */
+(()=>{
 /* Wayfarer tab renderers loaded on demand. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.store = window.WayfarerTabRenderers.store || {};
@@ -19,5 +21,6 @@ window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.store = function() { window.WayfarerTabRenderers.store.renderStoreCatalog(); };
 
 
-/* Store category interaction extracted in v2.1.0. */
+/* Store category interaction extracted in v2.1.1. */
 document.querySelectorAll("[data-store-category]").forEach(button=>button.addEventListener("click",()=>setStoreCategory(button.dataset.storeCategory)));
+})();

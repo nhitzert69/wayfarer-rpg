@@ -1,3 +1,5 @@
+/* v2.1.1: IIFE isolates tab-local declarations so modules can preload together. */
+(()=>{
 /* Wayfarer tab renderers loaded on demand. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.character = window.WayfarerTabRenderers.character || {};
@@ -31,6 +33,7 @@ window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.character = function() { window.WayfarerTabRenderers.character.renderCharacterOverview(); };
 
 
-/* Character Inventory/equipment click handlers extracted in v2.1.0. */
+/* Character Inventory/equipment click handlers extracted in v2.1.1. */
 document.getElementById("themeInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;if(!state.inventory.some(item=>item&&item.id===itemId&&(item.type==="theme"||String(item.category||"").toLowerCase()==="theme"||item.equipable===true)))return;if(state.equipment?.theme===itemId) {if(debugSandboxActive&&debugAllowThemeUnequip){state.equipment.theme=null;debugLog("Unequipped theme in sandbox test mode.");toast("Theme unequipped (sandbox only).");}else{toast("A theme must always be equipped. Enable the sandbox exception to test unequipped state.");return;}}else{const equipResult=equipThemeItem(itemId,state);if(!equipResult.ok){toast("Could not equip this theme: "+equipResult.reason+".");debugLog("Theme equip operation failed for "+itemId+": "+equipResult.reason);return;}const themeName=itemId==="orthodox-theme"?"Faith":itemId==="academy-theme"?"Academy":itemId==="adventure-theme"?"Adventurer":itemId==="social-interactions-theme"?"Social Butterfly":itemId==="relationships-theme"?"Heartkeeper":itemId==="fitness-theme"?"Fitness":itemId==="spartan-endurance-theme"?"Spartan Endurance":itemId==="v0-test-theme"?"Test":itemId==="bloodthirst-theme"?"Bloodthirst":"Dungeon";debugLog(debugSandboxActive?"Equipped "+themeName+" theme in sandbox.":"Equipped "+themeName+" theme.");toast(themeName+" theme equipped.");}applyThemeMusic({userInitiated:true});save();renderDebugPanel();});
 document.getElementById("petInventory")?.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button)return;const itemId=button.dataset.inventoryItem;const pet=(state.inventory||[]).find(item=>item&&String(item.id)===String(itemId)&&(item.type==="pet"||String(item.category||"").toLowerCase()==="pet"));if(!pet)return;if(state.equipment?.pet===itemId){state.equipment.pet=null;toast((pet.name||"Pet")+" unequipped.");}else{state.equipment.pet=itemId;toast((pet.name||"Pet")+" equipped.");}save();renderDebugPanel();});
+})();

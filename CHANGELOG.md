@@ -1,3 +1,11 @@
+# Wayfarer v2.1.1 — account-aware tab module preload and Skills refresh fix (2026-10-29)
+
+- Added a central tab-module registry with loading/loaded/failed status, and a one-time loader for all nine tab modules.
+- After successful login and after session restoration on refresh, preload every tab module only after account state has been restored; then render the active view and explicitly refresh Skills progress/catalog so selected skills appear without opening the Skills tab.
+- Wrapped each tab file in an isolated scope so all modules can safely be loaded together without colliding top-level `const`/`let` declarations. Existing shared account, session, cloud-save, and gameplay state remains in the core.
+- Updated release identifiers and service-worker cache namespace.
+- Validation: syntax checks, module path/cache checks, and ZIP integrity. Live browser login/refresh, Debug controls, Store transactions, and account persistence remain unverified.
+
 # Wayfarer v2.1.0 — lazy tab functionality extraction (2026-10-29)
 
 - Moved Skills save actions, To Do create/edit/delete actions, Journal create/edit/delete actions, Groceries add/remove/clear actions, Store category interaction, and Character Inventory/equipment click handlers out of `index.html` into their matching lazily loaded tab scripts.

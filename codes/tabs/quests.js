@@ -1,3 +1,5 @@
+/* v2.1.1: IIFE isolates tab-local declarations so modules can preload together. */
+(()=>{
 /* Wayfarer quests tab renderer. Loaded on first tab selection. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.quests = function() {
@@ -29,3 +31,4 @@ window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.quests = function() {
   if (typeof window.WayfarerTabRenderers.quests === "function") window.WayfarerTabRenderers.quests();
 };
+})();

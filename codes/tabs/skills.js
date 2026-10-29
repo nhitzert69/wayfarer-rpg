@@ -1,3 +1,5 @@
+/* v2.1.1: IIFE isolates tab-local declarations so modules can preload together. */
+(()=>{
 /* Wayfarer tab renderers loaded on demand. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.skills = window.WayfarerTabRenderers.skills || {};
@@ -45,7 +47,7 @@ window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.skills = function() { window.WayfarerTabRenderers.skills.renderSkillProgress(); window.WayfarerTabRenderers.skills.renderSkillCatalog(); };
 
 
-/* Lazy Skills tab actions extracted from index.html in v2.1.0. */
+/* Lazy Skills tab actions extracted from index.html in v2.1.1. */
 const saveSkillsButton=document.getElementById("saveSkillsBtn");
 if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
  event.preventDefault();
@@ -71,3 +73,4 @@ if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
    console.error("Wayfarer could not save selected skills:",error);
  }
 });
+})();

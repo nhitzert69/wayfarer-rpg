@@ -1,3 +1,5 @@
+/* v2.1.1: IIFE isolates tab-local declarations so modules can preload together. */
+(()=>{
 /* Wayfarer groceries tab renderer. Loaded on first tab selection. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.groceries = function() {
@@ -15,7 +17,7 @@ window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.groceries = function() { window.WayfarerTabRenderers.groceries(); };
 
 
-/* Lazy Groceries form/actions extracted from index.html in v2.1.0. */
+/* Lazy Groceries form/actions extracted from index.html in v2.1.1. */
 // Grocery list: saved alongside the user's existing local Wayfarer data.
 const groceryForm=document.getElementById("groceryForm");
 if(groceryForm)groceryForm.addEventListener("submit",function(event){
@@ -32,3 +34,4 @@ const clearBoughtGroceries=document.getElementById("clearBoughtGroceries");
 if(clearBoughtGroceries)clearBoughtGroceries.addEventListener("click",()=>{state.groceries=state.groceries.filter(g=>!g.checked);save();toast("Checked items removed.");});
 const clearGroceries=document.getElementById("clearGroceries");
 if(clearGroceries)clearGroceries.addEventListener("click",()=>{if(!state.groceries.length)return;if(!confirm("Clear your entire grocery list?"))return;state.groceries=[];save();toast("Grocery list cleared.");});
+})();

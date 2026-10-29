@@ -1,3 +1,8 @@
+## v2.1.1 account-aware module preload (mandatory)
+- On successful login and after session restoration on refresh, load all nine tab modules only after account state is hydrated. Track each module as loading/loaded/failed and report failures clearly.
+- Keep tab modules in isolated scopes so loading them together cannot collide on top-level declarations. Do not duplicate authentication, save, or shared gameplay state in modules.
+- Refresh Skills progress and catalog after preload even when Skills is not the active tab. Browser-test login, refresh, selected skills, all nine tabs, Debug actions, Store/equipment, and cloud save persistence.
+
 ## v2.1.0 lazy tab action extraction (mandatory)
 - Skills, To Do, Journal, Groceries, Store category interaction, and Character Inventory/equipment click handlers are owned by their lazy-loaded tab files; do not move account/session/save primitives into tabs.
 - Core render updates shared counters and delegates tab-specific rendering to the active loaded tab only. Keep cross-tab state changes visible when the user opens a tab by rendering from current shared state.

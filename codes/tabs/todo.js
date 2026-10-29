@@ -1,3 +1,5 @@
+/* v2.1.1: IIFE isolates tab-local declarations so modules can preload together. */
+(()=>{
 /* Wayfarer todo tab renderer. Loaded on first tab selection. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.todo = function() {
@@ -16,7 +18,7 @@ window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.todo = function() { window.WayfarerTabRenderers.todo(); };
 
 
-/* Lazy To Do form/actions extracted from index.html in v2.1.0. */
+/* Lazy To Do form/actions extracted from index.html in v2.1.1. */
 let todoEditingId=null;
 const todoForm=document.getElementById("todoForm"),todoSubmitBtn=document.getElementById("todoSubmitBtn"),cancelTodoEditBtn=document.getElementById("cancelTodoEditBtn");
 function resetTodoForm(){todoEditingId=null;if(todoForm)todoForm.reset();if(todoSubmitBtn)todoSubmitBtn.textContent="Save task";if(cancelTodoEditBtn)cancelTodoEditBtn.style.display="none";}
@@ -51,3 +53,4 @@ todoSubmitBtn.addEventListener("click",saveTodoTask);
 todoForm.addEventListener("submit",function(event){event.preventDefault();saveTodoTask();});
 cancelTodoEditBtn.addEventListener("click",resetTodoForm);
 document.getElementById("addTodoBtn").addEventListener("click",()=>document.getElementById("todoTitle").focus());
+})();

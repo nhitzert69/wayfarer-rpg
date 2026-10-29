@@ -1,3 +1,5 @@
+/* v2.1.1: IIFE isolates tab-local declarations so modules can preload together. */
+(()=>{
 /* Wayfarer journal tab renderer. Loaded on first tab selection. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.journal = function() {
@@ -12,7 +14,7 @@ window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.journal = function() { window.WayfarerTabRenderers.journal(); };
 
 
-/* Lazy Journal form/actions extracted from index.html in v2.1.0. */
+/* Lazy Journal form/actions extracted from index.html in v2.1.1. */
 // Journal entries are saved locally with a timestamp and can be edited or deleted.
 let journalEditingId = null;
 const journalForm = document.getElementById("journalForm");
@@ -79,3 +81,4 @@ if(journalForm){
   });
 }
 if(cancelJournalEditBtn) cancelJournalEditBtn.addEventListener("click",function(){resetJournalForm();toast("Edit cancelled.");});
+})();
