@@ -3,6 +3,13 @@
 /* Wayfarer tab renderers loaded on demand. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.store = window.WayfarerTabRenderers.store || {};
+let activeStoreCategory = "themes";
+function setStoreCategory(category){
+ if(!["themes","artifacts","pets"].includes(category))return;
+ activeStoreCategory=category;
+ document.querySelectorAll("[data-store-category]").forEach(button=>{const active=button.dataset.storeCategory===category;button.setAttribute("aria-selected",active?"true":"false");button.tabIndex=active?0:-1;});
+ document.querySelectorAll(".storeCategoryPanel").forEach(panel=>{panel.hidden=panel.id!==({themes:"storePanelThemes",artifacts:"storePanelArtifacts",pets:"storePanelPets"}[category]);});
+}
 /* Wayfarer store tab module. Shared state remains in the core; module initializes its view on demand. */
 window.WayfarerTabRenderers.store.renderStoreCatalog = function(){
  const root=document.getElementById("storeThemeCatalog");if(!root)return;

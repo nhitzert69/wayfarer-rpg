@@ -1,3 +1,10 @@
+## v2.1.4 modularization and Debug cleanup (mandatory)
+- Build from the user-confirmed stable v2.1.3 archive. Remove the “Reset all themes to Store” control and its handler completely.
+- Continue modularization more aggressively but only for bounded tab-owned behavior. This release moves Debug Unlock All Items/theme-level control handlers into `codes/tabs/debug.js` and Store category state/switching into `codes/tabs/store.js`.
+- Keep authentication, hydrated account state, Sandbox isolation checks, shared state mutation authority, save/cloud-sync paths, and core render coordination in `index.html`. Modules must use the existing shared functions and must not write directly to localStorage or Supabase.
+- Module initialization must be idempotent; never register duplicate event listeners when a tab is selected or initialized more than once.
+- Update Debug report versions, service-worker cache namespace, and top changelog entry together. Run JavaScript syntax checks, assert the removed reset control/handler is absent, assert moved handlers exist only in their module, check module paths and ZIP integrity. Mark live browser/Supabase checks INCONCLUSIVE unless actually performed.
+
 ## v2.1.3 theme reset and level-specific grants (mandatory)
 - Build from v2.1.2. Preserve the existing tab code separation; this update does not require further module extraction.
 - Admin “Reset all themes to Store” is available with Sandbox active or inactive, with explicit confirmation. In live mode, save through the normal live save path; in Sandbox, affect only the temporary Sandbox state. Preserve Dungeon as owned/equipped fallback and do not alter artifacts, pets, currency, XP, quests, or unrelated progress.

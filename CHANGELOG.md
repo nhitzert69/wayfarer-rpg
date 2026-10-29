@@ -1,3 +1,12 @@
+# Wayfarer v2.1.4 — remove theme reset and expand tab-module ownership (2026-10-29)
+
+- Removed the Admin “Reset all themes to Store” button and its handler, as requested.
+- Moved Debug “Unlock all items” behavior and the theme-level selector event handling from `index.html` into `codes/tabs/debug.js`. The module now owns those interactions; the core retains Sandbox validation, authoritative state, and the shared save/render boundary.
+- Moved Store category selection state and panel-switching logic from `index.html` into `codes/tabs/store.js`, keeping category navigation and Store rendering together.
+- Preserved the existing nine-tab preload/lifecycle model and did not restructure the remaining modules in this release.
+- Updated Debug report version strings, service-worker cache namespace, and the top changelog entry.
+- Validation: pending JavaScript syntax, moved-handler uniqueness, removed-control, module/cache path, version consistency, and ZIP integrity checks. Live browser and Supabase checks remain INCONCLUSIVE unless actually performed.
+
 # Wayfarer v2.1.3 — Theme reset and theme-level Debug controls (2026-10-29)
 
 - Rebuilt from the confirmed v2.1.2 baseline; retained the existing tab-module separation without further restructuring.
