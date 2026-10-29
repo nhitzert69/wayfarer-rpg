@@ -1,3 +1,11 @@
+# Wayfarer v1.19.8 — reliable Admin tab visibility and faster Sandbox resume (2026-10-29)
+
+- Fixed the shared account gate resetting the Debug tab's visibility after the Debug panel had already rendered. Admin-only visibility is now enforced after general tab visibility updates and re-applied after authentication initialization.
+- On same-tab refresh, if a valid Sandbox snapshot matches the authenticated Admin username, startup still verifies the Supabase session but skips waiting for the normal cloud-save hydration. The isolated Sandbox snapshot and its live-state backup are restored before the startup gate is released, reducing repeat-test friction without bypassing authentication.
+- If the snapshot is missing, malformed, or belongs to another username, normal cloud-save restoration proceeds. The Sandbox never bypasses Supabase authentication and never syncs its temporary state to the live account.
+- Updated service-worker cache namespace and Debug test report version strings.
+- Validation: JavaScript syntax, startup-branch assertions, Admin visibility checks, rules-file presence, and ZIP integrity. Live browser/Supabase refresh testing remains required.
+
 # Wayfarer v1.19.7 — restore Admin tab identity and show Bloodthirst XP/gold bonuses (2026-10-29)
 
 - Fixed Admin username recovery after refresh: if Supabase user metadata lacks the username, reuse the last entered username only when its deterministic Wayfarer email exactly matches the authenticated user's email. This preserves the Admin Debug tab without granting Admin status to a different account.

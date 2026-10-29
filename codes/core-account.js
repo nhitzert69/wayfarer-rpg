@@ -229,7 +229,7 @@ async function finishSignIn(username,pin,create,gender=null){
  enforceAccountGate();
  if(typeof renderDebugPanel === "function") renderDebugPanel();
 }
-function finishAuthInitialization(){authInitializationPending=false;const gate=document.getElementById("authStartupGate");if(gate)gate.style.display="none";enforceAccountGate();}
+function finishAuthInitialization(){authInitializationPending=false;const gate=document.getElementById("authStartupGate");if(gate)gate.style.display="none";enforceAccountGate();if(typeof renderDebugPanel==="function")setTimeout(()=>{enforceAccountGate();renderDebugPanel();},0);}
 // Independent last-resort watchdog: if any startup callback hangs or throws
 // outside the bounded network promises, recover the UI without deleting saves.
 window.wayfarerStartupFailsafe=function(){
@@ -249,7 +249,7 @@ window.wayfarerStartupFailsafe=function(){
  }catch(error){console.error("Wayfarer startup recovery encountered an error",error);}
  finally{finishAuthInitialization();}
 };
-function enforceAccountGate(){const gate=document.getElementById("authStartupGate");if(authInitializationPending){if(gate)gate.style.display="flex";return;}if(gate)gate.style.display="none";const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=signedIn||btn.dataset.tab==='settings';btn.style.display=allowed?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=signedIn?'':(sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
+function enforceAccountGate(){const gate=document.getElementById("authStartupGate");if(authInitializationPending){if(gate)gate.style.display="flex";return;}if(gate)gate.style.display="none";const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=signedIn||btn.dataset.tab==='settings';btn.style.display=allowed?'':'none';btn.disabled=!allowed;});const debugTab=document.getElementById('debugTabButton');if(debugTab){const admin=signedIn&&String(wayfarerSignedInUsername||'').trim().toLowerCase()==='admin';debugTab.style.display=admin?'inline-flex':'none';debugTab.disabled=!admin;}document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=signedIn?'':(sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
 let accountFlowMode=null;
 function showAccountMode(mode){accountFlowMode=mode;document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="block";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display=mode==="create"?"inline-flex":"none";document.getElementById("signInBtn").style.display=mode==="login"?"inline-flex":"none";hideGenderChoice();if(mode==="create"){const field=document.getElementById("accountGenderField");if(field)field.style.display="block";}}
 function resetAccountMode(){accountFlowMode=null;hideGenderChoice();document.getElementById("accountModeChooser").style.display="flex";document.getElementById("accountUsernameField").style.display="none";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="none";}
@@ -310,8 +310,23 @@ if(cloudClient){
    if(data.session){
      cloudUser=data.session.user;
      wayfarerSignedInUsername=restoreWayfarerUsername(data.session.user);
+     // If this same tab has a valid Admin Sandbox snapshot, authenticate first but
+     // skip the ordinary cloud-save wait. The snapshot contains the isolated sandbox
+     // plus the live-state backup; debug.js restores it before the startup gate opens.
+     let sandboxResume=null;
+     let startupCloudReadFailed=false;
+     try{
+       const rawSandbox=sessionStorage.getItem("wayfarer-debug-sandbox-session-v1");
+       if(rawSandbox){const candidate=JSON.parse(rawSandbox);if(candidate&&candidate.username&&candidate.username.trim().toLowerCase()===String(wayfarerSignedInUsername||"").trim().toLowerCase()&&String(wayfarerSignedInUsername||"").trim().toLowerCase()==="admin"&&candidate.live&&candidate.sandbox)sandboxResume=candidate;}
+     }catch(sandboxError){console.warn("Wayfarer Sandbox resume snapshot could not be inspected; using normal cloud restore.",sandboxError);}
+     if(sandboxResume){
+       state=sandboxResume.live;
+       render();
+       setCloudStatus("Admin Sandbox session found. Restoring the temporary test state; live account data remains isolated.");
+     }else{
      cloudHydrating=true;
      const {data:row,error:rowError}=await withStartupTimeout(cloudClient.from("wayfarer_saves").select("app_state,updated_at").eq("user_id",cloudUser.id).maybeSingle(),12000,"loading saved progress");
+     startupCloudReadFailed=!!rowError;
      if(!rowError&&row&&row.app_state){
        const localUpdatedAt=Number(localStorage.getItem(STATE_UPDATED_KEY)||0);
        const cloudUpdatedAt=Date.parse(row.updated_at||"")||0;
@@ -349,6 +364,7 @@ if(cloudClient){
        render();
        setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");
      }
+     }
      cloudHydrating=false;
      if(typeof restoreDebugSandboxSession==="function")restoreDebugSandboxSession();
      window.dispatchEvent(new Event("wayfarer-auth-restored"));
@@ -364,7 +380,7 @@ if(cloudClient){
      finishAuthInitialization();
      // Open the app as soon as account state is restored; cloud writes run in the background.
      // This prevents a slow save request from holding the user on the startup screen.
-     if(!rowError)syncCurrentState().catch(error=>console.error("Background startup sync failed",error));
+     if(!startupCloudReadFailed&&!sandboxResume)syncCurrentState().catch(error=>console.error("Background startup sync failed",error));
    }else{
      // Only show the login flow after getSession explicitly confirms no session.
      finishAuthInitialization();

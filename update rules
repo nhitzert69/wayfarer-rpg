@@ -1,3 +1,9 @@
+## Admin tab visibility and Sandbox resume (v1.19.8 — mandatory)
+- Apply Admin-only Debug tab visibility after the general account gate updates tab styles, and after authentication initialization. A signed-in Admin must not need to click another tab to refresh Debug visibility; non-Admin accounts must never see or access it.
+- On refresh, always verify the Supabase session before resuming a Sandbox. If same-tab sessionStorage contains a valid Sandbox snapshot whose username exactly matches authenticated Admin, restore its temporary state and live-state backup before releasing the startup gate; do not wait on cloud-save hydration unnecessarily.
+- Sandbox resume must never bypass authentication, never run for non-Admin/mismatched snapshots, and never write temporary Sandbox state to the real account. Missing/malformed snapshots fall back to normal cloud restoration.
+- Update changelog, service-worker cache namespace, and Debug report versions together. Verify Admin/non-Admin tab visibility, Sandbox refresh resume, and live-account isolation in a browser.
+
 ## Admin identity restoration and Bloodthirst reward labels (v1.19.7 — mandatory)
 - After refresh, recover the username from Supabase metadata first. If absent, reuse `wayfarer-last-username` only when `usernameEmail(candidate)` exactly matches the authenticated Supabase email; never grant Admin based only on an unrelated global cached username or email local-part guess. Re-render Debug visibility after auth restoration.
 - Quest reward UI must display both the locked-in theme bonus XP and theme bonus gold when present. Keep total quest rewards and all other bonus labels intact.
