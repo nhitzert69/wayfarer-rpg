@@ -1,3 +1,12 @@
+# Wayfarer v2.1.6 — persistent Admin gender and remembered active tab (2026-10-29)
+
+- Fixed Admin gender persistence by treating `state.profile.gender` as authoritative when valid and using auth metadata only as a fallback for legacy saves. Moved the gender-change click handler into `codes/tabs/debug.js` with idempotent registration; live changes continue through the core save/sync path, while Sandbox changes remain temporary.
+- Added account-specific active-tab persistence. The selected tab is restored after login/session hydration and module preload; unauthenticated access still opens Settings, and a remembered Debug tab falls back to Quest Board for non-Admin accounts.
+- Consolidated Adventure chooser/generation, campaign/quest generation, quest reward awarding, and quest completion from three standalone scripts into `codes/tabs/quests.js`. The Quest Board module now owns this gameplay flow and its event handlers; shared account state and the core `save()` boundary remain in `index.html`. Removed the duplicate standalone scripts and their precache entries.
+- Kept account/session, shared state, navigation, and persistence authority in `index.html`; Debug now owns its gender action. Preserved all nine tabs.
+- Updated the service-worker cache namespace and embedded Debug report version to v2.1.6.
+- Validation: JavaScript syntax, gender authority/handler ownership, active-tab restore paths, Quest Board exports, service-worker precache paths, version consistency, and ZIP integrity checked. Live browser/Supabase checks remain INCONCLUSIVE because they were not run here.
+
 # Wayfarer v2.1.5 — move Debug diagnostic suites into the Debug module (2026-10-29)
 
 - Moved Theme Integration Tests, Quest System Tests, Store tests, and Equipment Lifecycle Test Suite orchestration from `index.html` into `codes/tabs/debug.js`.
