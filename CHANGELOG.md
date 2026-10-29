@@ -1,3 +1,10 @@
+# Wayfarer v3.0.1 — Character launcher styling and CHATGPT Debug access (2026-10-30)
+
+- Load the Kingdoms of the Unknown stylesheet with the main page so the Character tab Play button is red from first render; mark the stylesheet to avoid dynamically adding a duplicate when the game starts.
+- Extend the existing Debug identity gate to recognize the exact signed-in username `CHATGPT` alongside `Admin`. For this release, CHATGPT receives the same current Debug access; splitting shared and Admin-only permissions remains future work.
+- Bump the service-worker cache namespace and embedded Debug report version to v3.0.1 so deployed clients can receive the fix.
+- No Supabase schema, credentials, authentication flow, account data, or save format changed. Static validation is required; live browser and account-specific behavior remain unverified until exercised.
+
 # Wayfarer v3.0.0 — Mandatory project rules and release standardization (2026-10-29)
 
 - Established `update rules` as the mandatory master standard for safe baselines/backups, source-of-truth handling, architecture ownership, account/Sandbox protection, test evidence, release bookkeeping, and completion criteria.

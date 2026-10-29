@@ -8,6 +8,7 @@
 <link rel="manifest" href="manifest.json">
 <title>Wayfarer — Real-Life RPG</title>
 <link rel="stylesheet" href="./codes/styles.css">
+<link rel="stylesheet" href="./codes/game/game.css" data-kotu-styles="true">
 
 
 
@@ -635,7 +636,7 @@ let debugOverrideQuestRules=false;
 // when a theme's intended identity is deliberately changed.
 
 let debugSandboxCharacterSnapshot=null;
-function restoreWayfarerUsername(user){const metadataName=String(user?.user_metadata?.wayfarer_username||"").trim();if(metadataName){try{localStorage.setItem("wayfarer-last-username",metadataName);}catch(e){}return metadataName;}const email=String(user?.email||"").trim();const localPart=email.includes("@")?email.slice(0,email.indexOf("@")):email;if(localPart.trim()){try{localStorage.setItem("wayfarer-last-username",localPart.trim());}catch(e){}return localPart.trim();}try{return String(localStorage.getItem("wayfarer-last-username")||"").trim();}catch(e){return "";}} function debugIsAdmin(){return String(wayfarerSignedInUsername||"").trim().toLowerCase()==="admin";}
+function restoreWayfarerUsername(user){const metadataName=String(user?.user_metadata?.wayfarer_username||"").trim();if(metadataName){try{localStorage.setItem("wayfarer-last-username",metadataName);}catch(e){}return metadataName;}const email=String(user?.email||"").trim();const localPart=email.includes("@")?email.slice(0,email.indexOf("@")):email;if(localPart.trim()){try{localStorage.setItem("wayfarer-last-username",localPart.trim());}catch(e){}return localPart.trim();}try{return String(localStorage.getItem("wayfarer-last-username")||"").trim();}catch(e){return "";}} function debugIsAdmin(){const username=String(wayfarerSignedInUsername||"").trim().toLowerCase();return username==="admin"||username==="chatgpt";}
 function debugRequireSandbox(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated sandbox first.");return false;}return true;}
 
 
