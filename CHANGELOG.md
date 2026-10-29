@@ -1,3 +1,10 @@
+# Wayfarer v2.0.9 — quest rendering and Debug tab reliability fixes (2026-10-29)
+
+- Made quest rendering resilient to missing/uninitialized quest arrays and bound completion actions once per quest grid to prevent duplicate listeners.
+- Ensure the currently selected tab module is requested after core renders when it has not loaded yet, so quest boards refresh when the module becomes available.
+- Made Sandbox start/exit button states explicit in the Debug renderer; kept all other Sandbox-only controls and handlers in the core.
+- Static syntax, asset paths, service-worker entries, and ZIP integrity checked. Browser behavior remains unverified.
+
 # Wayfarer v2.0.8 — on-demand tab rendering extraction (2026-10-29)
 
 - Moved the tab-specific render responsibilities for all nine tabs into their matching lazily loaded `codes/tabs/*.js` files: Quest Board, Character, Store, Skills, To Do, Groceries, Journal, Settings, and Debug.

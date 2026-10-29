@@ -1,3 +1,9 @@
+## v2.0.9 quest and Debug regression follow-up (mandatory)
+- Quest renderer must safely handle absent quest arrays and attach completion handlers only once per grid.
+- Core render should ensure the selected tab module is loaded when needed without repeated fetches or recursive rendering.
+- Keep Debug action handlers and Sandbox enforcement in core; module rendering must not bypass authorization or disable the Start Sandbox control for Admin.
+- Browser validation of quest visibility and Debug actions remains required; static checks are not a substitute.
+
 
 
 ## v2.0.8 tab renderer extraction
