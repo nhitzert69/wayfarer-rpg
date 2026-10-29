@@ -1,3 +1,11 @@
+# Wayfarer v2.1.3 — Theme reset and theme-level Debug controls (2026-10-29)
+
+- Rebuilt from the confirmed v2.1.2 baseline; retained the existing tab-module separation without further restructuring.
+- Added an Admin-only “Reset all themes to Store” action available both outside and inside Sandbox. It confirms before acting, preserves Dungeon as the owned/equipped fallback, resets only unlockable theme inventory, and leaves artifacts, pets, currency, XP, and unrelated progress unchanged. When Sandbox is active, it affects only the temporary Sandbox state; otherwise it saves to the live account.
+- Added a Theme Level selector with levels 1–5 for the existing Sandbox “Unlock all items” control. Granted themes receive the selected theme level and corresponding theme perks; non-theme items are granted without alteration. Changing the level while the override is active reconciles the temporary theme grants.
+- Updated Debug report version strings and the service-worker cache namespace to `wayfarer-v2.1.3`.
+- Validation: pending static checks for syntax, selector values, theme-only reset filtering, level assignment, version/cache consistency, and ZIP integrity. Live browser and Supabase persistence checks remain INCONCLUSIVE unless performed in the deployed app.
+
 # Wayfarer v2.1.2 — Sandbox save boundary and tab refresh fixes (2026-10-29)
 
 - Fixed the Character renderer dispatch: the renderer registry stores Character as an object, so the old core call attempted to invoke the object as a function and could abort the rest of `render()`. It now calls `renderCharacterOverview()` explicitly, allowing equipped theme art/classes and inventory to refresh immediately.

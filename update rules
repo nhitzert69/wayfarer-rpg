@@ -1,3 +1,9 @@
+## v2.1.3 theme reset and level-specific grants (mandatory)
+- Build from v2.1.2. Preserve the existing tab code separation; this update does not require further module extraction.
+- Admin “Reset all themes to Store” is available with Sandbox active or inactive, with explicit confirmation. In live mode, save through the normal live save path; in Sandbox, affect only the temporary Sandbox state. Preserve Dungeon as owned/equipped fallback and do not alter artifacts, pets, currency, XP, quests, or unrelated progress.
+- The “Unlock all items” Sandbox override has a theme-level selector limited to 1, 2, 3, 4, and 5. Apply the chosen `themeLevel` and matching theme perk values to theme grants only. Non-theme items must not be modified by this selector. Changing the selector while the override is active reconciles theme grants.
+- Update Debug report versions, service-worker cache namespace, and the top changelog entry together. Check JavaScript syntax, theme-only reset filtering, fallback equipment, theme level/perk values, non-theme invariance, and ZIP integrity. Mark live browser/Supabase checks INCONCLUSIVE unless actually performed.
+
 ## v2.1.1 account-aware module preload (mandatory)
 - On successful login and after session restoration on refresh, load all nine tab modules only after account state is hydrated. Track each module as loading/loaded/failed and report failures clearly.
 - Keep tab modules in isolated scopes so loading them together cannot collide on top-level declarations. Do not duplicate authentication, save, or shared gameplay state in modules.
