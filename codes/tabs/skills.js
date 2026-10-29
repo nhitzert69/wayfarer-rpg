@@ -52,7 +52,9 @@ window.WayfarerTabModules.skills = function() { window.WayfarerTabRenderers.skil
 
 /* Lazy Skills tab actions extracted from index.html in v2.1.1. */
 const saveSkillsButton=document.getElementById("saveSkillsBtn");
-if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
+if(saveSkillsButton&&!saveSkillsButton.dataset.wayfarerSkillSaveBound){
+ saveSkillsButton.dataset.wayfarerSkillSaveBound="true";
+ saveSkillsButton.addEventListener("click",function(event){
  event.preventDefault();
  const catalog=document.getElementById("skillCatalog");
  if(catalog){
@@ -72,5 +74,6 @@ if(saveSkillsButton)saveSkillsButton.addEventListener("click",function(event){
    toast("Could not save skills on this device. Please check browser storage settings.");
    console.error("Wayfarer could not save selected skills:",error);
  }
-});
+ });
+}
 })();

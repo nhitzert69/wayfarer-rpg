@@ -1,3 +1,74 @@
+# Wayfarer v2.3.14 — Store structural completion (2026-10-29)
+
+- Completed the Store feature-ownership audit: catalog rendering, category selection, theme purchase/upgrade handling, and purchase validation live in `codes/tabs/store.js`; the core retains authentication, shared account state, Sandbox save isolation, persistence, and global render coordination.
+- Replaced per-render purchase-button listeners with one idempotent delegated listener on the stable Store catalog root. The listener resolves purchase requests against the current catalog snapshot, avoiding listener accumulation and stale button/item references after rerenders.
+- Normalized Store ownership and transaction ID comparisons to strings, preserving special-unlock exclusions, skill requirements, coin checks, upgrade sequencing, Debug fault injection, and Sandbox Unlock All behavior.
+- Updated the mandatory update rules, embedded Debug report versions, and service-worker cache namespace to v2.3.14.
+- Validation: JavaScript syntax, static Store ownership/event-delegation checks, transaction smoke tests, module presence, precache paths, version consistency, and ZIP integrity. Real browser purchase interactions and Supabase persistence remain INCONCLUSIVE.
+
+# Wayfarer v2.3.13 — Character module boundary audit (2026-10-29)
+
+- Removed Character-to-Store rendering coupling; the core refreshes the active tab and Store owns its catalog.
+- Added idempotent delegated equipment handlers on stable theme/pet inventory roots.
+- Normalized inventory ID comparisons to strings so saved numeric/string IDs behave consistently.
+- Character owns character overview, inventory presentation, and theme/pet equipment interactions; shared theme rules and persistence remain in shared services/core.
+- Validation: JavaScript syntax, static ownership/listener checks, service-worker precache paths, release metadata, and ZIP integrity. Live browser/Supabase behavior remains unverified.
+
+# Wayfarer v2.3.12 — Quest Board audit and summary reliability (2026-10-29)
+
+- Completed the Quest Board structural audit: generation, adventure quests, campaign planning, reward calculation, completion handling, rendering, and summary counters remain owned by `codes/tabs/quests.js`; the core retains state normalization, persistence, and global render coordination.
+- Hardened quest ID generation for both generated and adventure quests: prefer `crypto.randomUUID`, fall back to `crypto.getRandomValues`, and use a last-resort collision-resistant ID when either secure API is unavailable or throws.
+- The Quest Board summary hook now runs when the module registers, so dashboard counters are populated even before the Quest Board is activated. Core render coordination remains in place for subsequent state updates.
+- Updated embedded Debug report versions, mandatory update rules, and the service-worker cache namespace to v2.3.12.
+- Validation: JavaScript syntax, quest-ID fallback smoke tests, summary registration/order checks, module ownership checks, all precache paths, release metadata, and ZIP integrity. Browser quest completion, counters in a real session, and Supabase behavior remain INCONCLUSIVE until tested live.
+
+# Wayfarer v2.3.11 — Skills event binding and ownership audit (2026-10-29)
+
+- Completed the Skills structural ownership audit: catalog rendering and selection, priority controls, progress cards, and Save selected skills remain in `codes/tabs/skills.js`; catalog/progression/migration rules remain in the shared skill catalog/service; account state, save authority, and global render coordination remain in core.
+- Added an idempotent dataset guard to the Save selected skills button so repeated module initialization cannot attach duplicate click handlers. Existing stable-root delegation for catalog choice and priority changes is preserved.
+- Updated embedded Debug report versions, update rules, and the service-worker cache namespace to v2.3.11.
+- Validation: JavaScript syntax, skill-service progression/migration smoke tests, event-binding ownership/idempotence checks, all precache paths, release metadata, and ZIP integrity. Browser interactions, account persistence, and Supabase behavior remain INCONCLUSIVE.
+
+# Wayfarer v2.3.10 — move Sandbox controls into Debug module (2026-10-29)
+
+- Moved Start Sandbox and Exit Sandbox click handlers from `index.html` into `codes/tabs/debug.js`, so the Debug module owns its lifecycle actions alongside its other controls.
+- Used the module's existing idempotent action-binding helper to prevent duplicate click listeners if initialization is repeated.
+- Added an explicit Admin gate to both actions. Sandbox state branching and the save override remain in core because they integrate with the shared state and persistence boundary; account restoration and session recovery remain core-owned.
+- Updated embedded Debug report versions, this update-rules file, and the service-worker cache namespace to v2.3.10.
+- Validation: JavaScript syntax, static handler ownership/gate checks, all precache paths, version consistency, and ZIP integrity. Browser interactions, Sandbox refresh/exit behavior, and Supabase persistence remain INCONCLUSIVE until tested in a live browser.
+
+# Wayfarer v2.3.9 — Settings control ownership audit (2026-10-29)
+
+- Completed the Settings structural audit: the Settings module now owns syncing persisted settings values into their corresponding controls and the visible music-volume label.
+- Kept account authentication, account restoration, and cloud persistence in the core; kept soundtrack playback, fading, and audio lifecycle in `codes/theme-music.js`.
+- Routed music-control refreshes through the Settings renderer when it is registered, with a safe fallback during early initialization.
+- Updated the update rules, embedded Debug report versions, and service-worker cache namespace to v2.3.9.
+- Validation: syntax, Settings renderer ownership, audio-service boundary, all precache paths, version consistency, and ZIP integrity. Browser interactions and Supabase persistence remain INCONCLUSIVE.
+
+# Wayfarer v2.3.8 — complete Journal module ownership audit (2026-10-29)
+
+- Completed the Journal feature-ownership audit: rendering, summary count, create/edit/delete actions, form reset, and edit navigation remain in `codes/tabs/journal.js`; core retains shared state normalization, save/render coordination, and navigation. Marked Journal structurally complete, with live browser behavior still awaiting regression testing.
+- Fixed a module-initialization bug: the stable `journalList` root was declared inside the renderer but referenced outside it when binding delegated actions, which could throw a `ReferenceError` and prevent the module from registering.
+- Added dataset guards for Journal form submission and cancel-edit handlers so repeated initialization cannot accumulate listeners.
+- Hardened Journal entry ID creation with UUID, secure-random-bytes, and collision-resistant fallback paths, including when secure APIs throw.
+- Updated this rules file, the service-worker cache namespace, and embedded Debug report versions to v2.3.8.
+- Validation: syntax, module registration and ownership, handler guards, ID fallback smoke tests, all precache paths, version consistency, and ZIP integrity. Browser interactions and Supabase persistence remain INCONCLUSIVE.
+
+# Wayfarer v2.3.7 — complete Groceries module ownership audit (2026-10-29)
+
+- Completed the Groceries feature-ownership audit: list rendering, add/check/remove/clear actions, and their event handlers live in `codes/tabs/groceries.js`; `index.html` retains only shared state normalization, save/render coordination, navigation, and tab registration. Groceries is now marked structurally complete, with live runtime behavior still awaiting browser regression testing.
+- Made grocery form and clear-button listeners idempotent with dataset guards, matching the stable-root delegated list handlers and protecting against repeated initialization.
+- Hardened grocery ID creation: try `crypto.randomUUID`, then `crypto.getRandomValues`, then a timestamp/random fallback if secure APIs are missing or throw.
+- Updated this rules file, the service-worker cache namespace, and embedded Debug report versions to v2.3.7.
+- Validation: syntax, module ownership, listener guards, ID fallback smoke tests, all precache paths, version consistency, and ZIP integrity. Browser interactions and Supabase persistence remain INCONCLUSIVE.
+
+# Wayfarer v2.3.6 — To Do module audit complete; harden Groceries ID fallback (2026-10-29)
+
+- Completed a focused ownership audit of To Do: rendering, task creation/editing/deletion, completion, form lifecycle, and navigation live in `codes/tabs/todo.js`; the core only supplies shared state/save/render/navigation services and normalizes the account data shape. Marked To Do structurally complete, with live-browser behavior still requiring regression verification.
+- Continued the next tab audit with Groceries and made item-ID generation safe when `window.crypto.randomUUID` is unavailable, using the same defensive fallback pattern as To Do. Grocery rendering, form actions, checkbox/removal actions, and list clearing remain in `codes/tabs/groceries.js`.
+- Updated the service-worker cache namespace and embedded Debug report versions to v2.3.6.
+- Validation: syntax, tab ownership/static checks, precache paths, version alignment, and ZIP integrity. Browser/Supabase behavior remains INCONCLUSIVE.
+
 # Wayfarer v2.3.5 — cross-tab event delegation and Settings rendering (2026-10-29)
 
 - Updated To Do, Groceries, Journal, and Skills to delegate dynamic-row/catalog events from stable containers, preventing per-render listener rebinding and keeping actions tied to current shared state.

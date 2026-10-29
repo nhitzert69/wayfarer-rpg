@@ -1,5 +1,19 @@
 /* v2.1.6: Quest Board owns adventure generation, campaign generation, reward handling, and quest rendering. */
 (()=>{
+/* Quest IDs must remain unique even when Web Crypto is missing or throws. */
+function createQuestId(){
+  try {
+    if(window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID();
+  } catch (_) {}
+  try {
+    if(window.crypto && typeof window.crypto.getRandomValues === "function"){
+      const bytes=new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      return "q-"+Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
+    }
+  } catch (_) {}
+  return "q-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2)+"-"+Math.random().toString(36).slice(2);
+}
 /* Consolidated from codes/adventures.js in v2.1.6. */
 // Adventure chooser: generate a location-independent mission and add it to the quest board.
 const adventureToggle=document.getElementById("generateAdventureBtn");
@@ -125,7 +139,7 @@ function generateAdventure(type){
   const choices=fresh.length?fresh:pool;
   const [title,description]=choices[Math.floor(Math.random()*choices.length)];
   state.questHistory[historyKey]=[title,...recent.filter(t=>t!==title)].slice(0,12);
-  const quest={id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2),title,description,category:"Adventure",skill:"Adventure",xp:15,done:false,source:"adventure",adventureType:type};
+  const quest={id:createQuestId(),title,description,category:"Adventure",skill:"Adventure",xp:15,done:false,source:"adventure",adventureType:type};
   if(!Array.isArray(state.quests))state.quests=[];
   state.quests.push(quest);
   state.activeDate=today();
@@ -381,7 +395,7 @@ function generateQuests(opts){
     const baseXp=Number(quest.xp)||15;
     const generatedForLevel=getSkillLevel(skill);
     const skillLevelBonusXp=calculateSkillQuestLevelBonus(generatedForLevel);
-    chosen.push({...quest,baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:chosenPlace,done:false,source:"generated",generatedForLevel,id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2)});
+    chosen.push({...quest,baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:chosenPlace,done:false,source:"generated",generatedForLevel,id:createQuestId()});
     usedTitles.add(quest.title);
     state.questHistory[skill]=[quest.title,...(state.questHistory[skill]||[]).filter(t=>t!==quest.title)].slice(0,8);
   }
@@ -507,6 +521,8 @@ window.WayfarerTabRenderers.quests.renderSummary = function(){
  const shift=state?.settings?.shift||"normal";
  const shiftNoteEl=document.getElementById("shiftNote");if(shiftNoteEl)shiftNoteEl.textContent=({low:"Keep it gentle. Recovery is part of the campaign.",normal:"Small steps forge a different life.",free:"Your wider world awaits. Consider a longer adventure."})[shift]||"Small steps forge a different life.";
 };
+// Populate the dashboard counters as soon as this module registers, even before its tab is activated.
+window.WayfarerTabRenderers.quests.renderSummary();
 window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModules.quests = function() {
   if (typeof window.WayfarerTabRenderers.quests === "function") window.WayfarerTabRenderers.quests();

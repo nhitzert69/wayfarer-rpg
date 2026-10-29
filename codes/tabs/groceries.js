@@ -23,18 +23,33 @@ window.WayfarerTabModules.groceries = function() { window.WayfarerTabRenderers.g
 /* Lazy Groceries form/actions extracted from index.html in v2.1.1. */
 // Grocery list: saved alongside the user's existing local Wayfarer data.
 const groceryForm=document.getElementById("groceryForm");
-if(groceryForm)groceryForm.addEventListener("submit",function(event){
- event.preventDefault();
- const name=document.getElementById("groceryItem").value.trim();
- const quantity=document.getElementById("groceryQty").value.trim();
- if(!name)return;
- state.groceries.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name,quantity,checked:false,createdAt:new Date().toISOString()});
- groceryForm.reset();
- save();
- document.getElementById("groceryItem").focus();
-});
+function createGroceryId(){
+ try{if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();}catch(error){/* Use the fallback below when a browser blocks randomUUID. */}
+ try{if(window.crypto&&typeof window.crypto.getRandomValues==="function"){const bytes=new Uint32Array(4);window.crypto.getRandomValues(bytes);return "g-"+Array.from(bytes,n=>n.toString(16).padStart(8,"0")).join("");}}catch(error){/* Fall through to a timestamp/random fallback. */}
+ return "g-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2)+"-"+Math.random().toString(36).slice(2);
+}
+if(groceryForm&&!groceryForm.dataset.wayfarerGroceryFormBound){
+ groceryForm.dataset.wayfarerGroceryFormBound="true";
+ groceryForm.addEventListener("submit",function(event){
+  event.preventDefault();
+  const name=document.getElementById("groceryItem").value.trim();
+  const quantity=document.getElementById("groceryQty").value.trim();
+  if(!name)return;
+  const id=createGroceryId();
+  state.groceries.push({id,name,quantity,checked:false,createdAt:new Date().toISOString()});
+  groceryForm.reset();
+  save();
+  document.getElementById("groceryItem").focus();
+ });
+}
 const clearBoughtGroceries=document.getElementById("clearBoughtGroceries");
-if(clearBoughtGroceries)clearBoughtGroceries.addEventListener("click",()=>{state.groceries=state.groceries.filter(g=>!g.checked);save();toast("Checked items removed.");});
+if(clearBoughtGroceries&&!clearBoughtGroceries.dataset.wayfarerGroceryClearBoughtBound){
+ clearBoughtGroceries.dataset.wayfarerGroceryClearBoughtBound="true";
+ clearBoughtGroceries.addEventListener("click",()=>{const before=state.groceries.length;state.groceries=state.groceries.filter(g=>!g.checked);if(state.groceries.length!==before){save();toast("Checked items removed.");}});
+}
 const clearGroceries=document.getElementById("clearGroceries");
-if(clearGroceries)clearGroceries.addEventListener("click",()=>{if(!state.groceries.length)return;if(!confirm("Clear your entire grocery list?"))return;state.groceries=[];save();toast("Grocery list cleared.");});
+if(clearGroceries&&!clearGroceries.dataset.wayfarerGroceryClearAllBound){
+ clearGroceries.dataset.wayfarerGroceryClearAllBound="true";
+ clearGroceries.addEventListener("click",()=>{if(!state.groceries.length)return;if(!confirm("Clear your entire grocery list?"))return;state.groceries=[];save();toast("Grocery list cleared.");});
+}
 })();

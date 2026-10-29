@@ -2,8 +2,11 @@
 (()=>{
 /* Wayfarer journal tab renderer. Loaded on first tab selection. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
+// Resolve the stable list root outside the renderer so delegated handlers can bind
+// safely at module evaluation time (the previous local declaration caused a
+// ReferenceError before the Journal module could finish registering).
+const journalListEl=document.getElementById("journalList");
 window.WayfarerTabRenderers.journal = function() {
- const journalListEl=document.getElementById("journalList");
  if(journalListEl) journalListEl.innerHTML=state.journal.length?[...state.journal].sort((a,b)=>(b.createdAt||b.date||"").localeCompare(a.createdAt||a.date||"")).map(j=>`<div class="logItem" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px"><div class="row" style="align-items:flex-start"><strong>${esc(j.title)}</strong><span class="tag">${esc(j.type)}</span></div><div class="sub">${esc(j.displayDate||j.date||"Date unknown")}</div><p style="margin:7px 0 0;color:#d2c2a6;white-space:pre-wrap">${esc(j.text||"")}</p><div class="row" style="margin-top:10px;gap:8px"><button class="btn small" type="button" data-edit-journal="${esc(j.id||"")}">Edit</button><button class="btn small" type="button" data-delete-journal="${esc(j.id||"")}">Delete</button></div></div>`).join(""):'<div class="empty">Your chronicles will appear here.</div>';
 };
 // Keep one pair of handlers on the stable journal list instead of rebinding rows.
@@ -56,7 +59,8 @@ function deleteJournalEntry(id){
   save();
   toast("Journal entry deleted.");
 }
-if(journalForm){
+if(journalForm&&!journalForm.dataset.wayfarerJournalSubmitBound){
+  journalForm.dataset.wayfarerJournalSubmitBound="true";
   journalForm.addEventListener("submit",function(event){
     event.preventDefault();
     const title = document.getElementById("entryTitle").value.trim();
@@ -80,7 +84,10 @@ if(journalForm){
       render();
       toast("Journal entry updated.");
     } else {
-      const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(36).slice(2);
+      let id;
+      try { if(window.crypto&&typeof window.crypto.randomUUID==="function") id=window.crypto.randomUUID(); } catch(error) {}
+      if(!id){try{if(window.crypto&&typeof window.crypto.getRandomValues==="function"){const bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);id=Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");}}catch(error){}}
+      if(!id)id=String(Date.now())+"-"+Math.random().toString(36).slice(2)+"-"+Math.random().toString(36).slice(2);
       state.journal.push({id,title,type,text,createdAt:now.toISOString(),date:now.toISOString(),displayDate});
       save();
       resetJournalForm();
@@ -89,5 +96,8 @@ if(journalForm){
     }
   });
 }
-if(cancelJournalEditBtn) cancelJournalEditBtn.addEventListener("click",function(){resetJournalForm();toast("Edit cancelled.");});
+if(cancelJournalEditBtn&&!cancelJournalEditBtn.dataset.wayfarerJournalCancelBound){
+ cancelJournalEditBtn.dataset.wayfarerJournalCancelBound="true";
+ cancelJournalEditBtn.addEventListener("click",function(){resetJournalForm();toast("Edit cancelled.");});
+}
 })();

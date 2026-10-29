@@ -1,3 +1,63 @@
+## v2.3.14 Store structural completion (mandatory)
+- Store owns theme catalog rendering, category selection, purchase/upgrade interaction, and purchase transaction validation in `codes/tabs/store.js`. Core retains account state, authentication, Sandbox isolation enforcement, save/cloud persistence, and global render coordination.
+- Store purchase buttons must delegate from the stable `#storeThemeCatalog` root using an idempotent dataset guard; do not attach per-button listeners during each catalog render. Resolve clicked items against the current rendered item snapshot so stale or replaced buttons cannot purchase outdated offers.
+- Compare inventory item IDs as strings in Store ownership and purchase checks. Preserve special-unlock exclusions, skill-level requirements, currency checks, upgrade level sequencing, fault-injection behavior, and Sandbox-only Unlock All behavior.
+- Store is structurally complete only after auditing catalog/category rendering, purchase/upgrade transaction rules, inventory ownership, event idempotence, Debug fault-injection integration, and the Character/core boundary. Browser purchase interactions and Supabase persistence remain INCONCLUSIVE unless tested live.
+- Every release updates this rules file, the top changelog entry, embedded Debug report versions, and service-worker cache namespace together. Validate all nine module paths, syntax, all precache paths, version consistency, and ZIP integrity.
+
+## v2.3.13 Character structural completion (mandatory)
+- Character owns character overview rendering, inventory presentation, theme/pet inventory interaction, and character-specific UI in `codes/tabs/character.js`. Do not invoke Store catalog rendering from Character; Store owns its catalog and the core coordinates active-tab refreshes.
+- Theme and pet inventory click handlers must bind idempotently to stable roots using dataset guards. Compare inventory IDs consistently as strings when reading IDs from DOM attributes.
+- Keep theme definitions/appearance and theme equip validation in shared theme services; keep persistence, account state, and global render coordination in the core. Preserve the Sandbox-only theme unequip exception and Admin/Debug integrations.
+- Character is structurally complete only after checking overview/inventory rendering, theme and pet equip/unequip paths, theme appearance/music refresh, store coupling, handler idempotence, and core ownership. Live browser and Supabase behavior remain INCONCLUSIVE unless tested.
+- Every release updates this rules file, top changelog entry, embedded Debug report versions, and service-worker cache namespace together. Validate all nine module paths, syntax, all precache paths, version consistency, and ZIP integrity.
+
+## v2.3.12 Quest Board structural completion (mandatory)
+- Quest Board owns quest/adventure generation, campaign planning, quest rendering, completion UI, reward calculation, and summary counters in `codes/tabs/quests.js`. Core retains shared state normalization, save/cloud persistence, authentication/account restoration, navigation, and global render coordination.
+- Register the callable Quest Board renderer before attaching `renderSummary`; invoke the summary hook on module registration so dashboard counters are populated before the tab is activated. Core must not directly write Quest Board summary DOM.
+- Quest IDs for generated and adventure quests must tolerate `crypto.randomUUID` and `crypto.getRandomValues` being absent or throwing. Prefer secure APIs, then use a collision-resistant fallback.
+- Keep quest completion rewards idempotent: do not award XP twice for an already completed quest; preserve the no-penalty rule for uncompleting a quest. Preserve cooldown, new-skill-only generation, theme bonuses, and Sandbox override behavior.
+- Mark Quest Board structurally complete only after checking quest generation, adventure generation, campaign planner, completion/reward ownership, summary hook registration, listener idempotence, and core boundaries. Browser interactions and Supabase behavior remain INCONCLUSIVE unless tested live.
+- Every release updates this rules file, the top changelog entry, embedded Debug report versions, and service-worker cache namespace together. Validate all nine module paths, syntax, all precache paths, version consistency, and ZIP integrity.
+
+## v2.3.11 Skills structural completion (mandatory)
+- Skills owns catalog rendering, selected-skill/priority UI interactions, progress-card rendering, and Save selected skills in `codes/tabs/skills.js`. The Save button listener must use a dataset guard; catalog change interactions delegate from the stable `#skillCatalog` root and bind once.
+- `codes/skill-catalog.js` remains the authoritative skill list. `codes/skill-service.js` owns skill label migration, selected-skill normalization, priority helpers, progression thresholds, and skill-level calculations. Keep shared state, account restoration, persistence, global render coordination, and quest reward application in their established shared owners.
+- Do not mark runtime behavior tested without browser interaction. Validate skill progression thresholds, idempotent legacy migration, selection/priority behavior via targeted tests where possible, all nine module paths, all precache paths, release metadata, and ZIP integrity. Browser/Supabase behavior remains INCONCLUSIVE unless actually tested.
+- Every release updates the top changelog entry, this rules file, embedded Debug report versions, and service-worker cache namespace together.
+
+## v2.3.10 Debug lifecycle control ownership (mandatory)
+- Start Sandbox and Exit Sandbox UI click handlers belong in `codes/tabs/debug.js`, use the module's idempotent binding helper, and explicitly require Admin privileges at action time. Do not restore direct Sandbox button listeners to `index.html`.
+- Keep the shared `debugSandboxActive` state, save boundary/temporary save override, session recovery, authentication, account restoration, and cloud persistence in core. Debug owns feature-specific Sandbox start/exit actions, feature switches, diagnostics, test suites, and Admin control rendering.
+- Starting Sandbox must copy live state into an isolated temporary branch; exiting must restore the original in-memory state and discard Sandbox changes. Sandbox writes must never reach localStorage or Supabase through the normal save path.
+- Every release updates the top changelog entry, this rules file, embedded Debug report versions, and service-worker cache namespace together. Audit all nine tab modules, syntax, event idempotence, ownership, all precache paths, version consistency, and ZIP integrity. Browser/Supabase behavior remains INCONCLUSIVE unless tested.
+
+## v2.3.9 Settings completion (mandatory)
+- Settings owns synchronization of persisted settings into UI controls and display labels, including the visible music-volume percentage. The audio service may request a Settings control refresh, but soundtrack playback, fades, and audio lifecycle remain in `codes/theme-music.js`.
+- Keep authentication, account restoration, shared state normalization, and cloud persistence in the core; the Settings tab must not take over account workflows.
+- During early initialization, Settings renderer may not yet be registered; music controls must remain safe and synchronized using a fallback until the renderer is available.
+- Mark Settings structurally complete only after verifying its module owns its control rendering, its remaining core content is intentionally authentication/account management, and no duplicate audio behavior has moved into the tab. Browser behavior remains unverified unless tested.
+- Every release updates this rules file, top changelog entry, Debug report versions, and service-worker cache namespace. Check all nine modules, syntax, event idempotence, precache paths, version consistency, and ZIP integrity.
+
+## v2.3.8 Journal completion (mandatory)
+- Journal is structurally complete when rendering, summary count, entry creation/edit/deletion, form reset, and edit navigation remain in `codes/tabs/journal.js`; core retains only shared state normalization, save/render coordination, account restoration, and navigation/tab registration.
+- The stable `journalList` root must be declared at module scope before delegated listeners bind; never reference a renderer-local `const` from module-level event-binding code.
+- Journal form submit and cancel-edit listeners must use dataset guards. Entry ID generation must handle `randomUUID` and `getRandomValues` being absent or throwing, with a collision-resistant fallback.
+- Do not mark runtime behavior tested without browser interaction; account persistence remains core-owned. Continue the next tab audit after Journal.
+- Every release updates this rules file, the top changelog entry, Debug report versions, and service-worker cache namespace together. Check all nine tab modules, syntax, ownership, listener idempotence, every precache path, version consistency, and ZIP integrity.
+
+## v2.3.7 Groceries completion (mandatory)
+- Groceries is structurally complete when rendering, add/check/remove/clear actions, and their listeners remain in `codes/tabs/groceries.js`; core retains only shared state shape normalization, `save()`, global render coordination, and navigation/tab registration.
+- Bind grocery form and clear-button handlers idempotently with dataset guards. List actions must remain delegated from the stable list root. Grocery IDs should try `crypto.randomUUID`, then `crypto.getRandomValues`, then a collision-resistant timestamp/random fallback, including when secure API calls throw.
+- Do not mark runtime behavior tested without browser interaction; account persistence remains core-owned. Continue the next tab audit after Groceries.
+- Every release updates the top changelog entry, Debug report versions, and service-worker cache namespace together. Check all nine tab modules, syntax, ownership, listener idempotence, every precache path, version consistency, and ZIP integrity.
+
+## v2.3.6 To Do completion and Groceries robustness (mandatory)
+- To Do is structurally complete when task rendering, creation, editing, deletion, completion toggles, form reset, and edit navigation remain in `codes/tabs/todo.js`; the core retains only shared state shape normalization, `save()`, global render coordination, and navigation services. Do not move account persistence into the tab.
+- Groceries owns its rendering, add/check/remove/clear interactions in `codes/tabs/groceries.js`; item ID creation must guard `window.crypto` and `randomUUID` availability and retain a collision-resistant fallback.
+- Continue tab-by-tab auditing; declare a tab complete only after checking its feature-specific code in `index.html`, module ownership, dependencies, event-handler idempotence, and available static tests. Live behavior remains unverified unless browser-tested.
+- Every release updates the top changelog entry, Debug report versions, and service-worker cache namespace together. Check all nine tab modules, syntax, module ownership, all precache paths, version consistency, and ZIP integrity.
+
 ## v2.3.5 cross-tab event ownership (mandatory)
 - Keep the modularization goal across all nine tabs; do not focus exclusively on one tab.
 - Dynamic To Do, Groceries, Journal and Skills list/catalog interactions should delegate from stable container roots and use dataset guards so repeated renders do not bind per-row handlers. Do not move persistence authority out of the core `save()` boundary.
