@@ -421,6 +421,8 @@ document.getElementById("closeCampaignPlanner")?.addEventListener("click",()=>op
 document.getElementById("cancelCampaignBtn")?.addEventListener("click",()=>openCampaignPlanner(false));
 updateCampaignPreview();
 
+/* Quest Board owns quest-specific category icons; the core only supplies shared UI primitives. */
+function categoryIcon(c,skill){if(skill==="Fitness")return "💪";if(skill==="Cardio")return "🏃";if(skill==="Piano")return "🎹";return ({Adventure:"🧭",Social:"🗣️",Skill:"✨",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
 /* Consolidated from codes/app-render-quests.js in v2.1.6. */
 function questCard(q){return `<article class="card questActive" data-quest-card="${esc(q.id)}">
   <div class="questTop"><div class="questBody"><div class="row" style="align-items:flex-start"><h3>${categoryIcon(q.category,q.skill)} ${esc(q.title)}</h3><span class="xp">+${q.xp} XP · +${5+Math.max(0,Number(q.perkBonusGold)||0)} coins${q.skillLevelBonusXp?` <small style="display:block;font-size:11px;opacity:.85">Includes +${q.skillLevelBonusXp} skill-level bonus XP (Lv ${q.generatedForLevel||1})</small>`:""}${q.perkBonusXp?` <small style="display:block;font-size:11px;opacity:.85">Includes ${q.perkBonusXp} ${esc(q.perkThemeName||"theme")} bonus XP</small>`:""}</span></div>

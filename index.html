@@ -250,7 +250,7 @@
   <div class="debugSandboxBanner"><strong id="debugSandboxStatus">Sandbox inactive</strong><p class="sub">Start a sandbox to test XP, quests, dates, and planner behavior against a temporary copy. Exiting discards sandbox changes.</p><div class="debugTools"><button class="btn" id="debugStartSandbox">Start isolated sandbox</button><button class="btn secondary" id="debugExitSandbox">Exit sandbox</button></div><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugAllowThemeUnequip" type="checkbox" style="margin-top:3px" disabled><span><strong>Allow unequipped theme</strong><small style="display:block;color:var(--muted)">Sandbox testing only. Allows the required theme to be temporarily removed.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugOverrideQuestRules" type="checkbox" style="margin-top:3px" disabled><span><strong>Override quest safeguards</strong><small style="display:block;color:var(--muted)">Sandbox only. Bypass the 4-hour quest-generation cooldown and skip quest-completion confirmations for testing.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugUnlockAllItems" type="checkbox" style="margin-top:3px" disabled><span><strong>Unlock all items</strong><small style="display:block;color:var(--muted)">Sandbox only. Grants every registered unlockable item for testing, including future themes, pets and artifacts.</small></span></label><div class="debugTools" style="margin-top:10px"><label for="debugThemeGrantLevel">Theme level for Get All Items <select id="debugThemeGrantLevel"><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option><option value="4">Level 4</option><option value="5">Level 5</option></select></label><small class="sub">Applies only to themes granted by Unlock All Items. Artifacts and pets are not changed.</small></div></div>
   <div class="card legacy-debug-panel-hidden" aria-hidden="true"><h3>Theme Integration Tests</h3><p class="sub">Runs theme-by-theme asset, CSS, computed-style, full-page panel, background and equipped-state checks. Any failed surface is reported separately. Read-only; does not alter saved progress.</p><div class="debugTools"><button class="btn secondary" id="debugRunThemeTests" type="button">Run theme integration tests</button></div><pre id="debugThemeTestResults" class="debugLog">No theme tests run yet.</pre></div>
   <div class="card legacy-debug-panel-hidden" aria-hidden="true"><h3>Feature Isolation Switches</h3><p class="sub">Sandbox only. Temporarily lock individual effects to the Dungeon theme while other equipped-theme effects remain active. Sandbox only; these switches do not change saved settings.</p><div class="debugTools"><label><input type="checkbox" id="debugDisableBackground"> Lock background to Dungeon</label><label><input type="checkbox" id="debugDisableColors"> Lock colors to Dungeon</label><label><input type="checkbox" id="debugDisablePortrait"> Lock character/theme images to Dungeon</label><label><input type="checkbox" id="debugDisableMusic"> Lock music to Dungeon</label></div><p id="debugFeatureSwitchStatus" class="sub" aria-live="polite">All theme effects enabled.</p></div>
-  <div class="card"><h3>Character Recovery &amp; Test Grants</h3><p class="sub">Admin tools, Sandbox only. XP/gold grants, removals, character reset and restore are disabled outside an active Sandbox. Changes affect only the temporary character; Journal, To Do and Groceries remain untouched.</p><div class="debugTools"><label>XP <input type="number" id="debugGrantXp" min="0" max="100000" value="100"></label><label>Gold <input type="number" id="debugGrantGold" min="0" max="100000" value="100"></label><button class="btn secondary" id="debugGrantResources">Grant XP &amp; gold</button><button class="btn danger" id="debugRemoveResources">Remove XP &amp; gold</button><button class="btn secondary" id="debugRestoreCharacter">Undo/restore character snapshot</button><button class="btn danger" id="debugResetCharacter">Reset Sandbox character…</button></div><p id="debugCharacterToolsStatus" class="sub" aria-live="polite">No reset snapshot stored.</p></div>
+  <div class="card"><h3>Character Recovery &amp; Test Grants</h3><p class="sub">Admin tools. XP/gold grants can target the live character or temporary Sandbox; live changes require confirmation and use normal account saving. Removal, reset and snapshot restore remain Sandbox-only. Journal, To Do and Groceries are preserved by character reset.</p><div class="debugTools"><label>XP <input type="number" id="debugGrantXp" min="0" max="100000" value="100"></label><label>Gold <input type="number" id="debugGrantGold" min="0" max="100000" value="100"></label><button class="btn secondary" id="debugGrantResources">Grant XP &amp; gold</button><button class="btn danger" id="debugRemoveResources">Remove XP &amp; gold</button><button class="btn secondary" id="debugRestoreCharacter">Undo/restore character snapshot</button><button class="btn danger" id="debugResetCharacter">Reset Sandbox character…</button></div><p id="debugCharacterToolsStatus" class="sub" aria-live="polite">No reset snapshot stored.</p></div>
   <div class="card"><h3>Live Quest Controls</h3><p class="sub">Sandbox-only test control. Clears the temporary character’s Generate Quests cooldown; it never changes the live account.</p><div class="debugTools"><button class="btn secondary" id="debugResetQuestCooldown" type="button">Reset Sandbox quest cooldown</button></div><p id="debugQuestCooldownStatus" class="sub" aria-live="polite">Live cooldown unchanged.</p></div>
   <div class="card legacy-debug-panel-hidden" aria-hidden="true"><h3>Quest System Tests</h3><p class="sub">Sandbox only. Runs isolated quest-generation and completion reward checks for every registered skill, plus Store unlock/purchase checks for every registered theme.</p><div class="debugTools"><button class="btn secondary" id="debugRunQuestTests">Run quest system tests</button><button class="btn secondary" id="debugRunStoreTests">Run Store tests</button></div><div class="debugTools" style="margin-top:10px"><label><input type="checkbox" id="debugFailAcademyUnlock"> Inject theme unlock failure</label><label><input type="checkbox" id="debugFailAcademyPurchase"> Inject theme purchase failure</label><label><input type="checkbox" id="debugFailAcademyBonus"> Inject theme bonus XP failure</label><label>Target skill <select id="debugFaultSkillSelect"><option value="">Choose skill…</option></select></label></div><p class="sub">Sandbox-only fault injection. The selected skill scopes unlock/purchase failures to themes gated by that skill and XP-bonus failures to that skill. Tests exercise the relevant behavior and inspect the outcome.</p><pre id="debugQuestStoreResults" class="debugLog">No quest/store tests run yet.</pre></div>
   <div class="card"><h3>Character Gender Test</h3><p class="sub">Admin-only character-gender test. Outside Sandbox, the selected gender is saved to the live character after confirmation. Inside Sandbox, the change is temporary and discarded when Sandbox ends.</p><div class="debugTools"><select id="debugAccountGender"><option value="male">Male character</option><option value="female">Female character</option></select><button class="btn secondary" id="debugApplyAccountGender" type="button">Apply gender to account</button></div>
@@ -285,6 +285,8 @@
 <script src="./codes/theme-registry.js"></script>
 <script src="./codes/theme-service.js"></script>
 <script src="./codes/theme-music.js"></script>
+<script src="./codes/skill-service.js"></script>
+<script src="./codes/debug-service.js"></script>
 
 <script>
 // Lazy tab entry points. The shared account/app core remains eager; each tab entry
@@ -385,46 +387,6 @@ const skillCatalog = [
  ]},
  {category:"Sandbox testing", icon:"🧪", skills:[["Test","Complete the Test quest to validate unlocks, equipment, and item effects. (Sandbox only)"]]}
 ];
-const defaultSelected = [ {category:"Sandbox testing", icon:"🧪", skills:[["Test","Complete test quests to validate unlocks, equipment, and item effects. (Sandbox only)"]] }
-];
-function allSkillNames(){return skillCatalog.flatMap(c=>c.skills.map(s=>s[0]))}
-function ensureSelectedSkills(){
- if(!Array.isArray(state.selectedSkills)) state.selectedSkills=[...defaultSelected];
- state.selectedSkills=state.selectedSkills.filter(s=>allSkillNames().includes(s));
- if(!state.skillXp)state.skillXp={};
- if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};
- state.selectedSkills.forEach(skill=>{if(!["priority","secondary"].includes(state.skillPriorities[skill]))state.skillPriorities[skill]="secondary";});
- Object.keys(state.skillPriorities).forEach(skill=>{if(!state.selectedSkills.includes(skill))delete state.skillPriorities[skill];});
-}
-function getSkillPriority(skill){ensureSelectedSkills();return state.skillPriorities[skill]||"secondary";}
-
-function skillDescription(name){for(const c of skillCatalog){const found=c.skills.find(s=>s[0]===name);if(found)return found[1]}return ""}
-function questForSkill(skill){
- const map={
-  "Reading":["Read 10 pages","Read 10 pages of a book you enjoy."],
-  "Piano":["Practise piano for 10 minutes","Practise one technique or work on a song for 10 minutes."],
-  "Adventure":["Explore somewhere new","Visit a nearby place you don't usually go, even briefly."],
-  "Social Interactions":["Initiate one interaction","Start a conversation, ask a question or greet someone first."],
-  "Relationships":["Reconnect with someone","Send a thoughtful message or make plans with someone you care about."],
-  "Discipline":["Do one thing before screens","Complete one meaningful real-life task before gaming or TV."],
-  "Learning":["Learn something new","Spend 10 minutes learning a topic and note one thing you discovered."],
-  "Digital Balance":["Choose an offline activity","Put your phone away and spend 15 minutes doing something offline."],
-  "Fitness":["Complete a strength session","Do a manageable resistance or bodyweight workout using familiar exercises."],
-  "Cooking":["Make something simple","Prepare a meal or learn one new cooking technique."],
-  "Conversation":["Ask a good question","Ask someone an open-ended question and listen to their answer."],
-  "Photography":["Take three thoughtful photos","Look for interesting light, shapes or details around you."],
-  "Writing":["Write for 10 minutes","Write a paragraph, journal entry or short scene."],
-  "Strength Training":["Complete a short strength session","Do a safe, manageable session suited to your current ability."],
-  "Running":["Go for an easy run or walk-run","Keep it comfortable and adapt to your current fitness."],
-  "Walking & Hiking":["Take a different route","Walk somewhere you don't usually go."],
-  "Guitar":["Practise guitar","Spend 10 focused minutes on chords or a song."],
-  "Singing":["Practise your voice","Spend 10 minutes on warm-ups or a song."]
- };
- const pair=skill==="Test"?["Test","Complete the Test quest to verify the Test skill can gain XP in Sandbox."]:map[skill]||[`Practise ${skill.toLowerCase()}`,`Spend 10 focused minutes practising ${skill.toLowerCase()} or learning one small thing about it.`];
- const xp=/Adventure|Social Interactions|Relationships|Conversation|Networking|Public Speaking|Community|Hosting/.test(skill)?25:10;
- return {title:pair[0],description:pair[1],category:/Adventure|Walking|Hiking|Explore/.test(skill)?"Adventure":/Social|Relationships|Conversation|Networking|Speaking|Hosting|Community|Teamwork/.test(skill)?"Social":/Reading|Learning|History|Science|Philosophy|Psychology|Geography|Language|Research|Knowledge/.test(skill)?"Knowledge":/Piano|Guitar|Music|Instrument|Singing|Drawing|Painting|Photography|Writing|Creative|Pottery|Woodworking|Sewing|Knitting|Coding|Design/.test(skill)?"Skill":"Daily",skill,xp};
-}
-
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
 function freshState(){return {xp:0,completedTotal:0,quests:[],questGenerationCooldownUntil:0,lastGeneratedSkills:[],journal:[],todo:[],groceries:[],selectedSkills:[],skillPriorities:{},skillXp:{},questHistory:{},questDays:[],profile:{gender:null},inventory:[],equipment:{},gold:0,settings:{...defaultSettings},activeDate:today(),lastDay:today()};}
 let state=load()||freshState();
@@ -617,7 +579,7 @@ function nextSaveRevision(){
  let previous=0;try{previous=Number(localStorage.getItem(STATE_UPDATED_KEY))||0;}catch(e){}
  return Math.max(Date.now(),previous+1);
 }
-let debugSandboxActive=false, debugLiveStateBackup=null, debugSandboxState=null, debugLogEntries=[];
+let debugSandboxActive=false, debugLiveStateBackup=null, debugSandboxState=null;
 function save(skipRender=false){
  if(typeof debugSandboxActive!=="undefined"&&debugSandboxActive){if(!skipRender)render();if(typeof persistDebugSandboxSession==="function")persistDebugSandboxSession();return;}
  const revision=nextSaveRevision();
@@ -628,8 +590,6 @@ function save(skipRender=false){
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
-function ensureQuests(){if(state.quests.length)return;state.quests=starters.map((q,i)=>({...q,id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+i),done:false,source:"starter"}));}
-function categoryIcon(c,skill){if(skill==="Fitness")return "💪";if(skill==="Cardio")return "🏃";if(skill==="Piano")return "🎹";return ({Adventure:"🧭",Social:"🗣️",Skill:"✨",Knowledge:"📚",Relationships:"🤝",Daily:"⚔️","Side quest":"✦","Boss quest":"👑"})[c]||"✦"}
 let debugUnlockAllItems=false;
 let debugThemeGrantLevel=1;
 let debugAllowThemeUnequip=false;
@@ -696,56 +656,6 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 }
 
 
-// Curated quest generation: one random quest per selected skill.
-// Quest templates start at 15 base XP; generated rewards scale with that skill's level.
-function getSkillGroup(skill){
-  for(const group of skillCatalog){
-    if(group.skills.some(item=>item[0]===skill)) return group.category;
-  }
-  return "Lifestyle & personal growth";
-}
-// Progressive per-skill XP curve. skillXp remains lifetime total XP, so existing progress is preserved.
-function xpNeededForNextLevel(level){
-  if(level<=2) return 60;
-  if(level<=4) return 90;
-  if(level<=6) return 120;
-  if(level<=9) return 150;
-  if(level<=14) return 180;
-  if(level<=19) return 225;
-  if(level<=29) return 270;
-  return 300;
-}
-function getSkillProgress(totalXp){
-  let xp=Math.max(0,Number(totalXp)||0), level=1;
-  while(level<1000){
-    const needed=xpNeededForNextLevel(level);
-    if(xp<needed) return {level,intoLevel:xp,needed,progress:xp/needed*100};
-    xp-=needed; level++;
-  }
-  return {level,intoLevel:0,needed:xpNeededForNextLevel(level),progress:0};
-}
-function debugXpForSkillLevel(targetLevel){let xp=0;for(let level=1;level<Math.max(1,Number(targetLevel)||1);level++)xp+=xpNeededForNextLevel(level);return xp;}
-function debugFaultEnabled(id){return !!(debugIsAdmin()&&debugSandboxActive&&document.getElementById(id)?.checked);}
-function debugFaultSkill(){return String(document.getElementById("debugFaultSkillSelect")?.value||"");}
-function getSkillLevel(skill){
-  return getSkillProgress(state.skillXp&&state.skillXp[skill]).level;
-}
-// Skill-level reward bonus is locked when quests are generated: +3 per attained level 2-9,
-// +2 per attained level 10-19, then +1 for each attained level 20 and above.
-function calculateSkillQuestLevelBonus(level){
-  const attainedLevel=Math.max(1,Math.floor(Number(level)||1));
-  let bonus=0;
-  for(let gainedLevel=2;gainedLevel<=attainedLevel;gainedLevel++){
-    bonus+=gainedLevel>=20?1:gainedLevel>=10?2:3;
-  }
-  return bonus;
-}
-function getLevelBand(level){
-  if(level<=3) return 1;
-  if(level<=6) return 2;
-  if(level<=9) return 3;
-  return 3 + Math.floor((level-7)/3);
-}
 
 
 // Initialize the interface from saved local data on every page load.
@@ -754,24 +664,16 @@ ensureSelectedSkills();
 
 // Admin Debug Workshop (front-end convenience gate; not security for privileged backend operations).
 let debugOverrideQuestRules=false;
-function debugQuestRulesOverridden(){return debugSandboxActive&&debugOverrideQuestRules;}
-function debugLog(message){debugLogEntries.unshift(new Date().toLocaleTimeString()+" · "+message);debugLogEntries=debugLogEntries.slice(0,80);const el=document.getElementById("debugEventLog");if(el)el.textContent=debugLogEntries.join("\n");}
 // Independent Debug baseline: deliberately separate from UNLOCKABLE_ITEMS so a forgotten
 // registration/CSS change cannot redefine its own expected result. Update this manifest only
 // when a theme's intended identity is deliberately changed.
 
-const debugCharacterSnapshotKey="wayfarer-debug-character-snapshot-v1";
-function debugCharacterDataSnapshot(){return JSON.parse(JSON.stringify({xp:state.xp,gold:state.gold,skillXp:state.skillXp,selectedSkills:state.selectedSkills,skillPriorities:state.skillPriorities,inventory:state.inventory,equipment:state.equipment,profile:state.profile,quests:state.quests,completedTotal:state.completedTotal,questGenerationCooldownUntil:state.questGenerationCooldownUntil,lastGeneratedSkills:state.lastGeneratedSkills,questHistory:state.questHistory,questDays:state.questDays,characterXp:state.characterXp,level:state.level}));}
-function debugApplySnapshot(snapshot){if(!debugRequireSandbox())return;for(const k of Object.keys(snapshot||{}))state[k]=JSON.parse(JSON.stringify(snapshot[k]));save();render();renderDebugPanel();}
-function debugCanUseCharacterTools(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated Sandbox first. No live-account changes are allowed.");return false;}return true;}
 let debugSandboxCharacterSnapshot=null;
 function restoreWayfarerUsername(user){const metadataName=String(user?.user_metadata?.wayfarer_username||"").trim();if(metadataName){try{localStorage.setItem("wayfarer-last-username",metadataName);}catch(e){}return metadataName;}const email=String(user?.email||"").trim();const localPart=email.includes("@")?email.slice(0,email.indexOf("@")):email;if(localPart.trim()){try{localStorage.setItem("wayfarer-last-username",localPart.trim());}catch(e){}return localPart.trim();}try{return String(localStorage.getItem("wayfarer-last-username")||"").trim();}catch(e){return "";}} function debugIsAdmin(){return String(wayfarerSignedInUsername||"").trim().toLowerCase()==="admin";}
 function debugRequireSandbox(){if(!debugIsAdmin()){toast("Admin access required.");return false;}if(!debugSandboxActive){toast("Start the isolated sandbox first.");return false;}return true;}
 
 
 function renderDebugPanel(){ if(window.WayfarerTabRenderers?.debug?.renderDebugPanel) return window.WayfarerTabRenderers.debug.renderDebugPanel(); const btn=document.getElementById("debugTabButton"); if(btn)btn.style.display=(!!cloudUser&&debugIsAdmin())?"inline-flex":"none"; const genderApply=document.getElementById("debugApplyAccountGender"); if(genderApply)genderApply.disabled=!cloudUser||!debugIsAdmin(); }
-function debugRenderQuests(){const el=document.getElementById("debugQuestList");if(!el)return;const qs=Array.isArray(state.quests)?state.quests:[];el.textContent=qs.length?qs.map((q,i)=>`${i+1}. ${q.done?'[DONE]':'[OPEN]'} ${q.title||'(untitled)'} · skill=${q.skill||'—'} · xp=${q.xp??'—'} · source=${q.source||'—'} · id=${q.id||'—'}`).join("\n"):"No quests in sandbox.";}
-function debugInspect(){const el=document.getElementById("debugSaveInspector");if(!el)return;const d=debugSandboxActive?state:(debugLiveStateBackup||state);el.textContent=JSON.stringify({mode:debugSandboxActive?"sandbox":"read-only live snapshot",xp:d.xp,calculatedLevel:Math.floor((Number(d.xp)||0)/100)+1,completedTotal:d.completedTotal,questCount:(d.quests||[]).length,openQuests:(d.quests||[]).filter(q=>!q.done).length,completedQuests:(d.quests||[]).filter(q=>q.done).length,selectedSkills:d.selectedSkills,skillXp:d.skillXp,activeDate:d.activeDate,lastDay:d.lastDay,journalEntries:(d.journal||[]).length,todoItems:(d.todo||[]).length,questHistoryKeys:Object.keys(d.questHistory||{}).length},null,2);}
 
 const DEBUG_SANDBOX_SESSION_KEY="wayfarer-debug-sandbox-session-v1";
 function persistDebugSandboxSession(){if(!debugSandboxActive||!debugLiveStateBackup||!debugSandboxState)return;try{sessionStorage.setItem(DEBUG_SANDBOX_SESSION_KEY,JSON.stringify({username:wayfarerSignedInUsername||"",live:debugLiveStateBackup,sandbox:state,snapshot:debugSandboxCharacterSnapshot}));}catch(e){debugLog("Could not persist temporary Sandbox session: "+String(e?.message||e));}}

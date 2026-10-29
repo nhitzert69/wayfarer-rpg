@@ -1,3 +1,13 @@
+# Wayfarer v2.3.0 — shared skill service and Admin resource grant fix (2026-10-29)
+
+- Fixed Debug “Grant XP & gold”: available to Admin in Sandbox or live mode. Live grants require explicit confirmation, require an authenticated Admin account, and use the normal core save/cloud-sync path; Sandbox grants remain temporary. The UI labels the target environment clearly and reports the result. Zero-value grants are rejected. Removal, reset and snapshot restore remain Sandbox-only.
+- Extracted shared skill progression and normalization helpers into `codes/skill-service.js`: skill-name lookup, selected-skill normalization/priorities, XP thresholds/progress, skill levels, quest-level XP bonuses, and level-band calculation. The core retains ownership of account state and the skill catalog; tabs consume the shared service.
+- Moved the Quest Board category-icon mapping into `codes/tabs/quests.js` and removed unused legacy quest helpers from `index.html` after confirming no callers remained. Quest generation and completion remain owned by `codes/tabs/quests.js`.
+- Moved Debug-only snapshot creation/restoration helpers, sandbox character tool guard, and quest inspection renderer into `codes/tabs/debug.js`; the core retains Sandbox lifecycle, session recovery, and shared save boundary.
+- Added `codes/debug-service.js` for cross-tab Debug fault gates, quest override state, event logging, and save inspection. This removes Debug-only utilities from the core while preserving access during pre-tab Sandbox restoration.
+- Updated Debug report version, service-worker cache namespace and precache manifest for the shared skill service.
+- Validation: syntax checks, static ownership checks, XP threshold/reward-bonus tests, grant guard/confirmation checks, precache path/version consistency and ZIP integrity. Live browser and Supabase sync behavior remain INCONCLUSIVE until tested in the deployed app.
+
 # Wayfarer v2.2.0 — extract remaining Debug action handlers (2026-10-29)
 
 - Built from the user-confirmed working v2.1.9 release. Moved the remaining Debug action handlers for Sandbox quest cooldown, resource grants/removal, character reset/restore, Time Machine, XP labs, coin grants, disposable test quests, planner runs, save inspection, and event-log clearing into `codes/tabs/debug.js`.
