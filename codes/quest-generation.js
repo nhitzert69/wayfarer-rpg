@@ -34,19 +34,23 @@ function themeUnlockAllowed(item,level){const levelMet=Number(level)>=Number(ite
 function themePurchaseAllowed(item,level,gold){if(!item)return false;const eligible=Number(level)>=Number(item.unlockLevel??Infinity)&&Number(gold)>=Number(item.price);if(!eligible)return false;return !(lifecycleFaultEnabled("purchase",item)||(debugFaultEnabled("debugFailAcademyPurchase")&&debugFaultSkill()&&item.unlockSkill===debugFaultSkill()));}
 function attemptThemePurchase(item,target,level){
  if(!item||!target)return {ok:false,reason:"invalid-item"};
- if((target.inventory||[]).some(owned=>owned?.id===item.id))return {ok:false,reason:"already-owned"};
+ const existing=(target.inventory||[]).find(owned=>owned?.id===item.id);if(existing&&Number(item.themeLevel||1)<=Number(existing.themeLevel||1))return {ok:false,reason:"already-owned"};
  const actualLevel=Number(level??getSkillLevel(item.unlockSkill));
  if(!themeUnlockAllowed(item,actualLevel))return {ok:false,reason:"locked"};
  const gold=Math.max(0,Number(target.gold)||0);
  if(gold<Number(item.price))return {ok:false,reason:"insufficient-gold"};
  if(!themePurchaseAllowed(item,actualLevel,gold))return {ok:false,reason:"injected-purchase-failure"};
  if(!Array.isArray(target.inventory))target.inventory=[];
- target.gold=gold-Number(item.price);target.inventory.push({...item});
- return {ok:true,reason:"purchased",goldRemaining:target.gold};
+ target.gold=gold-Number(item.price);
+ if(existing){Object.assign(existing,{name:item.name,themeLevel:item.themeLevel,perkXp:item.perkXp,perkGold:item.perkGold});}
+ else target.inventory.push({...item,themeLevel:Number(item.themeLevel)||1,perkXp:Number(item.perkXp)||5,perkGold:Number(item.perkGold)||0});
+ return {ok:true,reason:existing?"upgraded":"purchased",goldRemaining:target.gold};
 }
-const THEME_PERK_SKILLS=Object.fromEntries(UNLOCKABLE_ITEMS.filter(item=>item.perkSkill).map(item=>[item.id,item.perkSkill]));
+const THEME_PERK_SKILLS=Object.fromEntries(UNLOCKABLE_ITEMS.filter(item=>item.perkSkill&&item.perkSkill!=="*").map(item=>[item.id,item.perkSkill]));
+function getThemeDefinition(themeId){return (state.inventory||[]).find(x=>x&&x.id===themeId)||UNLOCKABLE_ITEMS.find(x=>x.id===themeId)||null;}
 function themeBonusAllowed(themeId,skill){const item=UNLOCKABLE_ITEMS.find(x=>x.id===themeId);return !(lifecycleFaultEnabled("bonus",item)||(debugFaultEnabled("debugFailAcademyBonus")&&debugFaultSkill()===skill&&THEME_PERK_SKILLS[themeId]===skill));}
-function calculateThemeBonus(themeId,skill){return THEME_PERK_SKILLS[themeId]===skill&&themeBonusAllowed(themeId,skill)?5:0;}
+function calculateThemeBonus(themeId,skill){const item=getThemeDefinition(themeId);if(!item||!themeBonusAllowed(themeId,skill))return 0;if(themeId==="bloodthirst-theme")return 2;return THEME_PERK_SKILLS[themeId]===skill?Number(item.perkXp)||5:0;}
+function calculateThemeGoldBonus(themeId,skill){const item=getThemeDefinition(themeId);if(!item)return 0;if(themeId==="bloodthirst-theme")return 2;return THEME_PERK_SKILLS[themeId]===skill?Math.max(0,Number(item.perkGold)||0):0;}
 function getSkillLevel(skill){
   return getSkillProgress(state.skillXp&&state.skillXp[skill]).level;
 }
@@ -305,11 +309,12 @@ function generateQuests(opts){
     delete quest._minutes;delete quest._score;delete quest._place;
     const equippedThemeAtGeneration=state.equipment?.theme||"dungeon-theme";
     const themeBonusXp=calculateThemeBonus(equippedThemeAtGeneration,skill);
-    const themeNameAtGeneration=equippedThemeAtGeneration==="orthodox-theme"?"Orthodox Christianity":equippedThemeAtGeneration==="academy-theme"?"Academy":equippedThemeAtGeneration==="adventure-theme"?"Adventure":equippedThemeAtGeneration==="social-interactions-theme"?"Social Interactions":equippedThemeAtGeneration==="relationships-theme"?"Relationships":equippedThemeAtGeneration==="spartan-endurance-theme"?"Spartan Endurance":equippedThemeAtGeneration==="mozart-salon-theme"?"Mozart's Salon":equippedThemeAtGeneration==="ceo-theme"?"CEO":"";
+    const themeBonusGold=calculateThemeGoldBonus(equippedThemeAtGeneration,skill);
+    const themeNameAtGeneration=equippedThemeAtGeneration==="orthodox-theme"?"Orthodox Christianity":equippedThemeAtGeneration==="academy-theme"?"Academy":equippedThemeAtGeneration==="adventure-theme"?"Adventure":equippedThemeAtGeneration==="social-interactions-theme"?"Social Interactions":equippedThemeAtGeneration==="relationships-theme"?"Relationships":equippedThemeAtGeneration==="spartan-endurance-theme"?"Spartan Endurance":equippedThemeAtGeneration==="mozart-salon-theme"?"Mozart's Salon":equippedThemeAtGeneration==="ceo-theme"?"CEO":equippedThemeAtGeneration==="bloodthirst-theme"?"Bloodthirst":"";
     const baseXp=Number(quest.xp)||15;
     const generatedForLevel=getSkillLevel(skill);
     const skillLevelBonusXp=calculateSkillQuestLevelBonus(generatedForLevel);
-    chosen.push({...quest,baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:chosenPlace,done:false,source:"generated",generatedForLevel,id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2)});
+    chosen.push({...quest,baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:chosenPlace,done:false,source:"generated",generatedForLevel,id:(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+Math.random().toString(36).slice(2)});
     usedTitles.add(quest.title);
     state.questHistory[skill]=[quest.title,...(state.questHistory[skill]||[]).filter(t=>t!==quest.title)].slice(0,8);
   }

@@ -2,6 +2,7 @@
 // v0.14.5: theme-aware music system. Settings are persisted in the existing account state.
 const THEME_MUSIC={
  "dungeon-theme":"./assets/sound/dungeon-theme.mp3",
+ "bloodthirst-theme":"./assets/sound/bloodthirst-theme.mp3",
  "adventure-theme":"./assets/sound/adventure-theme.mp3",
  "academy-theme":"./assets/sound/academy-theme.mp3",
  "social-interactions-theme":"./assets/sound/social-interactions-theme.mp3",

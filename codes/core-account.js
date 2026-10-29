@@ -116,7 +116,16 @@ let cloudUser = null;
 let cloudHydrating = false;
 let cloudConfigured = false;
 if (window.supabase && WAYFARER_SUPABASE_URL.startsWith("https://") && WAYFARER_SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
-  cloudClient = window.supabase.createClient(WAYFARER_SUPABASE_URL, WAYFARER_SUPABASE_ANON_KEY);
+  cloudClient = window.supabase.createClient(WAYFARER_SUPABASE_URL, WAYFARER_SUPABASE_ANON_KEY, {
+    // Keep username/PIN sessions across page refreshes. Explicit settings avoid
+    // relying on SDK defaults after the modular script migration.
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
+      storage: window.localStorage
+    }
+  });
   cloudConfigured = true;
 }
 function setCloudStatus(message){const el=document.getElementById("cloudStatus");if(el)el.textContent=message;}

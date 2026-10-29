@@ -1,3 +1,25 @@
+# Wayfarer v1.18.8 — session persistence and theme progression hardening (2026-10-29)
+
+- Made Supabase session persistence explicit in the client configuration using localStorage, token refresh, and URL-session detection disabled, to harden username/PIN login across refreshes.
+- Hardened skill-theme upgrade level derivation so the next upgrade is calculated from the owned theme's saved level, while preserving the stable theme ID, skill-level requirements, and +100-coin pricing increments.
+- Bloodthirst remains intentionally excluded from the Store and cannot unlock in live gameplay until the kill-count threshold and an actual kill counter are implemented. Debug Sandbox Give All Items continues to include the registered theme.
+- Validation: JavaScript syntax, archive integrity, and release metadata checks. Live browser, Supabase session restoration, actual purchase flows, and deployment were not available for verification.
+
+# Wayfarer v1.18.7 — Skill-theme upgrade pricing (2026-10-29)
+
+- Added a 100-coin price increase for each skill-theme upgrade above Level 1. The original theme retains its registered base price; Levels 2–5 cost base +100, +200, +300, and +400 coins respectively.
+- Centralized the price calculation in the Store catalog so the displayed price, purchase affordability check, and shared purchase transaction use the same price. Added a Debug regression check for the five-level price curve using a 200-coin base example.
+- Updated the mandatory project rules and service-worker cache version to v1.18.7.
+- Validation: JavaScript syntax, upgrade-price formula assertions, required asset references, version/cache/changelog consistency, and ZIP integrity checked. Live browser, Supabase, and deployed-site tests were not performed.
+
+# Wayfarer v1.18.6 — Bloodthirst theme and skill-theme upgrade progression (2026-10-29)
+
+- Added the Bloodthirst icon, supplied male/female character artwork, landscape background, and compressed 128 kbps MP3 soundtrack (about 3.1 MB). The theme is not sold in the Store; its kill threshold remains intentionally unconfigured until the game is ready. Its registered perk is +2 XP and +2 gold for every skill quest.
+- Added skill-theme upgrade progression for registered skill themes: Level 1 unlocks at skill level 3; Levels 2–5 unlock at levels 8, 13, 18, and 23. Each upgrade adds +5 XP and +2 gold per matching-skill quest, reaching +25 XP and +8 gold at Level 5. The owned theme is upgraded in place so stable equipment IDs remain intact; Level 5 ends its Store progression.
+- Locked theme XP and gold bonuses into newly generated quests and awarded saved coin bonuses through the shared quest-reward helper. Existing quest rewards are not recalculated.
+- Added Bloodthirst theme registration, music mapping, crimson/ember/antique-gold palette, background overlay, and Sandbox registry inclusion. The configured kill-count unlock mechanic is pending a final threshold and integration with a kill counter (not present in this baseline).
+- Validation: JavaScript syntax, required asset references, version/cache/changelog consistency, and ZIP integrity checked. Browser gameplay, live Supabase, and deployed-site tests were not performed.
+
 # Wayfarer v1.18.5 — staged code organization in `codes/` (2026-10-29)
 
 - Removed the large inline application script from `index.html` and split the existing JavaScript, in its original execution order, into named files under `codes/`: core/account, themes/store, theme music, app rendering/quest rewards, skills, To Do, Journal, skill/navigation UI, groceries, adventures, app startup, quest generation, and Debug/Sandbox.

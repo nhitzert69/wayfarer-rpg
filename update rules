@@ -1,3 +1,8 @@
+## Auth session persistence (v1.18.8 — mandatory)
+- Supabase username/PIN authentication must explicitly use persistent browser storage, token refresh, and session restoration on reload.
+- Verify a signed-in session survives a page refresh, then confirm account data is loaded from the matching cloud user before showing the authenticated app.
+- Never clear account-bound state merely because the initial auth callback arrives before `getSession()` resolves. Test refresh, sign-out, sign-in, and account isolation; report browser/Supabase tests accurately.
+
 ## Modular code organization (v1.18.5 — mandatory)
 - Keep application code in the root-level `codes/` folder, loaded by `index.html` in a documented, stable order. `index.html` remains the application entry point.
 - Keep each major system in a clearly named file: account/persistence/core, skills and quests, Store and theme registry/music, To Do, Journal, groceries/adventures, quest generation, and Debug/Sandbox. Split further into dedicated tab/system files as each area is safely migrated; do not collapse the architecture back into a monolithic inline script.
@@ -97,3 +102,17 @@ Quest generation coverage rule (permanent): The campaign time selection is a pri
 - Run targeted tests for every change plus appropriate regression tests for critical systems, including login/account isolation, persistence, navigation, skills/quests, themes, Store, Inventory/equipment, rewards, Debug and Sandbox where relevant. Distinguish syntax/archive checks from actual browser testing and state exactly what was and was not verified.
 - Before packaging, validate JavaScript syntax, required files and asset references, ZIP integrity, and release-version consistency. The app/build and diagnostic report versions, service-worker cache, top changelog entry, and ZIP filename must identify the same release unless an intentional difference is documented. Keep `CHANGELOG.md` in the service-worker asset list and preserve all older entries.
 - Documentation-only/rules-only releases still require a new top changelog entry and matching release/cache metadata, but must not change unrelated gameplay behavior. Deliver the complete project ZIP, not isolated project files. Do not claim live-browser testing or deployment unless actually performed.
+
+
+## Skill-theme upgrade progression and Bloodthirst (v1.18.6 — mandatory)
+- Skill themes progress independently through five levels. Level 1 unlocks at skill level 3; Level 2 at 8; Level 3 at 13; Level 4 at 18; Level 5 at 23. Each level adds +5 XP and +2 gold to the matching skill's quest reward, so levels 1–5 provide +5/+0, +10/+2, +15/+4, +20/+6, and +25/+8. Preserve existing stable theme IDs and upgrade the owned item in place unless a migration is explicitly tested.
+- The Store shows the next upgrade for owned skill themes, and no further upgrade after Level 5. Verify price, skill requirement, purchase transaction, Inventory name/perks, equip state, save, and refresh behavior.
+- Bloodthirst is a special non-purchasable theme. Its unlock is based on a configurable kill count, but the threshold remains unset until specified. Do not make up a threshold. It grants +2 XP and +2 gold to every skill quest, uses its own icon, male/female art, background and music, and must be included in Sandbox Give All Items without affecting live account ownership.
+- Theme XP and coin bonuses are locked at quest generation and awarded exactly once by the shared completion path. Test skill-specific upgrades and Bloodthirst global bonuses, including saved rewards after changing equipment.
+
+
+## Skill-theme upgrade pricing (v1.18.7 — mandatory)
+- The first/original skill theme keeps its registered base price. Every upgrade above Level 1 costs an additional 100 coins over the immediately previous level: price = original base price + 100 × (theme level − 1).
+- Keep this price calculation in the shared theme Store path so the displayed price, purchase button, affordability check, currency deduction, and Debug lifecycle tests all use the same amount.
+- Example for a theme with a 200-coin base price: Levels 1–5 cost 200, 300, 400, 500, and 600 coins. For the existing 100-coin base themes, Levels 1–5 cost 100, 200, 300, 400, and 500 coins.
+- Test both price display and actual purchase deduction at all five levels, including insufficient funds, Sandbox isolation, and preserving the upgraded owned item/equipment ID.
