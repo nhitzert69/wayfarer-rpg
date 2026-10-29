@@ -1,3 +1,11 @@
+# Wayfarer v1.19.4 — independent startup watchdog (2026-10-29)
+
+- Added a page-level watchdog independent of the Supabase startup promise, so a stalled callback or early script failure cannot leave the loading overlay unchanged forever.
+- Added a last-resort recovery handler: if a user session is already identified, it opens the retained device copy without writing it over cloud data; otherwise it releases to the sign-in/settings flow.
+- Added a visible retry action and a clearer startup timeout message; no timeout is treated as permission to erase account state.
+- Updated service-worker cache namespace and retained prior changelog history and mandatory rules files.
+- Validation: JavaScript syntax, startup fallback assertions, version/cache/changelog consistency, and ZIP integrity. Real browser/Supabase testing is still required; this is not claimed verified against the live site.
+
 # Wayfarer v1.19.3 — bounded authentication and save restoration (2026-10-29)
 
 - Added a 12-second timeout around Supabase session restoration and cloud-save loading so an unresolved request cannot leave the startup gate visible forever.

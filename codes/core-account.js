@@ -235,6 +235,25 @@ async function finishSignIn(username,pin,create,gender=null){
  if(typeof renderDebugPanel === "function") renderDebugPanel();
 }
 function finishAuthInitialization(){authInitializationPending=false;const gate=document.getElementById("authStartupGate");if(gate)gate.style.display="none";enforceAccountGate();}
+// Independent last-resort watchdog: if any startup callback hangs or throws
+// outside the bounded network promises, recover the UI without deleting saves.
+window.wayfarerStartupFailsafe=function(){
+ if(!authInitializationPending)return;
+ console.error("Wayfarer startup watchdog released the authentication gate.");
+ try{
+   cloudHydrating=false;
+   if(cloudUser){
+     const cached=load();if(cached)state=cached;
+     try{render();}catch(error){console.error("Cached-state render failed during startup recovery",error);}
+     const show=(id,display)=>{const el=document.getElementById(id);if(el)el.style.display=display;};
+     show("signOutBtn","inline-flex");show("accountModeChooser","none");show("accountUsernameField","block");show("accountPinField","none");show("accountActionButtons","flex");show("createAccountBtn","none");show("signInBtn","none");show("backAccountModeBtn","none");
+     setCloudStatus("Startup recovery: opened your device copy while cloud restoration was delayed. Your cloud save was not overwritten. Refresh or retry cloud loading when ready.");
+   }else{
+     setCloudStatus("Sign-in restoration took too long. Please sign in again; your saved data has been preserved.");
+   }
+ }catch(error){console.error("Wayfarer startup recovery encountered an error",error);}
+ finally{finishAuthInitialization();}
+};
 function enforceAccountGate(){const gate=document.getElementById("authStartupGate");if(authInitializationPending){if(gate)gate.style.display="flex";return;}if(gate)gate.style.display="none";const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=signedIn||btn.dataset.tab==='settings';btn.style.display=allowed?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=signedIn?'':(sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
 let accountFlowMode=null;
 function showAccountMode(mode){accountFlowMode=mode;document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="block";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display=mode==="create"?"inline-flex":"none";document.getElementById("signInBtn").style.display=mode==="login"?"inline-flex":"none";hideGenderChoice();if(mode==="create"){const field=document.getElementById("accountGenderField");if(field)field.style.display="block";}}

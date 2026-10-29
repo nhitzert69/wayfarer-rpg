@@ -36,8 +36,24 @@
 </head>
 <body>
 <div id="authStartupGate" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#101315;color:#f4e8cf;text-align:center">
-  <div style="max-width:440px"><div style="font:700 25px Georgia,serif;letter-spacing:.14em;margin-bottom:12px">WAYFARER</div><div style="font:16px Georgia,serif;margin-bottom:8px">Restoring your campaign…</div><div style="color:#b9b0a0;font-size:13px">Checking your sign-in and saved progress. If this takes too long, Wayfarer will open a recovery path.</div></div>
+  <div style="max-width:440px"><div style="font:700 25px Georgia,serif;letter-spacing:.14em;margin-bottom:12px">WAYFARER</div><div id="authStartupTitle" style="font:16px Georgia,serif;margin-bottom:8px">Restoring your campaign…</div><div id="authStartupMessage" style="color:#b9b0a0;font-size:13px">Checking your sign-in and saved progress.</div><button id="authStartupRetry" type="button" style="display:none;margin:18px auto 0;padding:10px 16px;border:1px solid #a9824c;border-radius:8px;background:#252321;color:#f4e8cf;font-weight:700;cursor:pointer" onclick="location.reload()">Retry startup</button></div>
 </div>
+<script>
+// Runs independently of the modular app startup code. This catches failures
+// where core-account.js never reaches its own timeout/recovery handler.
+window.setTimeout(function(){
+ const gate=document.getElementById('authStartupGate');
+ if(!gate||getComputedStyle(gate).display==='none')return;
+ const title=document.getElementById('authStartupTitle');
+ const message=document.getElementById('authStartupMessage');
+ const retry=document.getElementById('authStartupRetry');
+ if(title)title.textContent='Startup is taking longer than expected';
+ if(message)message.textContent='Wayfarer is recovering your session. Your saved progress will not be erased.';
+ if(retry)retry.style.display='inline-block';
+ if(typeof window.wayfarerStartupFailsafe==='function')window.wayfarerStartupFailsafe();
+ else if(message)message.textContent='The app startup script did not finish loading. Retry the page; your saved progress has not been cleared.';
+},18000);
+</script>
 <div class="app">
 <header>
   <div class="brand"><div class="crest dungeonCrest" role="img" aria-label="Dungeon icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 43V21C7 10 14 4 24 4s17 6 17 17v22" fill="#15191b" stroke="#d4a15f" stroke-width="2.2"/><path d="M12 43V22c0-8 5-13 12-13s12 5 12 13v21" fill="#282522" stroke="#786047" stroke-width="1.5"/><path d="M17 43V23c0-5 3-8 7-8s7 3 7 8v20" fill="#090c0e" stroke="#bd884c" stroke-width="1.5"/><path d="M13 22l-3-5 4 1 2-5 2 7M35 22l3-5-4 1-2-5-2 7" fill="#f2a34e" stroke="#efc783" stroke-width="1"/><path d="M20 43V30h8v13" fill="#1d1712" stroke="#9b7446" stroke-width="1.2"/></svg></div><div><p class="eyebrow">A life worth adventuring</p><h1>WAYFARER</h1></div></div>

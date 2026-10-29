@@ -1,3 +1,8 @@
+## Independent startup watchdog (v1.19.4 — mandatory)
+- Keep an independent page-level watchdog in index.html in addition to Supabase promise timeouts. It must reveal a retryable recovery state if modular startup stalls or fails before registering its own timeout.
+- On watchdog recovery, preserve the device copy and never overwrite cloud data automatically. If the authenticated user is already identified, render the retained local copy with a clear cloud-recovery status; otherwise show the normal sign-in path.
+- Update service-worker cache version, changelog, and Debug version strings together. A release is not considered fixed until signed-in refresh is verified in a real browser.
+
 ## Bounded authentication startup recovery (v1.19.3 — mandatory)
 - Neither Supabase session restoration nor cloud-save hydration may hold the startup gate indefinitely. Wrap each startup network operation in a bounded timeout and release the gate into a retryable recovery state on timeout.
 - A timeout is not proof that the user is signed out. Preserve the device copy and never reset account state because auth or cloud reads are slow/unavailable.
