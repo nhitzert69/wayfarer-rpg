@@ -1,3 +1,18 @@
+# Wayfarer v1.19.7 — restore Admin tab identity and show Bloodthirst XP/gold bonuses (2026-10-29)
+
+- Fixed Admin username recovery after refresh: if Supabase user metadata lacks the username, reuse the last entered username only when its deterministic Wayfarer email exactly matches the authenticated user's email. This preserves the Admin Debug tab without granting Admin status to a different account.
+- Quest cards now explicitly show both Bloodthirst bonus XP and bonus gold when those locked-in quest rewards include them. The existing total XP and coin reward remains visible.
+- Updated Debug report version strings and service-worker cache namespace.
+- Validation: JavaScript syntax, username/email matching logic, bonus-label rendering, rules-file presence, and ZIP integrity. Live browser/Supabase behavior remains unverified.
+
+# Wayfarer v1.19.6 — restore Admin Debug Sandbox persistence after authentication (2026-10-29)
+
+- Fixed the refresh restoration condition: the Debug script previously attempted Sandbox restoration only when no cloud client or user existed, skipping the normal signed-in Admin case.
+- Restore the same-tab Sandbox snapshot only after the authenticated user is confirmed as Admin, with a startup event to handle either script-loading order.
+- Made restoration idempotent and require the saved Sandbox snapshot username to match the authenticated Admin username exactly; failed restoration no longer deletes the saved snapshot automatically.
+- Updated service-worker cache namespace and Debug report version strings.
+- Validation: JavaScript syntax, restoration-path assertions, version/cache/changelog consistency, rules files, and ZIP integrity. Real browser refresh testing remains required.
+
 # Wayfarer v1.19.5 — index-level Supabase auth bootstrap (2026-10-29)
 
 - Moved Supabase client creation and the first persisted-session restoration check into `index.html`, before any modular Wayfarer scripts execute.

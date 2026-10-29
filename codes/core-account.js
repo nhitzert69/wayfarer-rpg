@@ -350,7 +350,8 @@ if(cloudClient){
        setCloudStatus("Signed in. No cloud save existed, so a fresh profile was created.");
      }
      cloudHydrating=false;
-     restoreDebugSandboxSession();
+     if(typeof restoreDebugSandboxSession==="function")restoreDebugSandboxSession();
+     window.dispatchEvent(new Event("wayfarer-auth-restored"));
      document.getElementById("signOutBtn").style.display="inline-flex";
      document.getElementById("accountModeChooser").style.display="none";
      document.getElementById("accountUsernameField").style.display="block";

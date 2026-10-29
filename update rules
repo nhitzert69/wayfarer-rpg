@@ -1,3 +1,14 @@
+## Admin identity restoration and Bloodthirst reward labels (v1.19.7 — mandatory)
+- After refresh, recover the username from Supabase metadata first. If absent, reuse `wayfarer-last-username` only when `usernameEmail(candidate)` exactly matches the authenticated Supabase email; never grant Admin based only on an unrelated global cached username or email local-part guess. Re-render Debug visibility after auth restoration.
+- Quest reward UI must display both the locked-in theme bonus XP and theme bonus gold when present. Keep total quest rewards and all other bonus labels intact.
+- Update changelog, service-worker cache namespace, and Debug report version strings together.
+
+## Admin Debug Sandbox persistence after auth bootstrap (v1.19.6 — mandatory)
+- Restore a saved same-tab Debug Sandbox only after Supabase has identified the signed-in Admin account. The Debug script must handle either ordering: authentication may resolve before or after `debug.js` loads.
+- Never gate restoration on the absence of `cloudUser`; that skips restoration for the normal signed-in Admin case. Dispatch/listen for an auth-restored event and keep restoration idempotent.
+- Restore only when the stored snapshot username exactly matches the authenticated username. Do not clear a valid snapshot just because authentication is not ready yet. Keep the real account save isolated from the temporary Sandbox.
+- Update changelog, service-worker cache version, and Debug report version strings together. Verify Sandbox persistence across a real same-tab refresh without altering live account progress.
+
 ## Index-level authentication bootstrap (v1.19.5 — mandatory)
 - Create the Supabase client and begin persisted-session restoration in `index.html` before loading modular application scripts.
 - `core-account.js` must reuse the exact `window.wayfarerSupabaseClient` and `window.wayfarerAuthPreflight` promise; do not create a competing client or race a second initial `getSession()` call when preflight exists.
