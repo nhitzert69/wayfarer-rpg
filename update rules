@@ -1,118 +1,12 @@
-## Auth session persistence (v1.18.8 — mandatory)
-- Supabase username/PIN authentication must explicitly use persistent browser storage, token refresh, and session restoration on reload.
-- Verify a signed-in session survives a page refresh, then confirm account data is loaded from the matching cloud user before showing the authenticated app.
-- Never clear account-bound state merely because the initial auth callback arrives before `getSession()` resolves. Test refresh, sign-out, sign-in, and account isolation; report browser/Supabase tests accurately.
+## Debug Sandbox hard boundary and auth restoration (v1.18.9 — mandatory)
+- Every Debug control that changes gameplay, account state, progression, inventory, equipment, dates, cooldowns, feature flags, fault injection, or test fixtures must be blocked unless the exact Admin account is signed in and Sandbox is active. The only outside-Sandbox action allowed is entering Sandbox; leaving Sandbox is allowed only while active.
+- Enforce this both in each action handler and with a central capture-phase interaction guard. Do not rely on hidden/disabled UI alone. Do not let resource grants, removals, character reset/restore, cooldown reset, gender changes, unlock-all, or fault injection touch live state.
+- Sandbox changes must never persist into the real account or shared local save. Reset/restore snapshots must be sandbox-scoped and must not overwrite a live-account snapshot.
+- On startup, Supabase getSession() is authoritative for session restoration. Ignore transient null auth callbacks until initial restoration completes; do not clear username/session UI due to an early callback. Preserve account data if restoration fails and show a retryable status. Verify page refresh, sign-in/out, and account isolation in a browser before claiming success.
 
-## Modular code organization (v1.18.5 — mandatory)
-- Keep application code in the root-level `codes/` folder, loaded by `index.html` in a documented, stable order. `index.html` remains the application entry point.
-- Keep each major system in a clearly named file: account/persistence/core, skills and quests, Store and theme registry/music, To Do, Journal, groceries/adventures, quest generation, and Debug/Sandbox. Split further into dedicated tab/system files as each area is safely migrated; do not collapse the architecture back into a monolithic inline script.
-- Preserve classic-script shared global behavior during the staged migration unless a separately tested migration to ES modules is explicitly performed. Do not change declaration order or execution order casually.
-- When adding, renaming, or moving code files, update `index.html`, the service-worker precache list, version/cache identifiers, and tests. Confirm every referenced file exists and is served with the correct path.
-- Refactor incrementally and validate each step. Do not claim a system is independently modular if it still shares a file with unrelated systems; document remaining consolidation work accurately.
+## Debug Sandbox hard boundary and auth restoration (v1.18.9 — mandatory)
+- Every Debug control that changes gameplay, account state, progression, inventory, equipment, dates, cooldowns, feature flags, fault injection, or test fixtures must be blocked unless the exact Admin account is signed in and Sandbox is active. The only outside-Sandbox action allowed is entering Sandbox; leaving Sandbox is allowed only while active.
+- Enforce this both in each action handler and with a central capture-phase interaction guard. Do not rely on hidden/disabled UI alone. Do not let resource grants, removals, character reset/restore, cooldown reset, gender changes, unlock-all, or fault injection touch live state.
+- Sandbox changes must never persist into the real account or shared local save. Reset/restore snapshots must be sandbox-scoped and must not overwrite a live-account snapshot.
+- On startup, Supabase getSession() is authoritative for session restoration. Ignore transient null auth callbacks until initial restoration completes; do not clear username/session UI due to an early callback. Preserve account data if restoration fails and show a retryable status. Verify page refresh, sign-in/out, and account isolation in a browser before claiming success.
 
-## Store category organization and compact mobile cards (v1.18.4 — mandatory)
-- Keep Store navigation separated into Themes, Artifacts, and Pets categories. Selecting a category must show only its corresponding catalog panel, visibly identify the active tab, and preserve the selected category during Store re-renders.
-- Every registered purchasable item must appear in the category matching its stable item type/category without duplicating or bypassing shared unlock, purchase, ownership, or save logic.
-- When a category has no registered purchasables, show a clear empty state rather than inventing catalog items. Adding future artifacts or pets requires registering them in the authoritative catalog and integrating their actual purchase and inventory/equipment behavior.
-- Keep Store cards compact and mobile-friendly: use appropriately sized item art, concise spacing, readable text, and accessible controls while preserving prices, unlock requirements, perks, and purchase actions.
-- Test all three category buttons, active tab/panel state, responsive card sizing, purchase/unlock behavior, and state persistence. Clearly distinguish empty catalog states from failed loading.
-
-# Update Rules
-
-## Skill-level quest XP scaling (v1.18.3 — mandatory)
-- Generated quests must add a skill-level XP bonus based on the level of the skill they train: +3 XP for each attained level from 2 through 9, +2 XP for each attained level from 10 through 19, and +1 XP for each attained level from 20 onward. The accumulated bonus is +24 at level 9, +26 at level 10, +44 at level 19, +45 at level 20, and +46 at level 21.
-- Apply the scaling only to quests for the matching skill, in addition to the template's base XP and any eligible theme bonus. Do not change the shared reward-award helper to add the bonus a second time.
-- Quest generation is the reward-locking boundary: save the skill level and skill-level bonus on each generated quest. Existing quest rewards must remain unchanged after later level-ups or equipment changes.
-- Display the skill-level bonus clearly on generated quests. Test the tier boundaries and verify completion awards the displayed total exactly once, with XP credited to the matching skill. Preserve Test/Sandbox isolation and all saved progress.
-
-## Debug feature-lock regression verification (mandatory)
-- When a Debug feature lock forces a theme aspect to Dungeon, theme integration tests must inspect the actual computed/rendered output and compare it against the equipped theme's expected output; never declare failure merely because the injector checkbox is enabled.
-- For colors, compare all registered theme palette variables against the same equipped theme with only the lock removed. For character/theme imagery, compare actual image sources against registered expected assets. An unmapped new theme must fail or be explicitly inconclusive, never silently pass.
-- Validate each lock with a non-Dungeon theme equipped: run with the lock off, enable it and confirm the relevant test detects the real override, then turn it off and confirm the expected result returns. Record whether this was syntax-only or live-browser verified.
-
-## Quest, XP, and account-save durability (mandatory)
-- Completing a quest must persist the completed flag, total XP, skill XP, coins, and completion count through the same shared save path.
-- Keep local-save revision metadata consistent with the revision timestamp written to the cloud save. A failed cloud write must not make an older cloud snapshot appear newer than the local state.
-- Drain pending cloud writes before signing out. If the latest save fails, do not silently clear the account-bound local state; clearly report the failure and let the user retry.
-- Test quest completion followed by immediate refresh, sign-out/sign-in, and cloud-save failure. Confirm completed quests and all awarded XP remain intact, and verify account isolation and Sandbox separation.
-
-## Release changelog/version verification (mandatory)
-- Every single update, including small fixes, configuration changes, Debug-only changes, and rule/documentation changes, must be recorded as a new entry at the very top of `CHANGELOG.md` before packaging. Never ship an update without its own changelog entry.
-- Every update must add a new release entry to the very top of `CHANGELOG.md` before packaging. The top entry must describe the changes made in that specific update and must match the delivered project version; never leave an older release as the first entry.
-- Preserve all previous changelog entries and history. Do not rewrite or remove older entries just to make the newest release appear current.
-- Before delivery, verify the first changelog heading, the app's Debug/build version, the service-worker cache version, and the ZIP filename all identify the same release version. If a version string is intentionally different for a technical reason, document that explicitly in the changelog.
-- Include the changelog in the service-worker asset list and verify the app's Version History fetches the deployed `CHANGELOG.md`. After packaging, inspect the ZIP itself to confirm the top entry is the latest release. Do not claim the user's deployed app has updated until they deploy the ZIP and refresh/reload the app.
-
-
-## Image Compression
-- Every new image added to Wayfarer must be compressed and optimized before being included in the project.
-- Prefer WebP for photographic or illustrated backgrounds, character art, and theme icons when transparency and visual quality are preserved. Use PNG when lossless transparency or other specific requirements make it necessary.
-- Keep images visually clear at their actual display size while minimizing file size.
-- Update every asset reference and the service-worker cache when adding, converting, renaming, or moving images.
-- Verify that every referenced image exists and loads after the update.
-
-- Any new picture/image added to Wayfarer must be compressed/optimized before inclusion.
-- Every theme must include its own optimized full-screen app background, registered to the theme and displayed behind the interface with a legibility overlay.
-
-Every new theme must be tested for its complete visual identity: dedicated background with overlay, theme-specific palette applied to major UI components, active body class, icon, character art, soundtrack, Store/Inventory/equip integration, and Debug test coverage.
-
-
-## Theme display identity and visual regression enforcement
-- Display names may be changed without changing stable internal theme IDs, skill names, unlock keys, saved equipment IDs, or quest reward keys.
-- Debug theme compliance tests must verify actual browser-computed styles and the lower interface (including Inventory and equipment surfaces), not merely the existence of CSS text.
-- Test theme background and icon HTTP responses and image decoding. Report each failure individually with expected/actual details and suggested investigation. Never report a theme as passed solely because its asset path or selector exists.
-- When checking non-active themes, use temporary in-memory class changes only and restore the original body classes immediately; never mutate saved user progress during visual tests.
-
-
-## Debug and recovery safeguards (v0.15.5)
-- Theme/quest/store diagnostic tests and feature-isolation switches must be restricted to Admin while Sandbox mode is active.
-- Dungeon is the starter theme and must not be expected in the unlockable Store catalog. Only the theme equipment slot is required to show theme-specific changes; empty artifact/pet slots may remain blank.
-- Debug must clearly distinguish PASS, FAIL, and INCONCLUSIVE. A catalog/style presence check is not proof of end-to-end behavior.
-- Character reset must require explicit confirmation, preserve Journal, To Do, and Groceries, and offer one-step restoration from a snapshot. Explain which character fields are reset before confirmation.
-- XP/gold grant tools are Admin-only, can run in live or Sandbox, and must clearly state which environment is being changed.
-- Store and quest tests must not alter real progress; simulated purchase/reward flows should run only against isolated sandbox state.
-
-
-## Data-driven gameplay fault injection (v0.15.54)
-- Debug unlock, purchase, and theme-bonus XP injectors must only operate for Admin inside Sandbox and must alter the actual shared gameplay decision/reward path. Tests must inspect observed results, never infer failure merely from a checked injector.
-- Store integration tests must iterate every registered unlockable theme, simulate its required skill level and exact price in isolated state, and verify actual ownership and remaining currency after the purchase transaction.
-- Theme definitions that grant a skill bonus must declare `perkSkill`; quest-generation tests discover skills from the skill catalog and theme perks from the unlockable registry. Skills with no registered theme perk must be marked INCONCLUSIVE for bonus testing rather than falsely passing.
-- Quest XP tests must create an isolated eligible quest through the shared theme-bonus calculation and award XP through the same reward helper used by quest completion. Never mutate real quests, inventory, currency, or saved progress during diagnostic tests.
-
-
-## Quest generation UX and compatibility
-- The main Generate Quests button should generate immediately without opening an intermediate campaign-planning panel unless the user explicitly requests that workflow.
-- Preserve the shared quest-selection, anti-repetition, priority ordering, connected-session notes, theme-bonus, and cooldown logic when changing the quest-generation UI. Do not duplicate or bypass the core generation function.
-- When changing quest cooldown duration, update the single source-of-truth constant and every user-facing cooldown message, Debug description, changelog entry, and relevant test.
-
-Quest generation coverage rule (permanent): The campaign time selection is a prioritization window, not a generation cap. Generate one eligible quest for every selected skill: priority skills appear as Main Quests, secondary skills appear as Side Quests. Never stop the skill loop because a time budget is exhausted. If the preferred location has no matching quest for a selected skill, fall back to another suitable quest for that skill. Test 1-hour selection with multiple priority and secondary skills and verify every selected skill is represented.
-
-
-## Live quest cooldown reset control
-- If a Debug control resets Generate Quests outside Sandbox, it must be Admin-only, explicitly labelled as a live-account action, and refuse to run while Sandbox is active.
-- It may clear only the quest-generation cooldown timestamp; it must not delete or replace quests or alter skills, XP, coins, inventory, or other progress. Require confirmation, save the change, refresh button status, and log the action.
-- Test both allowed live mode and denied Sandbox mode.
-
-## Release quality, regression testing, and state isolation (v1.17.1 — mandatory)
-- Start from the latest approved, working project archive. Read this file and `theme creation rules.md` before changing project files. Preserve existing features, username/PIN Supabase login, configuration, account isolation, saved progress, and all prior changelog history unless the user explicitly requests a change.
-- Test real behavior, not simulated outcomes. Debug tests must call the same shared functions/gameplay paths as the application, perform the operation, inspect the observed result, and independently decide PASS/FAIL. Never report failure solely because an injector is enabled. Use INCONCLUSIVE when the test cannot establish the result.
-- For changed functionality, test both the normal path and relevant failure paths. When state or UI is affected, verify that enabling and disabling controls updates every relevant view immediately without a manual page reload unless a reload is explicitly intended.
-- Sandbox must have separate temporary state from the normal account. Verify entering Sandbox, changing temporary data, refreshing/re-entering the session where supported, explicitly exiting Sandbox, and confirming normal-account data and cloud saves remain unchanged. Do not let alternate event handlers or save paths bypass Sandbox isolation.
-- Whenever a change adds or modifies a state variable, helper, persistence mechanism, event handler, or UI refresh path, inspect all related call sites and competing save/render paths for inconsistent behavior. Prefer shared source-of-truth functions over duplicated rules.
-- Run targeted tests for every change plus appropriate regression tests for critical systems, including login/account isolation, persistence, navigation, skills/quests, themes, Store, Inventory/equipment, rewards, Debug and Sandbox where relevant. Distinguish syntax/archive checks from actual browser testing and state exactly what was and was not verified.
-- Before packaging, validate JavaScript syntax, required files and asset references, ZIP integrity, and release-version consistency. The app/build and diagnostic report versions, service-worker cache, top changelog entry, and ZIP filename must identify the same release unless an intentional difference is documented. Keep `CHANGELOG.md` in the service-worker asset list and preserve all older entries.
-- Documentation-only/rules-only releases still require a new top changelog entry and matching release/cache metadata, but must not change unrelated gameplay behavior. Deliver the complete project ZIP, not isolated project files. Do not claim live-browser testing or deployment unless actually performed.
-
-
-## Skill-theme upgrade progression and Bloodthirst (v1.18.6 — mandatory)
-- Skill themes progress independently through five levels. Level 1 unlocks at skill level 3; Level 2 at 8; Level 3 at 13; Level 4 at 18; Level 5 at 23. Each level adds +5 XP and +2 gold to the matching skill's quest reward, so levels 1–5 provide +5/+0, +10/+2, +15/+4, +20/+6, and +25/+8. Preserve existing stable theme IDs and upgrade the owned item in place unless a migration is explicitly tested.
-- The Store shows the next upgrade for owned skill themes, and no further upgrade after Level 5. Verify price, skill requirement, purchase transaction, Inventory name/perks, equip state, save, and refresh behavior.
-- Bloodthirst is a special non-purchasable theme. Its unlock is based on a configurable kill count, but the threshold remains unset until specified. Do not make up a threshold. It grants +2 XP and +2 gold to every skill quest, uses its own icon, male/female art, background and music, and must be included in Sandbox Give All Items without affecting live account ownership.
-- Theme XP and coin bonuses are locked at quest generation and awarded exactly once by the shared completion path. Test skill-specific upgrades and Bloodthirst global bonuses, including saved rewards after changing equipment.
-
-
-## Skill-theme upgrade pricing (v1.18.7 — mandatory)
-- The first/original skill theme keeps its registered base price. Every upgrade above Level 1 costs an additional 100 coins over the immediately previous level: price = original base price + 100 × (theme level − 1).
-- Keep this price calculation in the shared theme Store path so the displayed price, purchase button, affordability check, currency deduction, and Debug lifecycle tests all use the same amount.
-- Example for a theme with a 200-coin base price: Levels 1–5 cost 200, 300, 400, 500, and 600 coins. For the existing 100-coin base themes, Levels 1–5 cost 100, 200, 300, 400, and 500 coins.
-- Test both price display and actual purchase deduction at all five levels, including insufficient funds, Sandbox isolation, and preserving the upgraded owned item/equipment ID.

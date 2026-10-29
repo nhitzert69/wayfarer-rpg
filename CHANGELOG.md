@@ -1,3 +1,10 @@
+# Wayfarer v1.18.9 — persistent session restoration and Debug Sandbox isolation (2026-10-29)
+
+- Hardened startup auth restoration: getSession() is authoritative, initial/transient null auth callbacks no longer clear account state before restoration completes, and restore errors retain the device copy and report status.
+- Added a central capture-phase guard so Debug controls are blocked outside Sandbox; converted resource grant/removal, character reset/restore and cooldown reset paths to require Admin Sandbox.
+- Updated mandatory project rules for sandbox-only mutation and auth restoration.
+- Validation: JavaScript syntax, ZIP integrity and release metadata. Live browser, actual Supabase session restoration and end-to-end Sandbox isolation still require testing.
+
 # Wayfarer v1.18.8 — session persistence and theme progression hardening (2026-10-29)
 
 - Made Supabase session persistence explicit in the client configuration using localStorage, token refresh, and URL-session detection disabled, to harden username/PIN login across refreshes.
