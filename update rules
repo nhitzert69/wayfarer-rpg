@@ -1,3 +1,11 @@
+
+
+## v2.0.8 tab renderer extraction
+- Core account/session/save state remains in `index.html`.
+- Tab-specific rendering should live in the matching `codes/tabs/*.js` module and load on first selection.
+- v2.0.8 moves the rendering responsibilities for all nine tabs into their matching lazily loaded `codes/tabs/*.js` files. Account/session/save logic and existing form/action event handlers remain in core for compatibility; do not describe all event handlers as extracted.
+- Do not remove core wrappers until module behavior and every call site are verified.
+- Browser login/refresh, state persistence, navigation, and all nine tabs require live testing before calling this fully validated.
 ## v2.0.7 lazy tab entry points and Admin gender override (mandatory)
 - Nine tab entry scripts live under `codes/tabs/` and are loaded once on first tab selection through the shared loader. Keep the shared account/auth/save core eager and unchanged.
 - v2.0.7 is only the compatibility-first lazy-entry foundation. Do not claim the tab logic itself has been fully extracted while renderers, handlers, and shared state logic remain inline. Before moving actual logic, map dependencies, event listeners, shared state, initialization order, and save callers, then migrate one bounded tab at a time and browser-test it.

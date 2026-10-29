@@ -1,3 +1,11 @@
+# Wayfarer v2.0.8 — on-demand tab rendering extraction (2026-10-29)
+
+- Moved the tab-specific render responsibilities for all nine tabs into their matching lazily loaded `codes/tabs/*.js` files: Quest Board, Character, Store, Skills, To Do, Groceries, Journal, Settings, and Debug.
+- Added a shared tab-renderer registry so core state remains authoritative while loaded tab views refresh through the existing `render()` path.
+- Kept account/session/save logic and existing form/action event handlers in the core for compatibility; this release extracts tab rendering, not every tab-specific event handler.
+- Preserved the Admin live/Sandbox gender-change behavior from v2.0.7.
+- Static checks only; live browser behavior, authentication refresh, and account persistence require user testing.
+
 # Wayfarer v2.0.7 — lazy tab entry points and Admin gender control (2026-10-29)
 
 - Added nine tab-specific JavaScript entry files and a one-time lazy loader. Each entry file is requested when its tab is selected and reused on later visits; the Quest Board entry is initialized after page load.
