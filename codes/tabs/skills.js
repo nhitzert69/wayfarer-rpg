@@ -3,7 +3,6 @@
 /* Wayfarer tab renderers loaded on demand. */
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.skills = window.WayfarerTabRenderers.skills || {};
-window.WayfarerTabRenderers.skills = window.WayfarerTabRenderers.skills || {};
 /* Wayfarer skills tab module. Shared state remains in the core; module initializes its view on demand. */
 window.WayfarerTabRenderers.skills.renderSkillProgress = function(){
  ensureSelectedSkills();

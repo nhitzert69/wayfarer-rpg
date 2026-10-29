@@ -1,3 +1,10 @@
+## v2.3.3 all-tabs integration audit (mandatory)
+- Continue auditing all nine tabs; do not narrow the overall modularization goal to Quest Board, Character, and Store alone.
+- Attach renderer hooks such as `renderSummary` only after the callable renderer is created; verify no later assignment overwrites hooks. Core may coordinate tab-owned hooks but must not own tab-specific DOM updates.
+- Tab-owned navigation (including To Do and Journal edit actions) must call `activateWayfarerTab(tabName, remember)` instead of manually toggling `.tab`/`.section` classes.
+- Remove duplicate initialization statements when found, but avoid unrelated cleanup that risks behavior changes.
+- Update the changelog top entry, Debug report version, and service-worker cache namespace together. Check all tab modules, navigation ownership, hook registration order, JavaScript syntax, all precache paths, version consistency, and ZIP integrity. Mark browser/Supabase behavior INCONCLUSIVE unless actually tested.
+
 ## v2.3.2 Quest Board registration and tab ownership (mandatory)
 - `codes/tabs/quests.js` must register the callable Quest Board renderer first, then attach `renderSummary` to that function. Do not assign a summary property before the `quests` renderer exists or overwrite a renderer object after attaching its hooks.
 - Keep generated quest logic and rendering in the Quest Board module; remove unused legacy quest data from core rather than duplicating it.

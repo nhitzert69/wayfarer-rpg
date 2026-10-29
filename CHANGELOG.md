@@ -1,3 +1,12 @@
+# Wayfarer v2.3.3 — finish cross-tab navigation and summary ownership fixes (2026-10-29)
+
+- Fixed Journal summary-hook registration order: `renderSummary` is now attached after the callable Journal renderer is created, so core summary coordination can update the journal-entry count instead of losing the hook.
+- Updated To Do Edit navigation to use `activateWayfarerTab("todo", true)` rather than directly toggling tab/section classes, preserving the core's remembered-tab and navigation lifecycle behavior.
+- Removed a duplicate Skills renderer-registry initialization line found during the all-tabs audit.
+- Continued the nine-tab architecture audit; this release is a focused integration fix, not a claim that all tab code is fully separated.
+- Updated the service-worker cache namespace and embedded Debug report versions to v2.3.3.
+- Validation: JavaScript syntax, summary-hook ownership, To Do navigation API usage, all service-worker precache paths, version consistency, and ZIP integrity. Real browser interactions, Supabase persistence, and full end-to-end regression remain INCONCLUSIVE.
+
 # Wayfarer v2.3.2 — repair Quest Board renderer registration and tighten tab ownership (2026-10-29)
 
 - Fixed a critical Quest Board module initialization error: the summary renderer was assigned to `WayfarerTabRenderers.quests` before that property existed, and the renderer is subsequently a function. The summary hook is now attached to the registered renderer function after its definition, allowing the tab script to initialize and the quest counters to update.
