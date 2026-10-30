@@ -2,10 +2,14 @@
 
 **Mandatory:** Read this file before creating, changing, testing, refactoring, packaging, or integrating any Kingdoms of the Unknown code or assets. Also follow the master `update rules`. Follow `theme creation rules.md` only when a game change also touches Wayfarer themes or theme systems.
 
+## Permanent branch workflow
+- `main`: production. `update-before-commit`: integration and test updates. `Latest-backup`: known-good backup; never update without explicit approval. Promote changes only after review and explicit approval.
+- Kingdoms username/PIN sign-in may use the same Supabase Auth project as Wayfarer, but its runtime and session storage must remain separate and it must never access Wayfarer save tables or application globals.
+
 ## 1. Product direction and ownership
 - The game is named **Kingdoms of the Unknown**.
 - The game is intended to become independently deployable. Its architecture must not make Wayfarer a runtime requirement.
-- Keep game-specific code and assets inside a clearly bounded game directory, currently `codes/game/` for the in-app prototype. Game-specific styles belong in the game stylesheet, not global Wayfarer styles unless explicitly shared by contract.
+- Keep game-specific code and assets inside a clearly bounded game directory, now `kingdoms-of-the-unknown/gamecode/` for the in-app prototype. Game-specific styles belong in the game stylesheet, not global Wayfarer styles unless explicitly shared by contract.
 - The Character tab may own a launch button and the smallest possible lazy-load trigger. It must not own game mechanics, screens, saves, or lifecycle logic.
 - Do not claim the existing prototype is already fully standalone until it has a separate entry point and has been tested without Wayfarer loaded.
 

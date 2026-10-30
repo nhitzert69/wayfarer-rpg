@@ -6,7 +6,7 @@
   if (!document.querySelector('link[data-kotu-styles="true"]')) {
     const stylesheet = document.createElement("link");
     stylesheet.rel = "stylesheet";
-    stylesheet.href = "./codes/game/game.css";
+    stylesheet.href = "./kingdoms-of-the-unknown/gamecode/game.css";
     stylesheet.dataset.kotuStyles = "true";
     document.head.appendChild(stylesheet);
   }
@@ -27,8 +27,7 @@
     root.setAttribute("aria-label", "Kingdoms of the Unknown");
     root.innerHTML = `
       <div class="kotu-stage">
-        <img class="kotu-title-art" src="./assets/images/kingdoms-of-the-unknown-title.png" alt="Kingdoms of the Unknown — fantasy kingdom title screen">
-        <div class="kotu-loading-label" aria-live="polite">ENTERING THE UNKNOWN</div>
+        <iframe class="kotu-standalone-frame" title="Kingdoms of the Unknown" src="./kingdoms-of-the-unknown/index.html"></iframe>
         <button type="button" class="kotu-menu-button" aria-expanded="false" aria-controls="kotuMenuPanel">☰ Menu</button>
         <div class="kotu-menu-panel" id="kotuMenuPanel" hidden>
           <button type="button" data-kotu-action="main-menu">← Return to Main Menu</button>
@@ -52,6 +51,7 @@
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && !root.hidden) close();
     });
+    window.addEventListener("message", event => { if(event.origin === window.location.origin && event.source === root.querySelector("iframe")?.contentWindow && event.data?.type === "kotu-return") close(); });
     orientationQuery = window.matchMedia("(max-width: 900px) and (orientation: portrait)");
     const updateOrientation = () => {
       const gate = root.querySelector(".kotu-rotate-gate");

@@ -8,6 +8,18 @@
 
 These rules are mandatory for every Wayfarer update, including documentation-only, bug-fix, Debug-only, theme, game, refactor, and release-packaging changes. They are the master development and release standard. The companion files `theme creation rules.md` and `game rules.md` are also mandatory whenever their scope applies. Read all applicable rule files before editing. If a required file cannot be read, stop and ask for it; do not proceed by assumption.
 
+## Mandatory three-branch release workflow (2026-10-30)
+- `main` is the production branch and is never the workspace for experiments or direct development edits.
+- `update-before-commit` is the permanent integration/testing branch: implement and verify proposed updates here first, then promote to `main` only after explicit user approval.
+- `Latest-backup` is the protected known-good recovery branch. Do not edit, reset, merge into, force-push, or repoint it as part of ordinary development. Refresh it only with explicit user approval after verifying a known-good release.
+- Before every update, confirm these exact branch names and compare the intended work branch to `main`. Preserve unrelated changes already present in the work branch; use a pull request for promotion. Never assume that a branch named backup also backs up Supabase data.
+
+## v3.0.6 game viewer regression guidance
+- For Kingdoms terrain camera changes, verify camera-target clamping, full viewport zoom-out, pan limits, and duplicate navigation controls in a live browser before claiming the issue fixed. Keep the standalone game as owner of game navigation; do not show a second Wayfarer host menu over the game iframe.
+
+## v3.0.7 terrain viewer guidance
+- When changing Kingdoms terrain scale or zoom, derive camera bounds from the transformed model and test all three factions. Check depth-buffer precision and texture filtering for motion shimmer; overlapping source geometry requires separate inspection. Validate drag controls with JavaScript syntax checks before release.
+
 ## 1. Rule hierarchy and change control
 - Follow this master standard for every change.
 - Follow `theme creation rules.md` for theme registration, assets, visuals, music, Store, unlocks, Inventory, equipment, perks, rewards, theme diagnostics, and theme-related cleanup.

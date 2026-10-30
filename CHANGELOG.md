@@ -1,3 +1,59 @@
+# Wayfarer v3.0.13 — New Kingdoms terrain assets and angled camera (2026-10-30)
+
+- Updated all three faction arena FBX paths to their new Meshy 20261030 filenames in the existing terrain folders.
+- Load matching base-color, normal and roughness texture maps using MeshStandardMaterial, with fallback to imported materials if base-color loading fails.
+- Adjusted orthographic camera direction to a more slanted viewpoint; retained zoom controls, terrain 1× scale, and standalone navigation.
+- Development branch only. Browser rendering and camera bounds still need testing.
+
+# Wayfarer v3.0.10 — Kingdoms standalone refresh navigation (2026-10-30)
+
+- Character Play now navigates directly to the standalone Kingdoms entry point rather than launching an iframe overlay. Refreshing the browser therefore reloads Kingdoms instead of Wayfarer.
+- The game's existing Return to Wayfarer control navigates back to the Wayfarer root when opened standalone. Game authentication remains separate from Wayfarer authentication; no save or Supabase schema changes.
+- Development branch only. Browser refresh, sign-in, return navigation, and cache behavior still require live testing.
+
+# Wayfarer v3.0.9 — Original terrain scale restored (2026-10-30)
+
+- Removed the 2× runtime scaling from all three terrain models, restoring their original FBX sizes.
+- Retained existing zoom limits and starting zoom; no model assets changed.
+- Updated on development branch only. Browser validation pending.
+
+# Wayfarer v3.0.8 — Kingdoms camera zoom-out adjustment (2026-10-30)
+
+- Reduced the minimum orthographic zoom from 4.2 to 1.8, allowing a wider zoom-out view; set initial zoom to 2.2 while retaining maximum zoom-in at 10.5.
+- Preserved the 2× scale of all three terrain models and all existing camera movement, texture filtering, account and launcher behavior.
+- Updated Debug version and service-worker cache namespace on `update-before-commit` only. Live browser framing and map-edge visibility are INCONCLUSIVE pending user testing.
+
+# Wayfarer v3.0.7 — Kingdoms terrain scaling, closer zoom and texture stability (2026-10-30)
+
+- Uniformly scaled all three imported FBX terrain models 2× in the game viewer, leaving the source files unchanged; bounding boxes and camera framing now use the scaled model.
+- Set the previous maximum zoom-in (4.2) as the new minimum zoom, with a closer maximum of 10.5; initial camera zoom starts at the new minimum.
+- Enabled logarithmic depth buffering, tightened camera near/far planes, and configured texture mipmapping, linear filtering and anisotropy to reduce visible flickering and shimmering during movement. These changes may not resolve flicker caused by overlapping source mesh surfaces.
+- Corrected malformed literal backslash-n tokens in the previous drag-pan handler.
+- Updated rules, Debug version and service-worker cache metadata on `update-before-commit` only. Browser WebGL validation remains INCONCLUSIVE; test all three maps, zoom, panning and rendering before promoting to `main`.
+
+# Wayfarer v3.0.6 — Kingdoms terrain camera and duplicate menu correction (2026-10-30)
+
+- Changed the 3D terrain preview from perspective to elevated orthographic strategy framing, using the FBX Y-up convention, centered on the basin and constrained to a conservative central panning area. Limited zoom-out and retained click-to-recenter, drag-to-pan, and wheel zoom.
+- Hid the redundant Wayfarer host overlay menu; Kingdoms' own navigation remains visible and its Return to Wayfarer action remains wired to the host overlay.
+- Updated cache namespace and Debug version metadata. Changes committed to `update-before-commit` only; `main` and `Latest-backup` untouched.
+- Static checks only; live WebGL framing, irregular-map edge containment, touch controls, Wayfarer return and authentication remain INCONCLUSIVE. The viewport may still show some background near irregular terrain edges, which requires in-browser testing and possible terrain-footprint camera bounds.
+
+# Wayfarer v3.0.5 — Kingdoms login and playable terrain preview (2026-10-30)
+
+- Added independent Kingdoms username/PIN login and registration using the existing Supabase Auth project but a separate session-storage key; does not read or write Wayfarer save data. Browser verification and backend account policies remain untested.
+- Added a standalone game entry point, Play button after session restoration, FBX terrain viewer for human, Greek and undead models, angled camera, click-to-recenter, drag-to-pan, wheel zoom and model-derived camera-target bounds.
+- Wayfarer Character Play still launches the game, now embedded through its standalone entry point. Removed the ENTERING THE UNKNOWN label.
+- Documented permanent main/update-before-commit/Latest-backup branch workflow; development branch only, no production merge.
+- Viewer uses CDN Three.js and Supabase SDK, and existing Wayfarer-hosted title artwork; fully independent asset packaging and offline operation remain pending. Static source review only; live WebGL, FBX and authentication flows INCONCLUSIVE.
+
+# Wayfarer v3.0.4 — Kingdoms of the Unknown folder separation (2026-10-30)
+
+- Moved the game shell JavaScript and CSS into `kingdoms-of-the-unknown/gamecode/` while keeping the red Character Play launcher in Wayfarer.
+- Updated Character lazy-load, game stylesheet, and service-worker precache references; Wayfarer authentication and saved-progress code are unchanged.
+- Added a game directory README explaining the standalone boundary and pending asset upload.
+- The supplied `gameassets.rar` contains binary terrain models/textures/images that this GitHub text connector cannot upload. These assets are **not yet in GitHub**; the game still references its existing title artwork under Wayfarer assets, so full independent deployment is not yet achieved.
+- Static path/version checks required. Live browser and Supabase testing not performed.
+
 # Wayfarer v3.0.3 — QA bug fixes and conservative cleanup (2026-10-30)
 
 - Fixed BUG-001: standalone Short/Day Adventure quests and campaign quests use one shared generation-time reward snapshot for skill and theme bonuses, including locked gold bonuses.
