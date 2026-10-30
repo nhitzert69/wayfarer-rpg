@@ -9,7 +9,7 @@ if(orientationQuery.addEventListener)orientationQuery.addEventListener("change",
 else orientationQuery.addListener(updateOrientation);
 window.addEventListener("resize",updateOrientation);
 updateOrientation();
-let client=null,mode="login",cleanup=null,activeUser=null;
+let client=null,mode="login",cleanup=null,activeUser=null,loadGeneration=0;
 function message(text){status.textContent=text;}
 function showForm(create){mode=create?"create":"login";form.hidden=false;actions.hidden=true;ready.hidden=true;$("formTitle").textContent=create?"Create account":"Log in";$("pin").autocomplete=create?"new-password":"current-password";}
 function signedOut(){activeUser=null;ready.hidden=true;form.hidden=true;actions.hidden=false;message("Log in or create an account to play.");}
@@ -24,7 +24,7 @@ function closeGameMenu(){menuPanel.hidden=true;menuToggle.setAttribute("aria-exp
 menuToggle.onclick=()=>{const open=menuPanel.hidden;menuPanel.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));};
 document.addEventListener("pointerdown",event=>{if(!event.target.closest(".game-menu"))closeGameMenu();});
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeGameMenu();});
-$("back").onclick=()=>{closeGameMenu();cleanup?.();cleanup=null;$("world").hidden=true;$("title").hidden=false;};
+$("back").onclick=()=>{loadGeneration++;$("terrainLoading").hidden=true;closeGameMenu();cleanup?.();cleanup=null;$("world").hidden=true;$("title").hidden=false;};
 $("authForm").onsubmit=async e=>{
   e.preventDefault();
   if(!client)return message("Authentication service unavailable.");
@@ -44,15 +44,26 @@ $("authForm").onsubmit=async e=>{
 };
 async function enterWorld(){
   if(!activeUser)return;
+  const generation=++loadGeneration;
   closeGameMenu();
-  $("title").hidden=true;$("world").hidden=false;
-  $("worldStatus").textContent="Loading terrain…";
   cleanup?.();cleanup=null;
+  $("title").hidden=true;$("world").hidden=false;
+  $("worldStatus").hidden=true;
+  $("terrainLoading").hidden=false;
+  $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
     const {startTerrain}=await import("./terrain.js");
-    cleanup=await startTerrain($("world"),$("faction").value);
-    $("worldStatus").textContent="Click to move · Drag to pan · Scroll to zoom";
-  }catch(error){$("worldStatus").textContent="Could not load map: "+String(error.message||error);}
+    if(generation!==loadGeneration)return;
+    const dispose=await startTerrain($("world"),$("faction").value);
+    if(generation!==loadGeneration){dispose();return;}
+    cleanup=dispose;
+    $("terrainLoading").hidden=true;
+  }catch(error){
+    if(generation!==loadGeneration)return;
+    $("terrainLoading").hidden=true;
+    $("worldStatus").hidden=false;
+    $("worldStatus").textContent="Could not load map: "+String(error.message||error);
+  }
 }
 $("play").onclick=enterWorld;
 $("faction").onchange=()=>{if(!$("world").hidden)enterWorld();};
