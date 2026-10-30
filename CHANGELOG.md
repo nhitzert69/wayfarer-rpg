@@ -1,3 +1,10 @@
+# Wayfarer v3.0.6 — Kingdoms terrain camera and duplicate menu correction (2026-10-30)
+
+- Changed the 3D terrain preview from perspective to elevated orthographic strategy framing, using the FBX Y-up convention, centered on the basin and constrained to a conservative central panning area. Limited zoom-out and retained click-to-recenter, drag-to-pan, and wheel zoom.
+- Hid the redundant Wayfarer host overlay menu; Kingdoms' own navigation remains visible and its Return to Wayfarer action remains wired to the host overlay.
+- Updated cache namespace and Debug version metadata. Changes committed to `update-before-commit` only; `main` and `Latest-backup` untouched.
+- Static checks only; live WebGL framing, irregular-map edge containment, touch controls, Wayfarer return and authentication remain INCONCLUSIVE. The viewport may still show some background near irregular terrain edges, which requires in-browser testing and possible terrain-footprint camera bounds.
+
 # Wayfarer v3.0.5 — Kingdoms login and playable terrain preview (2026-10-30)
 
 - Added independent Kingdoms username/PIN login and registration using the existing Supabase Auth project but a separate session-storage key; does not read or write Wayfarer save data. Browser verification and backend account policies remain untested.
