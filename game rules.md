@@ -2,9 +2,10 @@
 
 **Mandatory:** Read this file before creating, changing, testing, refactoring, packaging, or integrating any Kingdoms of the Unknown code or assets. Also follow the master `update rules`. Follow `theme creation rules.md` only when a game change also touches Wayfarer themes or theme systems.
 
-## Permanent branch workflow
-- `main`: production. `update-before-commit`: integration and test updates. `Latest-backup`: known-good backup; never update without explicit approval. Promote changes only after review and explicit approval.
+## Active branch workflow (2026-10-30)
+- Apply authorized game updates directly to `main`; `update-before-commit` is retired from ordinary updates. Create or refresh backup branches only when explicitly requested by the user. Preserve `Latest-backup` and historical backups unless explicitly instructed otherwise. Record each version in the changelog with enough detail to understand rollback consequences.
 - Kingdoms username/PIN sign-in may use the same Supabase Auth project as Wayfarer, but its runtime and session storage must remain separate and it must never access Wayfarer save tables or application globals.
+- Arena orientation: all three faction terrains should show the entrance toward the bottom center of the default screen. Check the orientation visually on all three maps; do not rely solely on a rotation constant. At minimum zoom, the camera must remain inside the mountain perimeter at supported viewport sizes; verify framing and pan limits in a live browser.
 
 ## 1. Product direction and ownership
 - The game is named **Kingdoms of the Unknown**.
