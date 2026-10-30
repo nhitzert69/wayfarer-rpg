@@ -40,7 +40,7 @@ export async function startTerrain(host, mapName="human") {
   // Orthographic strategy camera: no perspective-driven disappearance when zooming.
   const viewHeight=Math.min(width,depth)*0.42;
   const zoomMin=1.8,zoomMax=10.5;
-  const state={target,zoom:2.2};
+  const state={target,zoom:2.0};
   const clampTarget=()=>{
     // Reserve room around the center. The terrain is not rectangular, so this
     // is a conservative safe central area, not an exact polygon boundary.
