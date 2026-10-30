@@ -2,6 +2,10 @@
 
 **Mandatory:** Read this file before creating, changing, testing, refactoring, packaging, or integrating any Kingdoms of the Unknown code or assets. Also follow the master `update rules`. Follow `theme creation rules.md` only when a game change also touches Wayfarer themes or theme systems.
 
+## Permanent branch workflow
+- `main`: production. `update-before-commit`: integration and test updates. `Latest-backup`: known-good backup; never update without explicit approval. Promote changes only after review and explicit approval.
+- Kingdoms username/PIN sign-in may use the same Supabase Auth project as Wayfarer, but its runtime and session storage must remain separate and it must never access Wayfarer save tables or application globals.
+
 ## 1. Product direction and ownership
 - The game is named **Kingdoms of the Unknown**.
 - The game is intended to become independently deployable. Its architecture must not make Wayfarer a runtime requirement.
