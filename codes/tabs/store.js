@@ -34,6 +34,8 @@ window.attemptThemePurchase = function(item,target,level){
 };
 /* Wayfarer store tab module. Shared state remains in the core; module initializes its view on demand. */
 window.WayfarerTabRenderers.store.renderStoreCatalog = function(){
+ const balance=document.getElementById("storeGoldBalance");
+ if(balance)balance.textContent=String(Math.max(0,Number(state.gold)||0));
  const root=document.getElementById("storeThemeCatalog");if(!root)return;
  const catalog=UNLOCKABLE_ITEMS.filter(item=>!item.sandboxOnly||debugSandboxActive);
  const storeItems=catalog.filter(item=>getInventoryItemType(item)==="theme"&&String(item.id)!=="bloodthirst-theme").map(base=>{const owned=state.inventory.find(x=>x&&String(x.id)===String(base.id));const current=Math.max(1,Number(owned?.themeLevel)||1);if(owned&&current>=5)return null;const next=owned?current+1:1;return {...base,themeLevel:next,unlockLevel:3+(next-1)*5,name:next===1?base.name:`${base.perkSkill} Level ${next}`,perkXp:5*next,perkGold:2*(next-1),price:100*next,upgradeOf:owned?base.id:null};}).filter(Boolean);

@@ -1,3 +1,13 @@
+# Wayfarer v3.0.3 — QA bug fixes and conservative cleanup (2026-10-30)
+
+- Fixed BUG-001: standalone Short/Day Adventure quests and campaign quests use one shared generation-time reward snapshot for skill and theme bonuses, including locked gold bonuses.
+- Fixed BUG-002: Store balance updates from current state whenever the Store catalog renders, including Sandbox grants and purchases.
+- Fixed BUG-003: Settings now accurately describes base quest rewards and generation-time bonus locking.
+- SUS-001 startup navigation remains unconfirmed and unchanged pending timing-controlled browser reproduction.
+- Removed only `assets/images/social-interactions-market.webp`, an unreferenced image with no references found in the application, theme registry, service-worker precache, or project rules/documentation.
+- Kept all active scripts, styles, other assets, configuration, login, saved-progress code, and mandatory rules intact. Authentication, cloud persistence and unrelated gameplay logic remain unchanged.
+- Aligned Debug report versions, service-worker cache namespace, and update rules. Static source/reference audit performed; live browser and Supabase regression testing not performed.
+
 # Wayfarer v3.0.2 — CHATGPT live testing permissions (2026-10-30)
 
 - Restrict live XP and gold grants to the signed-in CHATGPT test account with confirmation. Admin grants remain Sandbox-only.
