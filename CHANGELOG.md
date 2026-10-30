@@ -1,3 +1,11 @@
+# Wayfarer v3.0.4 — Kingdoms of the Unknown folder separation (2026-10-30)
+
+- Moved the game shell JavaScript and CSS into `kingdoms-of-the-unknown/gamecode/` while keeping the red Character Play launcher in Wayfarer.
+- Updated Character lazy-load, game stylesheet, and service-worker precache references; Wayfarer authentication and saved-progress code are unchanged.
+- Added a game directory README explaining the standalone boundary and pending asset upload.
+- The supplied `gameassets.rar` contains binary terrain models/textures/images that this GitHub text connector cannot upload. These assets are **not yet in GitHub**; the game still references its existing title artwork under Wayfarer assets, so full independent deployment is not yet achieved.
+- Static path/version checks required. Live browser and Supabase testing not performed.
+
 # Wayfarer v3.0.3 — QA bug fixes and conservative cleanup (2026-10-30)
 
 - Fixed BUG-001: standalone Short/Day Adventure quests and campaign quests use one shared generation-time reward snapshot for skill and theme bonuses, including locked gold bonuses.
