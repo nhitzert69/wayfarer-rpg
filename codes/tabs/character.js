@@ -4,28 +4,12 @@
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.character = window.WayfarerTabRenderers.character || {};
 
-/* Load the game in its own folder only when the player presses Play. */
+/* Navigate to Kingdoms' standalone entry point so browser refresh stays in the game. */
 const kingdomsPlayButton = document.getElementById("kingdomsPlayButton");
 if (kingdomsPlayButton && !kingdomsPlayButton.dataset.wayfarerGameBound) {
   kingdomsPlayButton.dataset.wayfarerGameBound = "true";
   kingdomsPlayButton.addEventListener("click", () => {
-    if (window.KingdomsOfTheUnknown) { window.KingdomsOfTheUnknown.open(); return; }
-    kingdomsPlayButton.disabled = true;
-    kingdomsPlayButton.textContent = "LOADING KINGDOMS OF THE UNKNOWN…";
-    const script = document.createElement("script");
-    script.src = "./kingdoms-of-the-unknown/gamecode/game.js";
-    script.onload = () => {
-      kingdomsPlayButton.disabled = false;
-      kingdomsPlayButton.textContent = "▶ PLAY KINGDOMS OF THE UNKNOWN";
-      if (window.KingdomsOfTheUnknown) window.KingdomsOfTheUnknown.open();
-      else toast("The game could not initialize. Please reload and try again.");
-    };
-    script.onerror = () => {
-      kingdomsPlayButton.disabled = false;
-      kingdomsPlayButton.textContent = "▶ PLAY KINGDOMS OF THE UNKNOWN";
-      toast("Could not load the game files. Check that kingdoms-of-the-unknown/gamecode/game.js is deployed.");
-    };
-    document.head.appendChild(script);
+    window.location.assign("./kingdoms-of-the-unknown/index.html");
   });
 }
 /* Wayfarer character tab module. Shared state remains in the core; module initializes its view on demand. */
