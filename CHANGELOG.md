@@ -1,3 +1,10 @@
+# Wayfarer v3.0.30 — Rectangular replacement arenas (2026-10-30)
+
+- Renamed all 3 replacement arena FBX files and 12 associated PNG textures to concise faction-specific names without altering binary contents or reducing quality.
+- Updated the standalone Kingdoms viewer to load the new integrated arena models; removed obsolete separate floor loading and 180° floor rotation.
+- Replaced oval camera target limits with independent rectangular X/Z clamps derived from model bounds and current zoom/viewport footprint. Preserved camera angle, zoom controls, input handling, and Wayfarer account data.
+- Validation: repository asset paths and source substitutions inspected; no live browser, mobile, or model-render verification performed. Binary model compression not performed because safe FBX recompression is unavailable through the GitHub connector.
+
 # Wayfarer v3.0.29 — Rotate stylized floors 180 degrees (2026-10-30)
 
 - Rotated all three new stylized floor models 180° about the vertical Y axis around their existing exported origins. Original mountain terrain orientation, positions, scales, textures, camera, and saves are unchanged.

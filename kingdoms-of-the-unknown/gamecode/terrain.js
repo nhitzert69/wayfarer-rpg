@@ -7,11 +7,10 @@ export async function startTerrain(host, mapName="human") {
   const THREE=await import("three");
   const {FBXLoader}=await import(LOADER_URL);
   const files={
-    human:"./models/terrain/human-terrain/dark-swamp-terrain.fbx",
-    greek:"./models/terrain/greek-terrain/grassy-meadow-terrain.fbx",
-    undead:"./models/terrain/undead-terrain/volcanic-crater-terrain.fbx"
+    human:"./models/terrain/human-terrain/dark-swamp-arena.fbx",
+    greek:"./models/terrain/greek-terrain/grassy-meadow-arena.fbx",
+    undead:"./models/terrain/undead-terrain/volcanic-slate-arena.fbx"
   };
-  const floors={human:"./models/terrain/human-terrain/ashen-floor",greek:"./models/terrain/greek-terrain/mediterranean-floor",undead:"./models/terrain/undead-terrain/undead-mire-floor"};
   if(!files[mapName])throw new Error("Unknown map.");
   const scene=new THREE.Scene();
   // Procedural starfield behind the terrain, with no external asset dependency.
@@ -43,9 +42,9 @@ export async function startTerrain(host, mapName="human") {
   const model=await loader.loadAsync(files[mapName]);
   // Use the matching texture set exported alongside each replacement FBX.
   const textureBases={
-    human:"./models/terrain/human-terrain/dark-swamp-terrain",
-    greek:"./models/terrain/greek-terrain/grassy-meadow-terrain",
-    undead:"./models/terrain/undead-terrain/volcanic-crater-terrain"
+    human:"./models/terrain/human-terrain/dark-swamp-arena",
+    greek:"./models/terrain/greek-terrain/grassy-meadow-arena",
+    undead:"./models/terrain/undead-terrain/volcanic-slate-arena"
   };
   const textureBase=textureBases[mapName];
   const textureLoader=new THREE.TextureLoader();
@@ -74,33 +73,8 @@ export async function startTerrain(host, mapName="human") {
   } catch(error) {
     console.warn("Terrain textures unavailable; using imported materials.",error);
   }
-  // Preserve original terrain orientation; rotate only the new floors 180 degrees around their exported origin.
-  let floor=null;
-  try {
-    const floorBase=floors[mapName];
-    floor=await loader.loadAsync(floorBase+".fbx");
-    floor.rotation.y+=Math.PI; // 180° around world-up, not upside down.
-    const floorColor=configureTexture(await textureLoader.loadAsync(floorBase+".png"));
-    floorColor.colorSpace=THREE.SRGBColorSpace;
-    const [floorNormal,floorRoughness]=await Promise.all([
-      textureLoader.loadAsync(floorBase+"_normal.png").then(configureTexture).catch(()=>null),
-      textureLoader.loadAsync(floorBase+"_roughness.png").then(configureTexture).catch(()=>null)
-    ]);
-    floor.traverse(node=>{
-      if(!node.isMesh)return;
-      const makeMaterial=material=>new THREE.MeshStandardMaterial({
-        map:floorColor,normalMap:floorNormal,roughnessMap:floorRoughness,
-        roughness:1,metalness:0,side:material?.side??THREE.DoubleSide,
-        polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2
-      });
-      node.material=Array.isArray(node.material)?node.material.map(makeMaterial):makeMaterial(node.material);
-      node.renderOrder=1;
-    });
-    scene.add(floor);
-  } catch(error) {
-    console.warn("Stylized floor unavailable; using original terrain.",error);
-  }
-  // Keep the original exported X/Z alignment; no Y-axis rotation.
+  // The replacement arena FBX includes its own rectangular ground surface.
+  // Keep the exported orientation and avoid loading obsolete separate floors.
   scene.add(model);
   // FBX files may contain several meshes and nested material groups.
   const bounds=new THREE.Box3().setFromObject(model);
@@ -126,22 +100,12 @@ export async function startTerrain(host, mapName="human") {
     // larger ground distance because of its elevated viewing angle.
     const groundVerticalScale=Math.max(0.2,direction.y);
     const visibleHalfZ=visibleHalfVertical/groundVerticalScale;
-    // Inset elliptical perimeter approximates the oval mountain ring.
-    // Erode its radii by the camera footprint so the *visible edges*,
-    // rather than just the target point, stay inside the oval.
-    const radiusX=Math.max(0,width*0.44-visibleHalfX);
-    const radiusZ=Math.max(0,depth*0.44-visibleHalfZ);
-    const dx=state.target.x-center.x,dz=state.target.z-center.z;
-    if(radiusX<1e-6||radiusZ<1e-6){
-      state.target.x=center.x;
-      state.target.z=center.z;
-    }else{
-      const distance=Math.hypot(dx/radiusX,dz/radiusZ);
-      if(distance>1){
-        state.target.x=center.x+dx/distance;
-        state.target.z=center.z+dz/distance;
-      }
-    }
+    // Rectangular arena: clamp each axis independently, accounting for the
+    // visible camera footprint so zoom and viewport changes remain bounded.
+    const halfX=Math.max(0,width*0.5-visibleHalfX);
+    const halfZ=Math.max(0,depth*0.5-visibleHalfZ);
+    state.target.x=THREE.MathUtils.clamp(state.target.x,center.x-halfX,center.x+halfX);
+    state.target.z=THREE.MathUtils.clamp(state.target.z,center.z-halfZ,center.z+halfZ);
     state.target.y=baseY;
   };
   const updateCamera=()=>{
@@ -152,7 +116,7 @@ export async function startTerrain(host, mapName="human") {
     camera.zoom=state.zoom;
     camera.updateProjectionMatrix();
   };
-  // Keep a fixed isometric orientation and restrict zoom-out to the playable basin.
+  // Keep a fixed isometric orientation and clamp the view to rectangular arena bounds.
   const resizeCamera=()=>{
     const aspect=Math.max(0.2,host.clientWidth/Math.max(1,host.clientHeight));
     const height=viewHeight;
@@ -168,7 +132,7 @@ export async function startTerrain(host, mapName="human") {
     const rect=renderer.domElement.getBoundingClientRect();
     pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
     raycaster.setFromCamera(pointer,camera);
-    return raycaster.intersectObjects(floor?[floor,model]:[model],true).find(hit=>hit.point)?.point||null;
+    return raycaster.intersectObject(model,true).find(hit=>hit.point)?.point||null;
   };
   let down=null;
   const touches=new Map();
