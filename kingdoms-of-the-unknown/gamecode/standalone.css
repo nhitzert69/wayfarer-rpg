@@ -50,3 +50,10 @@ html,body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;max-width:
 .terrain-loading-card span{font:14px system-ui;color:#dfcba9}
 .terrain-spinner{width:42px;height:42px;border:3px solid #a0784266;border-top-color:#e8bd78;border-radius:50%;animation:kotu-spin .85s linear infinite}
 @keyframes kotu-spin{to{transform:rotate(360deg)}}
+
+/* v3.0.23: game Debug menu and sandbox indicator */
+.kotu-debug-panel{display:flex;flex-direction:column;gap:9px;padding-top:12px;margin-top:5px;border-top:1px solid #86663c}
+.kotu-debug-panel[hidden],#debugToggle[hidden],#sandboxBadge[hidden]{display:none!important}
+.kotu-debug-panel strong{font-size:15px}
+.kotu-debug-panel span,.kotu-debug-panel small{font:12px/1.4 system-ui;color:#e5d0ac}
+.kotu-sandbox-badge{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));z-index:10;background:#59321ee8;border:1px solid #e6ad60;border-radius:6px;color:#ffe0a1;padding:8px 12px;font:700 12px system-ui;pointer-events:none}
