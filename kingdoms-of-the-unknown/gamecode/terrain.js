@@ -56,9 +56,7 @@ export async function startTerrain(host, mapName="human") {
   } catch(error) {
     console.warn("Terrain textures unavailable; using imported materials.",error);
   }
-  // Small shared alignment correction; preserve the arena's original entrance orientation.
-  model.rotation.y += THREE.MathUtils.degToRad(10);
-  model.updateMatrixWorld(true);
+  // Keep the original exported X/Z alignment; no Y-axis rotation.
   scene.add(model);
   // FBX files may contain several meshes and nested material groups.
   const bounds=new THREE.Box3().setFromObject(model);
@@ -69,7 +67,7 @@ export async function startTerrain(host, mapName="human") {
   const width=Math.max(size.x,1),depth=Math.max(size.z,1);
   const baseY=bounds.min.y+size.y*0.16;
   const target=new THREE.Vector3(center.x,baseY,center.z);
-  const direction=new THREE.Vector3(0.9,0.85,0.9).normalize();
+  const direction=new THREE.Vector3(0,0.85,1).normalize();
   const cameraDistance=Math.max(width,depth)*1.5;
   // Orthographic strategy camera: no perspective-driven disappearance when zooming.
   const viewHeight=Math.min(width,depth)*0.42;
@@ -138,8 +136,8 @@ export async function startTerrain(host, mapName="human") {
     if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down.moved=true;
     if(down.moved){
       const factor=viewHeight/(Math.max(150,host.clientHeight)*state.zoom);
-      state.target.x-= (dx+dy)*factor*0.7;
-      state.target.z+= (dx-dy)*factor*0.7;
+      state.target.x-=dx*factor;
+      state.target.z-=dy*factor/Math.max(0.2,direction.y);
       updateCamera();
     }
     down.lastX=e.clientX;down.lastY=e.clientY;
