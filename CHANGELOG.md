@@ -1,3 +1,10 @@
+# Wayfarer v3.0.13 — New Kingdoms terrain assets and angled camera (2026-10-30)
+
+- Updated all three faction arena FBX paths to their new Meshy 20261030 filenames in the existing terrain folders.
+- Load matching base-color, normal and roughness texture maps using MeshStandardMaterial, with fallback to imported materials if base-color loading fails.
+- Adjusted orthographic camera direction to a more slanted viewpoint; retained zoom controls, terrain 1× scale, and standalone navigation.
+- Development branch only. Browser rendering and camera bounds still need testing.
+
 # Wayfarer v3.0.10 — Kingdoms standalone refresh navigation (2026-10-30)
 
 - Character Play now navigates directly to the standalone Kingdoms entry point rather than launching an iframe overlay. Refreshing the browser therefore reloads Kingdoms instead of Wayfarer.
