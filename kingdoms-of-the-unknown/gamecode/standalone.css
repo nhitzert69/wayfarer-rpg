@@ -27,3 +27,15 @@ html,body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;max-width:
   .hud{left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top))}
   .hint{bottom:max(6px,env(safe-area-inset-bottom))}
 }
+
+/* v3.0.19: fitted menu artwork and compact terrain navigation */
+.title{background-image:linear-gradient(#0002,#0008),url('../../assets/images/kingdoms-of-the-unknown-title.png');background-position:center;background-size:contain;background-repeat:no-repeat;background-color:#0c0e12}
+@media (orientation:landscape){.title{background-size:contain}}
+.game-menu{position:relative;pointer-events:auto}
+.game-menu-panel{position:absolute;top:calc(100% + 7px);left:0;z-index:20;display:flex;flex-direction:column;gap:9px;min-width:220px;max-width:calc(100vw - 28px);padding:12px;border:1px solid #a07842;border-radius:9px;background:#17120ff5;box-shadow:0 8px 30px #0009}
+.game-menu-panel[hidden]{display:none!important}
+.game-menu-panel label{font:13px system-ui;color:#f5dfb7}
+.game-menu-panel button,.game-menu-panel select{width:100%;text-align:left}
+.hud>.game-menu{background:transparent}
+.hud>#worldStatus{font-size:12px}
+@media (max-width:900px) and (orientation:landscape){.hud>#worldStatus{display:none}.game-menu-panel{min-width:200px}.controls{max-width:min(560px,92vw)}}
