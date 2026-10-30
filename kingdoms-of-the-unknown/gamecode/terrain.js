@@ -14,7 +14,7 @@ export async function startTerrain(host, mapName="human") {
   if(!files[mapName])throw new Error("Unknown map.");
   const scene=new THREE.Scene();
   scene.background=new THREE.Color(0x9aa6a8);
-  const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance"});
+  const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance",logarithmicDepthBuffer:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   
@@ -24,7 +24,10 @@ export async function startTerrain(host, mapName="human") {
   const loader=new FBXLoader();
   const model=await loader.loadAsync(files[mapName]);
   const textures={human:"./models/human-terrain/Meshy_AI_grassy_mountain_basin_1030145654_texture.png",greek:"./models/greek-terrain/Meshy_AI_bare_stone_basin_40k_1030153252_texture.png",undead:"./models/undead-terrain/Meshy_AI_undead_mountain_basin_1030153644_texture.png"};
-  try{const texture=await new THREE.TextureLoader().loadAsync(textures[mapName]);texture.colorSpace=THREE.SRGBColorSpace;model.traverse(node=>{if(node.isMesh){for(const mat of (Array.isArray(node.material)?node.material:[node.material])){if(mat){mat.map=texture;mat.needsUpdate=true;}}}});}catch(error){console.warn("Terrain texture missing, showing material fallback.",error);}
+  try{const texture=await new THREE.TextureLoader().loadAsync(textures[mapName]);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.magFilter=THREE.LinearFilter;texture.generateMipmaps=true;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());model.traverse(node=>{if(node.isMesh){for(const mat of (Array.isArray(node.material)?node.material:[node.material])){if(mat){mat.map=texture;mat.needsUpdate=true;}}}});}catch(error){console.warn("Terrain texture missing, showing material fallback.",error);}
+  // Scale the imported terrain uniformly, without modifying the source FBX.
+  model.scale.multiplyScalar(2);
+  model.updateMatrixWorld(true);
   scene.add(model);
   // FBX files may contain several meshes and nested material groups.
   const bounds=new THREE.Box3().setFromObject(model);
@@ -39,7 +42,7 @@ export async function startTerrain(host, mapName="human") {
   const cameraDistance=Math.max(width,depth)*1.5;
   // Orthographic strategy camera: no perspective-driven disappearance when zooming.
   const viewHeight=Math.min(width,depth)*0.42;
-  const zoomMin=1.6,zoomMax=4.2;
+  const zoomMin=4.2,zoomMax=10.5;
   const state={target,zoom:zoomMin};
   const clampTarget=()=>{
     // Reserve room around the center. The terrain is not rectangular, so this
@@ -63,7 +66,7 @@ export async function startTerrain(host, mapName="human") {
     const height=viewHeight;
     camera.left=-height*aspect/2;camera.right=height*aspect/2;
     camera.top=height/2;camera.bottom=-height/2;
-    camera.near=0.1;camera.far=cameraDistance*5;
+    camera.near=Math.max(1,cameraDistance*0.15);camera.far=cameraDistance*2.8;
     camera.updateProjectionMatrix();
     updateCamera();
   };
@@ -82,7 +85,11 @@ export async function startTerrain(host, mapName="human") {
     const dx=e.clientX-down.lastX,dy=e.clientY-down.lastY;
     if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down.moved=true;
     if(down.moved){
-      const factor=viewHeight/(Math.max(150,host.clientHeight)*state.zoom);\n      state.target.x-= (dx+dy)*factor*0.7;\n      state.target.z+= (dx-dy)*factor*0.7;\n      updateCamera();\n    }
+      const factor=viewHeight/(Math.max(150,host.clientHeight)*state.zoom);
+      state.target.x-= (dx+dy)*factor*0.7;
+      state.target.z+= (dx-dy)*factor*0.7;
+      updateCamera();
+    }
     down.lastX=e.clientX;down.lastY=e.clientY;
   };
   const onUp=e=>{if(down&&!down.moved){const p=pick(e);if(p){state.target.x=p.x;state.target.z=p.z;updateCamera();}}down=null;};
