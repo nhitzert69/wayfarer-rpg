@@ -5,7 +5,7 @@
 ## 1. Product direction and ownership
 - The game is named **Kingdoms of the Unknown**.
 - The game is intended to become independently deployable. Its architecture must not make Wayfarer a runtime requirement.
-- Keep game-specific code and assets inside a clearly bounded game directory, currently `codes/game/` for the in-app prototype. Game-specific styles belong in the game stylesheet, not global Wayfarer styles unless explicitly shared by contract.
+- Keep game-specific code and assets inside a clearly bounded game directory, now `kingdoms-of-the-unknown/gamecode/` for the in-app prototype. Game-specific styles belong in the game stylesheet, not global Wayfarer styles unless explicitly shared by contract.
 - The Character tab may own a launch button and the smallest possible lazy-load trigger. It must not own game mechanics, screens, saves, or lifecycle logic.
 - Do not claim the existing prototype is already fully standalone until it has a separate entry point and has been tested without Wayfarer loaded.
 
