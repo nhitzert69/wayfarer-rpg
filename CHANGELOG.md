@@ -1,3 +1,10 @@
+# Wayfarer v3.0.18 — Axis-aligned terrain camera (2026-10-30)
+
+- Removed the added 10-degree Y-axis model rotation; original exported model axes are preserved.
+- Changed orthographic camera direction to (0, 0.85, 1) so X is screen horizontal and Z screen vertical while retaining elevation angle.
+- Aligned drag-to-pan with screen X/Z axes; model files, zoom limits, auth and saves unchanged.
+- Updated game rules to require exported axis alignment. No backup created. Live visual testing remains pending.
+
 # Wayfarer v3.0.17 — Replacement arenas and landscape viewport (2026-10-30)
 
 - Updated Human arena to Dark Swamp Terrain, Greek arena to Grassy Meadow Terrain, and Undead arena to Volcanic Crater Terrain, using existing uploaded FBX files and matching color, normal, and roughness texture names.
