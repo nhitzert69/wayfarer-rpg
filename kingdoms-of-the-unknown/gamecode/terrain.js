@@ -74,9 +74,17 @@ export async function startTerrain(host, mapName="human") {
   const zoomMin=1.1,zoomMax=10.5;
   const state={target,zoom:2.0};
   const clampTarget=()=>{
-    // Reserve room around the center. The terrain is not rectangular, so this
-    // is a conservative safe central area, not an exact polygon boundary.
-    const xLimit=width*0.08,zLimit=depth*0.08;
+    // Camera-visible footprint, not a fixed fraction of the map: zooming in
+    // allows the camera center to approach the perimeter in all directions.
+    const visibleHalfX=(camera.right-camera.left)/(2*state.zoom);
+    const visibleHalfVertical=(camera.top-camera.bottom)/(2*state.zoom);
+    // The camera looks down along +Z: screen-vertical movement spans a
+    // larger ground distance because of its elevated viewing angle.
+    const groundVerticalScale=Math.max(0.2,direction.y);
+    const visibleHalfZ=visibleHalfVertical/groundVerticalScale;
+    const marginX=width*0.025,marginZ=depth*0.025;
+    const xLimit=Math.max(0,width/2-visibleHalfX-marginX);
+    const zLimit=Math.max(0,depth/2-visibleHalfZ-marginZ);
     state.target.x=THREE.MathUtils.clamp(state.target.x,center.x-xLimit,center.x+xLimit);
     state.target.z=THREE.MathUtils.clamp(state.target.z,center.z-zLimit,center.z+zLimit);
     state.target.y=baseY;
