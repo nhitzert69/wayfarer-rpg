@@ -7,9 +7,9 @@ export async function startTerrain(host, mapName="human") {
   const THREE=await import("three");
   const {FBXLoader}=await import(LOADER_URL);
   const files={
-    human:"./models/human-terrain/Meshy_AI_Volcanic_Terrain_20261030_texture.fbx",
-    greek:"./models/greek-terrain/Meshy_AI_Rocky_Basin_Terrain_20261030_texture.fbx",
-    undead:"./models/undead-terrain/Meshy_AI_Dark_Swamp_Basin_Terrain_20261030_texture.fbx"
+    human:"./models/human-terrain/Meshy_AI_Dark_Swamp_Terrain_20261030_texture.fbx",
+    greek:"./models/greek-terrain/Meshy_AI_Grassy_Meadow_Terrain_20261030_texture.fbx",
+    undead:"./models/undead-terrain/Meshy_AI_Volcanic_Crater_Terrain_20261030_texture.fbx"
   };
   if(!files[mapName])throw new Error("Unknown map.");
   const scene=new THREE.Scene();
@@ -25,9 +25,9 @@ export async function startTerrain(host, mapName="human") {
   const model=await loader.loadAsync(files[mapName]);
   // Use the matching texture set exported alongside each replacement FBX.
   const textureBases={
-    human:"./models/human-terrain/Meshy_AI_Volcanic_Terrain_20261030_texture",
-    greek:"./models/greek-terrain/Meshy_AI_Rocky_Basin_Terrain_20261030_texture",
-    undead:"./models/undead-terrain/Meshy_AI_Dark_Swamp_Basin_Terrain_20261030_texture"
+    human:"./models/human-terrain/Meshy_AI_Dark_Swamp_Terrain_20261030_texture",
+    greek:"./models/greek-terrain/Meshy_AI_Grassy_Meadow_Terrain_20261030_texture",
+    undead:"./models/undead-terrain/Meshy_AI_Volcanic_Crater_Terrain_20261030_texture"
   };
   const textureBase=textureBases[mapName];
   const textureLoader=new THREE.TextureLoader();
