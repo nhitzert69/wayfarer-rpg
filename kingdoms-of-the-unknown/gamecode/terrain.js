@@ -38,13 +38,13 @@ export async function startTerrain(host, mapName="human") {
   const direction=new THREE.Vector3(0.8,1.15,0.8).normalize();
   const cameraDistance=Math.max(width,depth)*1.5;
   // Orthographic strategy camera: no perspective-driven disappearance when zooming.
-  const viewHeight=Math.min(width,depth)*0.55;
-  const zoomMin=1.15,zoomMax=3.5;
+  const viewHeight=Math.min(width,depth)*0.42;
+  const zoomMin=1.6,zoomMax=4.2;
   const state={target,zoom:zoomMin};
   const clampTarget=()=>{
     // Reserve room around the center. The terrain is not rectangular, so this
     // is a conservative safe central area, not an exact polygon boundary.
-    const xLimit=width*0.14,zLimit=depth*0.14;
+    const xLimit=width*0.08,zLimit=depth*0.08;
     state.target.x=THREE.MathUtils.clamp(state.target.x,center.x-xLimit,center.x+xLimit);
     state.target.z=THREE.MathUtils.clamp(state.target.z,center.z-zLimit,center.z+zLimit);
     state.target.y=baseY;
