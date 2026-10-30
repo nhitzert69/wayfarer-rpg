@@ -1,3 +1,9 @@
+# Wayfarer v3.0.10 — Kingdoms standalone refresh navigation (2026-10-30)
+
+- Character Play now navigates directly to the standalone Kingdoms entry point rather than launching an iframe overlay. Refreshing the browser therefore reloads Kingdoms instead of Wayfarer.
+- The game's existing Return to Wayfarer control navigates back to the Wayfarer root when opened standalone. Game authentication remains separate from Wayfarer authentication; no save or Supabase schema changes.
+- Development branch only. Browser refresh, sign-in, return navigation, and cache behavior still require live testing.
+
 # Wayfarer v3.0.9 — Original terrain scale restored (2026-10-30)
 
 - Removed the 2× runtime scaling from all three terrain models, restoring their original FBX sizes.
