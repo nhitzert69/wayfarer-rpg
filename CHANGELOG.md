@@ -1,3 +1,9 @@
+# Wayfarer v3.0.8 — Kingdoms camera zoom-out adjustment (2026-10-30)
+
+- Reduced the minimum orthographic zoom from 4.2 to 1.8, allowing a wider zoom-out view; set initial zoom to 2.2 while retaining maximum zoom-in at 10.5.
+- Preserved the 2× scale of all three terrain models and all existing camera movement, texture filtering, account and launcher behavior.
+- Updated Debug version and service-worker cache namespace on `update-before-commit` only. Live browser framing and map-edge visibility are INCONCLUSIVE pending user testing.
+
 # Wayfarer v3.0.7 — Kingdoms terrain scaling, closer zoom and texture stability (2026-10-30)
 
 - Uniformly scaled all three imported FBX terrain models 2× in the game viewer, leaving the source files unchanged; bounding boxes and camera framing now use the scaled model.
