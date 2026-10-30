@@ -129,6 +129,16 @@ const adventurePools={
     ["The Complete Expedition","Choose an unfamiliar area within a sensible travel range. Discover one historic or cultural detail, one natural or scenic spot, one local speciality or story, and one place you would return to. Finish by recording your favourite discovery."]
   ]
 };
+/* Shared generation-time reward snapshot for campaign and standalone Adventure quests. */
+function questRewardSnapshot(skill,baseXp=15){
+  const equippedThemeAtGeneration=state.equipment?.theme||"dungeon-theme";
+  const themeBonusXp=calculateThemeBonus(equippedThemeAtGeneration,skill);
+  const themeBonusGold=calculateThemeGoldBonus(equippedThemeAtGeneration,skill);
+  const themeNameAtGeneration=equippedThemeAtGeneration==="bloodthirst-theme"?"Bloodthirst":equippedThemeAtGeneration==="orthodox-theme"?"Orthodox Christianity":equippedThemeAtGeneration==="academy-theme"?"Academy":equippedThemeAtGeneration==="adventure-theme"?"Adventure":equippedThemeAtGeneration==="social-interactions-theme"?"Social Interactions":equippedThemeAtGeneration==="relationships-theme"?"Relationships":equippedThemeAtGeneration==="spartan-endurance-theme"?"Spartan Endurance":equippedThemeAtGeneration==="mozart-salon-theme"?"Mozart's Salon":equippedThemeAtGeneration==="ceo-theme"?"CEO":"";
+  const generatedForLevel=getSkillLevel(skill);
+  const skillLevelBonusXp=calculateSkillQuestLevelBonus(generatedForLevel);
+  return {baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold,generatedForLevel};
+}
 function generateAdventure(type){
   const pool=adventurePools[type];
   if(!pool||!pool.length)return;
@@ -139,13 +149,13 @@ function generateAdventure(type){
   const choices=fresh.length?fresh:pool;
   const [title,description]=choices[Math.floor(Math.random()*choices.length)];
   state.questHistory[historyKey]=[title,...recent.filter(t=>t!==title)].slice(0,12);
-  const quest={id:createQuestId(),title,description,category:"Adventure",skill:"Adventure",xp:15,done:false,source:"adventure",adventureType:type};
+  const quest={id:createQuestId(),title,description,category:"Adventure",skill:"Adventure",...questRewardSnapshot("Adventure"),done:false,source:"adventure",adventureType:type};
   if(!Array.isArray(state.quests))state.quests=[];
   state.quests.push(quest);
   state.activeDate=today();
   save();
   setAdventureChooserOpen(false);
-  toast(`${type==="short"?"Short":"Day"} adventure generated! +15 XP when completed.`);
+  toast(`${type==="short"?"Short":"Day"} adventure generated! +${quest.xp} XP and +${5+quest.perkBonusGold} coins when completed.`);
   // Keep the current scroll position after generating an adventure.
 }
 document.querySelectorAll(".adventure-choice").forEach(button=>button.addEventListener("click",function(){generateAdventure(button.dataset.adventureType);}));
@@ -388,14 +398,8 @@ function generateQuests(opts){
     const minutes=quest._minutes;
     const chosenPlace=quest._place||settings.place;
     delete quest._minutes;delete quest._score;delete quest._place;
-    const equippedThemeAtGeneration=state.equipment?.theme||"dungeon-theme";
-    const themeBonusXp=calculateThemeBonus(equippedThemeAtGeneration,skill);
-    const themeBonusGold=calculateThemeGoldBonus(equippedThemeAtGeneration,skill);
-    const themeNameAtGeneration=equippedThemeAtGeneration==="bloodthirst-theme"?"Bloodthirst":equippedThemeAtGeneration==="orthodox-theme"?"Orthodox Christianity":equippedThemeAtGeneration==="academy-theme"?"Academy":equippedThemeAtGeneration==="adventure-theme"?"Adventure":equippedThemeAtGeneration==="social-interactions-theme"?"Social Interactions":equippedThemeAtGeneration==="relationships-theme"?"Relationships":equippedThemeAtGeneration==="spartan-endurance-theme"?"Spartan Endurance":equippedThemeAtGeneration==="mozart-salon-theme"?"Mozart's Salon":equippedThemeAtGeneration==="ceo-theme"?"CEO":"";
     const baseXp=Number(quest.xp)||15;
-    const generatedForLevel=getSkillLevel(skill);
-    const skillLevelBonusXp=calculateSkillQuestLevelBonus(generatedForLevel);
-    chosen.push({...quest,baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold,estimatedMinutes:minutes,planFocus:settings.focus,planPlace:chosenPlace,done:false,source:"generated",generatedForLevel,id:createQuestId()});
+    chosen.push({...quest,...questRewardSnapshot(skill,baseXp),estimatedMinutes:minutes,planFocus:settings.focus,planPlace:chosenPlace,done:false,source:"generated",id:createQuestId()});
     usedTitles.add(quest.title);
     state.questHistory[skill]=[quest.title,...(state.questHistory[skill]||[]).filter(t=>t!==quest.title)].slice(0,8);
   }
