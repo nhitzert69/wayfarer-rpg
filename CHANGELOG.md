@@ -1,3 +1,11 @@
+# Wayfarer v3.0.24 — Kingdoms resources and Build interface (2026-10-30)
+
+- Added a four-resource top-right HUD for Gold, Wood, Stone, and Food, styled after the supplied strategy-game reference and scaled for desktop and landscape mobile.
+- Added a prominent gold Build button opening a construction panel. Building placement, costs, and resource generation are intentionally not yet implemented; the panel communicates that status.
+- Resource values initialize at zero and read account-specific live or Sandbox resource storage separately. No Wayfarer resources, Supabase data, or existing game saves are changed.
+- Preserved terrain navigation, Debug account gating, starfield, login and orientation handling.
+- Updated cache namespace and release notes. Source-level changes committed directly to main; no new backup requested or created. Live browser rendering not verified.
+
 # Wayfarer v3.0.23 — Starry world backdrop and Kingdoms Debug Sandbox (2026-10-30)
 
 - Created and verified backup branch `backup-pre-v3-0-23-2026-10-30` from pre-update main; previous backups untouched.
