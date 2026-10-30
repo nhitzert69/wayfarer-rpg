@@ -36,16 +36,34 @@ function setSandbox(enabled){
   if(!debugAllowed()||sandboxActive===enabled)return;
   sandboxActive=enabled;
   $("faction").value=readMap(enabled?"sandbox-map":"live-map");
-  refreshDebug();
+  refreshDebug();renderResources();closeBuild();
   if(!$("world").hidden)enterWorld();
 }
 $("debugToggle").onclick=()=>{if(debugAllowed())$("debugPanel").hidden=!$("debugPanel").hidden;};
 $("sandboxToggle").onclick=()=>setSandbox(!sandboxActive);
 
+
+const RESOURCE_NAMES=["gold","wood","stone","food"];
+function readResources(kind){
+  try{
+    const raw=JSON.parse(localStorage.getItem(storageKey(kind+"-resources"))||"{}");
+    return Object.fromEntries(RESOURCE_NAMES.map(name=>[name,Math.max(0,Math.floor(Number(raw[name])||0))]));
+  }catch{return Object.fromEntries(RESOURCE_NAMES.map(name=>[name,0]));}
+}
+function renderResources(){
+  const resources=activeUser?readResources(sandboxActive?"sandbox":"live"):Object.fromEntries(RESOURCE_NAMES.map(name=>[name,0]));
+  for(const name of RESOURCE_NAMES) $("resource"+name[0].toUpperCase()+name.slice(1)).textContent=resources[name].toLocaleString();
+}
+const buildToggle=$("buildToggle"),buildPanel=$("buildPanel");
+function closeBuild(){buildPanel.hidden=true;buildToggle.setAttribute("aria-expanded","false");}
+buildToggle.onclick=()=>{const opening=buildPanel.hidden;buildPanel.hidden=!opening;buildToggle.setAttribute("aria-expanded",String(opening));if(opening)closeGameMenu();};
+$("buildClose").onclick=closeBuild;
+document.addEventListener("pointerdown",event=>{if(!event.target.closest(".kotu-build-ui"))closeBuild();});
+
 function message(text){status.textContent=text;}
 function showForm(create){mode=create?"create":"login";form.hidden=false;actions.hidden=true;ready.hidden=true;$("formTitle").textContent=create?"Create account":"Log in";$("pin").autocomplete=create?"new-password":"current-password";}
-function signedOut(){activeUser=null;sandboxActive=false;$("debugPanel").hidden=true;refreshDebug();ready.hidden=true;form.hidden=true;actions.hidden=false;message("Log in or create an account to play.");}
-function signedIn(user){const changed=activeUser?.id!==user.id;activeUser=user;if(changed){sandboxActive=false;$("debugPanel").hidden=true;$("faction").value=readMap("live-map");}refreshDebug();form.hidden=true;actions.hidden=true;ready.hidden=false;$("welcome").textContent="Welcome, "+String(user.user_metadata?.wayfarer_username||user.email?.split("@")[0]||"Commander");message("Account ready.");}
+function signedOut(){closeBuild();activeUser=null;sandboxActive=false;$("debugPanel").hidden=true;refreshDebug();renderResources();ready.hidden=true;form.hidden=true;actions.hidden=false;message("Log in or create an account to play.");}
+function signedIn(user){const changed=activeUser?.id!==user.id;activeUser=user;if(changed){sandboxActive=false;$("debugPanel").hidden=true;$("faction").value=readMap("live-map");}refreshDebug();renderResources();form.hidden=true;actions.hidden=true;ready.hidden=false;$("welcome").textContent="Welcome, "+String(user.user_metadata?.wayfarer_username||user.email?.split("@")[0]||"Commander");message("Account ready.");}
 $("showLogin").onclick=()=>showForm(false);
 $("showCreate").onclick=()=>showForm(true);
 $("cancelAuth").onclick=signedOut;
@@ -56,7 +74,7 @@ function closeGameMenu(){menuPanel.hidden=true;$("debugPanel").hidden=true;menuT
 menuToggle.onclick=()=>{const open=menuPanel.hidden;menuPanel.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));};
 document.addEventListener("pointerdown",event=>{if(!event.target.closest(".game-menu"))closeGameMenu();});
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeGameMenu();});
-$("back").onclick=()=>{loadGeneration++;$("terrainLoading").hidden=true;closeGameMenu();cleanup?.();cleanup=null;$("world").hidden=true;$("title").hidden=false;};
+$("back").onclick=()=>{closeBuild();loadGeneration++;$("terrainLoading").hidden=true;closeGameMenu();cleanup?.();cleanup=null;$("world").hidden=true;$("title").hidden=false;};
 $("authForm").onsubmit=async e=>{
   e.preventDefault();
   if(!client)return message("Authentication service unavailable.");
@@ -77,7 +95,7 @@ $("authForm").onsubmit=async e=>{
 async function enterWorld(){
   if(!activeUser)return;
   const generation=++loadGeneration;
-  closeGameMenu();
+  closeGameMenu();closeBuild();renderResources();
   cleanup?.();cleanup=null;
   $("title").hidden=true;$("world").hidden=false;
   $("worldStatus").hidden=true;
