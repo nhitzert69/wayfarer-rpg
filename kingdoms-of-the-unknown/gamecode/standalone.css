@@ -39,3 +39,14 @@ html,body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;max-width:
 .hud>.game-menu{background:transparent}
 .hud>#worldStatus{font-size:12px}
 @media (max-width:900px) and (orientation:landscape){.hud>#worldStatus{display:none}.game-menu-panel{min-width:200px}.controls{max-width:min(560px,92vw)}}
+
+/* v3.0.22: full-bleed title and world loading state */
+.title,.title[style]{background-size:100% 100%;background-position:center;background-repeat:no-repeat}
+@media (orientation:landscape){.title{background-size:100% 100%}}
+.terrain-loading{position:absolute;inset:0;z-index:12;display:grid;place-items:center;background:#090a0de8;pointer-events:auto}
+.terrain-loading[hidden]{display:none!important}
+.terrain-loading-card{display:flex;flex-direction:column;align-items:center;gap:14px;padding:28px 36px;text-align:center;background:#17120ff0;border:1px solid #a07842;border-radius:12px;box-shadow:0 12px 40px #0008;color:#f5dfb7}
+.terrain-loading-card strong{font:24px Georgia,serif}
+.terrain-loading-card span{font:14px system-ui;color:#dfcba9}
+.terrain-spinner{width:42px;height:42px;border:3px solid #a0784266;border-top-color:#e8bd78;border-radius:50%;animation:kotu-spin .85s linear infinite}
+@keyframes kotu-spin{to{transform:rotate(360deg)}}
