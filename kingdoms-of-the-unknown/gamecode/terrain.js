@@ -25,9 +25,6 @@ export async function startTerrain(host, mapName="human") {
   const model=await loader.loadAsync(files[mapName]);
   const textures={human:"./models/human-terrain/Meshy_AI_grassy_mountain_basin_1030145654_texture.png",greek:"./models/greek-terrain/Meshy_AI_bare_stone_basin_40k_1030153252_texture.png",undead:"./models/undead-terrain/Meshy_AI_undead_mountain_basin_1030153644_texture.png"};
   try{const texture=await new THREE.TextureLoader().loadAsync(textures[mapName]);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.magFilter=THREE.LinearFilter;texture.generateMipmaps=true;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());model.traverse(node=>{if(node.isMesh){for(const mat of (Array.isArray(node.material)?node.material:[node.material])){if(mat){mat.map=texture;mat.needsUpdate=true;}}}});}catch(error){console.warn("Terrain texture missing, showing material fallback.",error);}
-  // Scale the imported terrain uniformly, without modifying the source FBX.
-  model.scale.multiplyScalar(2);
-  model.updateMatrixWorld(true);
   scene.add(model);
   // FBX files may contain several meshes and nested material groups.
   const bounds=new THREE.Box3().setFromObject(model);
