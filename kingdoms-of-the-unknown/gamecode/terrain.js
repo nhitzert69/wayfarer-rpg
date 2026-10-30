@@ -7,9 +7,9 @@ export async function startTerrain(host, mapName="human") {
   const THREE=await import("three");
   const {FBXLoader}=await import(LOADER_URL);
   const files={
-    human:"./models/human-terrain/human-terrain.fbx",
-    greek:"./models/greek-terrain/greek-terrain.fbx",
-    undead:"./models/undead-terrain/undead-terrain.fbx"
+    human:"./models/human-terrain/Meshy_AI_Volcanic_Terrain_20261030_texture.fbx",
+    greek:"./models/greek-terrain/Meshy_AI_Rocky_Basin_Terrain_20261030_texture.fbx",
+    undead:"./models/undead-terrain/Meshy_AI_Dark_Swamp_Basin_Terrain_20261030_texture.fbx"
   };
   if(!files[mapName])throw new Error("Unknown map.");
   const scene=new THREE.Scene();
@@ -23,8 +23,39 @@ export async function startTerrain(host, mapName="human") {
   const sun=new THREE.DirectionalLight(0xffe7c7,2.2);sun.position.set(200,450,260);scene.add(sun);
   const loader=new FBXLoader();
   const model=await loader.loadAsync(files[mapName]);
-  const textures={human:"./models/human-terrain/Meshy_AI_grassy_mountain_basin_1030145654_texture.png",greek:"./models/greek-terrain/Meshy_AI_bare_stone_basin_40k_1030153252_texture.png",undead:"./models/undead-terrain/Meshy_AI_undead_mountain_basin_1030153644_texture.png"};
-  try{const texture=await new THREE.TextureLoader().loadAsync(textures[mapName]);texture.colorSpace=THREE.SRGBColorSpace;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.magFilter=THREE.LinearFilter;texture.generateMipmaps=true;texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());model.traverse(node=>{if(node.isMesh){for(const mat of (Array.isArray(node.material)?node.material:[node.material])){if(mat){mat.map=texture;mat.needsUpdate=true;}}}});}catch(error){console.warn("Terrain texture missing, showing material fallback.",error);}
+  // Use the matching texture set exported alongside each replacement FBX.
+  const textureBases={
+    human:"./models/human-terrain/Meshy_AI_Volcanic_Terrain_20261030_texture",
+    greek:"./models/greek-terrain/Meshy_AI_Rocky_Basin_Terrain_20261030_texture",
+    undead:"./models/undead-terrain/Meshy_AI_Dark_Swamp_Basin_Terrain_20261030_texture"
+  };
+  const textureBase=textureBases[mapName];
+  const textureLoader=new THREE.TextureLoader();
+  const configureTexture=texture=>{
+    texture.minFilter=THREE.LinearMipmapLinearFilter;
+    texture.magFilter=THREE.LinearFilter;
+    texture.generateMipmaps=true;
+    texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+    return texture;
+  };
+  try {
+    const baseColor=configureTexture(await textureLoader.loadAsync(textureBase+".png"));
+    baseColor.colorSpace=THREE.SRGBColorSpace;
+    const [normal,roughness]=await Promise.all([
+      textureLoader.loadAsync(textureBase+"_normal.png").then(configureTexture).catch(()=>null),
+      textureLoader.loadAsync(textureBase+"_roughness.png").then(configureTexture).catch(()=>null)
+    ]);
+    model.traverse(node=>{
+      if(!node.isMesh)return;
+      const convert=material=>new THREE.MeshStandardMaterial({
+        map:baseColor,normalMap:normal,roughnessMap:roughness,
+        roughness:1,metalness:0,side:material?.side??THREE.FrontSide
+      });
+      node.material=Array.isArray(node.material)?node.material.map(convert):convert(node.material);
+    });
+  } catch(error) {
+    console.warn("Terrain textures unavailable; using imported materials.",error);
+  }
   scene.add(model);
   // FBX files may contain several meshes and nested material groups.
   const bounds=new THREE.Box3().setFromObject(model);
@@ -35,7 +66,7 @@ export async function startTerrain(host, mapName="human") {
   const width=Math.max(size.x,1),depth=Math.max(size.z,1);
   const baseY=bounds.min.y+size.y*0.16;
   const target=new THREE.Vector3(center.x,baseY,center.z);
-  const direction=new THREE.Vector3(0.8,1.15,0.8).normalize();
+  const direction=new THREE.Vector3(0.9,0.85,0.9).normalize();
   const cameraDistance=Math.max(width,depth)*1.5;
   // Orthographic strategy camera: no perspective-driven disappearance when zooming.
   const viewHeight=Math.min(width,depth)*0.42;
