@@ -1,3 +1,10 @@
+# Wayfarer v3.0.15 — Fine-tune arena rotation and zoom-out (2026-10-30)
+
+- Replaced the 180° terrain rotation with a small 10° Y-axis adjustment for all three faction arenas, retaining original entrance orientation more closely.
+- Lowered the minimum orthographic zoom from 1.4 to 1.1 (approximately 21% lower zoom value), allowing a modestly wider zoom-out. Maximum zoom-in and initial zoom unchanged.
+- No authentication, saves, textures, or model assets changed. No backup created, as requested.
+- Static source changes checked; live browser verification of entrances, pan limits, and mountain edges remains pending.
+
 # Wayfarer v3.0.14 — Arena orientation, zoom-out and main-branch rules (2026-10-30)
 
 - Rotated all three standalone arena models 180° around their vertical axis to bring their shared entrance side toward the bottom of the camera view. Precise entrance centering remains to be visually verified on each map.
