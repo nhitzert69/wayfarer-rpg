@@ -13,7 +13,7 @@ if (kingdomsPlayButton && !kingdomsPlayButton.dataset.wayfarerGameBound) {
     kingdomsPlayButton.disabled = true;
     kingdomsPlayButton.textContent = "LOADING KINGDOMS OF THE UNKNOWN…";
     const script = document.createElement("script");
-    script.src = "./codes/game/game.js";
+    script.src = "./kingdoms-of-the-unknown/gamecode/game.js";
     script.onload = () => {
       kingdomsPlayButton.disabled = false;
       kingdomsPlayButton.textContent = "▶ PLAY KINGDOMS OF THE UNKNOWN";
@@ -23,7 +23,7 @@ if (kingdomsPlayButton && !kingdomsPlayButton.dataset.wayfarerGameBound) {
     script.onerror = () => {
       kingdomsPlayButton.disabled = false;
       kingdomsPlayButton.textContent = "▶ PLAY KINGDOMS OF THE UNKNOWN";
-      toast("Could not load the game files. Check that codes/game/game.js is deployed.");
+      toast("Could not load the game files. Check that kingdoms-of-the-unknown/gamecode/game.js is deployed.");
     };
     document.head.appendChild(script);
   });
