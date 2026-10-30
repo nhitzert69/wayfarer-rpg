@@ -1,3 +1,8 @@
+# Wayfarer v3.0.25 — Simplify Kingdoms image directory (2026-10-30)
+
+- Moved original faction concept maps and the Town Hall folder from `kingdoms-of-the-unknown/gameassets/images/` to `kingdoms-of-the-unknown/images/`, preserving exact file contents.
+- Checked active Kingdoms game scripts, styles, and HTML for references to the old path; none found. Models and textures unchanged. No new backup requested or created.
+
 # Wayfarer v3.0.24 — Kingdoms resources and Build interface (2026-10-30)
 
 - Added a four-resource top-right HUD for Gold, Wood, Stone, and Food, styled after the supplied strategy-game reference and scaled for desktop and landscape mobile.
