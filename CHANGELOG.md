@@ -1,3 +1,12 @@
+# Wayfarer v3.0.16 — Mobile Kingdoms usability and game-code cache refresh (2026-10-30)
+
+- Restored the standalone Kingdoms portrait orientation gate with a rotate-phone message and return link; it works independently of the former Wayfarer overlay.
+- Changed the title artwork from cover to contain to prevent cropping on narrow screens, and adjusted landscape mobile controls.
+- Added two-finger pinch zoom to the terrain viewer; existing mouse-wheel zoom, click-to-center, and drag-to-pan retained.
+- Switched standalone game JavaScript/CSS to network-first service-worker fetching to reduce stale code discrepancies across devices.
+- Preserved Supabase login, session storage, model assets, rotation and zoom limits. No backup created.
+- Source-level checks only; physical iOS pinch, orientation, and browser cache behavior require live verification.
+
 # Wayfarer v3.0.15 — Fine-tune arena rotation and zoom-out (2026-10-30)
 
 - Replaced the 180° terrain rotation with a small 10° Y-axis adjustment for all three faction arenas, retaining original entrance orientation more closely.
