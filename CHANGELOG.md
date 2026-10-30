@@ -1,3 +1,9 @@
+# Wayfarer v3.0.21 — Organize Kingdoms concept art (2026-10-30)
+
+- Relocated the three existing original faction map concept PNGs to `kingdoms-of-the-unknown/gameassets/images/maps/` without altering image contents.
+- Created `kingdoms-of-the-unknown/gameassets/images/townhall/` with an explanatory README. The new Town Hall concept sheet is pending upload because the GitHub connector cannot directly ingest the generated local binary image.
+- No terrain models, textures, or game logic changed. No backup requested or created.
+
 # Wayfarer v3.0.20 — Oval terrain camera boundaries (2026-10-30)
 
 - Replaced rectangular X/Z target clamping with an elliptical clamp approximating the mountain-ring perimeter, preventing diagonal corner excursions into the outside background.
