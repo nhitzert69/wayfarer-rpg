@@ -10,17 +10,49 @@ else orientationQuery.addListener(updateOrientation);
 window.addEventListener("resize",updateOrientation);
 updateOrientation();
 let client=null,mode="login",cleanup=null,activeUser=null,loadGeneration=0;
+
+let sandboxActive=false;
+const allowedDebugNames=new Set(["admin","chatgpt"]);
+const safeMap=name=>["human","greek","undead"].includes(name)?name:"human";
+const authenticatedName=user=>{
+  const email=String(user?.email||"").toLowerCase();
+  return email.endsWith("@wayfarer.example")?email.slice(0,-"@wayfarer.example".length):"";
+};
+const debugAllowed=()=>!!activeUser&&allowedDebugNames.has(authenticatedName(activeUser));
+const storageKey=kind=>"kotu-v1:"+activeUser.id+":"+kind;
+function readMap(kind){try{return safeMap(localStorage.getItem(storageKey(kind)));}catch{return "human";}}
+function saveMap(){if(!activeUser)return;try{localStorage.setItem(storageKey(sandboxActive?"sandbox-map":"live-map"),safeMap($("faction").value));}catch(error){console.warn("Map preference storage unavailable",error);}}
+function refreshDebug(){
+  const allowed=debugAllowed();
+  if(!allowed)sandboxActive=false;
+  $("debugToggle").hidden=!allowed;
+  if(!allowed)$("debugPanel").hidden=true;
+  $("sandboxBadge").hidden=!sandboxActive;
+  $("sandboxToggle").textContent=sandboxActive?"Exit Sandbox":"Enter Sandbox";
+  $("sandboxToggle").setAttribute("aria-pressed",String(sandboxActive));
+  $("debugModeStatus").textContent=sandboxActive?"Sandbox active · isolated test preferences":"Live mode · normal preferences";
+}
+function setSandbox(enabled){
+  if(!debugAllowed()||sandboxActive===enabled)return;
+  sandboxActive=enabled;
+  $("faction").value=readMap(enabled?"sandbox-map":"live-map");
+  refreshDebug();
+  if(!$("world").hidden)enterWorld();
+}
+$("debugToggle").onclick=()=>{if(debugAllowed())$("debugPanel").hidden=!$("debugPanel").hidden;};
+$("sandboxToggle").onclick=()=>setSandbox(!sandboxActive);
+
 function message(text){status.textContent=text;}
 function showForm(create){mode=create?"create":"login";form.hidden=false;actions.hidden=true;ready.hidden=true;$("formTitle").textContent=create?"Create account":"Log in";$("pin").autocomplete=create?"new-password":"current-password";}
-function signedOut(){activeUser=null;ready.hidden=true;form.hidden=true;actions.hidden=false;message("Log in or create an account to play.");}
-function signedIn(user){activeUser=user;form.hidden=true;actions.hidden=true;ready.hidden=false;$("welcome").textContent="Welcome, "+String(user.user_metadata?.wayfarer_username||user.email?.split("@")[0]||"Commander");message("Account ready.");}
+function signedOut(){activeUser=null;sandboxActive=false;$("debugPanel").hidden=true;refreshDebug();ready.hidden=true;form.hidden=true;actions.hidden=false;message("Log in or create an account to play.");}
+function signedIn(user){const changed=activeUser?.id!==user.id;activeUser=user;if(changed){sandboxActive=false;$("debugPanel").hidden=true;$("faction").value=readMap("live-map");}refreshDebug();form.hidden=true;actions.hidden=true;ready.hidden=false;$("welcome").textContent="Welcome, "+String(user.user_metadata?.wayfarer_username||user.email?.split("@")[0]||"Commander");message("Account ready.");}
 $("showLogin").onclick=()=>showForm(false);
 $("showCreate").onclick=()=>showForm(true);
 $("cancelAuth").onclick=signedOut;
 $("return").onclick=()=>{if(window.parent!==window){window.parent.postMessage({type:"kotu-return"},"*");}else{window.location.href="../index.html";}};
 $("logout").onclick=async()=>{if(client)await client.auth.signOut();signedOut();};
 const menuToggle=$("menuToggle"),menuPanel=$("menuPanel");
-function closeGameMenu(){menuPanel.hidden=true;menuToggle.setAttribute("aria-expanded","false");}
+function closeGameMenu(){menuPanel.hidden=true;$("debugPanel").hidden=true;menuToggle.setAttribute("aria-expanded","false");}
 menuToggle.onclick=()=>{const open=menuPanel.hidden;menuPanel.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));};
 document.addEventListener("pointerdown",event=>{if(!event.target.closest(".game-menu"))closeGameMenu();});
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeGameMenu();});
@@ -66,7 +98,7 @@ async function enterWorld(){
   }
 }
 $("play").onclick=enterWorld;
-$("faction").onchange=()=>{if(!$("world").hidden)enterWorld();};
+$("faction").onchange=()=>{saveMap();if(!$("world").hidden)enterWorld();};
 (async()=>{
   try{
     if(!window.supabase?.createClient)throw new Error("Authentication library unavailable.");
