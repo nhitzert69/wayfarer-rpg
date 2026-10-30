@@ -17,6 +17,9 @@ These rules are mandatory for every Wayfarer update, including documentation-onl
 ## v3.0.6 game viewer regression guidance
 - For Kingdoms terrain camera changes, verify camera-target clamping, full viewport zoom-out, pan limits, and duplicate navigation controls in a live browser before claiming the issue fixed. Keep the standalone game as owner of game navigation; do not show a second Wayfarer host menu over the game iframe.
 
+## v3.0.7 terrain viewer guidance
+- When changing Kingdoms terrain scale or zoom, derive camera bounds from the transformed model and test all three factions. Check depth-buffer precision and texture filtering for motion shimmer; overlapping source geometry requires separate inspection. Validate drag controls with JavaScript syntax checks before release.
+
 ## 1. Rule hierarchy and change control
 - Follow this master standard for every change.
 - Follow `theme creation rules.md` for theme registration, assets, visuals, music, Store, unlocks, Inventory, equipment, perks, rewards, theme diagnostics, and theme-related cleanup.
