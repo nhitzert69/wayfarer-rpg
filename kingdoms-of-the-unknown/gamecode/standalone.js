@@ -19,7 +19,12 @@ $("showCreate").onclick=()=>showForm(true);
 $("cancelAuth").onclick=signedOut;
 $("return").onclick=()=>{if(window.parent!==window){window.parent.postMessage({type:"kotu-return"},"*");}else{window.location.href="../index.html";}};
 $("logout").onclick=async()=>{if(client)await client.auth.signOut();signedOut();};
-$("back").onclick=()=>{cleanup?.();cleanup=null;$("world").hidden=true;$("title").hidden=false;};
+const menuToggle=$("menuToggle"),menuPanel=$("menuPanel");
+function closeGameMenu(){menuPanel.hidden=true;menuToggle.setAttribute("aria-expanded","false");}
+menuToggle.onclick=()=>{const open=menuPanel.hidden;menuPanel.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));};
+document.addEventListener("pointerdown",event=>{if(!event.target.closest(".game-menu"))closeGameMenu();});
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeGameMenu();});
+$("back").onclick=()=>{closeGameMenu();cleanup?.();cleanup=null;$("world").hidden=true;$("title").hidden=false;};
 $("authForm").onsubmit=async e=>{
   e.preventDefault();
   if(!client)return message("Authentication service unavailable.");
@@ -39,6 +44,7 @@ $("authForm").onsubmit=async e=>{
 };
 async function enterWorld(){
   if(!activeUser)return;
+  closeGameMenu();
   $("title").hidden=true;$("world").hidden=false;
   $("worldStatus").textContent="Loading terrain…";
   cleanup?.();cleanup=null;
