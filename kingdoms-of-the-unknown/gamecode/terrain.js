@@ -13,7 +13,24 @@ export async function startTerrain(host, mapName="human") {
   };
   if(!files[mapName])throw new Error("Unknown map.");
   const scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x9aa6a8);
+  // Procedural starfield behind the terrain, with no external asset dependency.
+  const skyCanvas=document.createElement("canvas");
+  skyCanvas.width=2048;skyCanvas.height=1024;
+  const sky=skyCanvas.getContext("2d");
+  const gradient=sky.createLinearGradient(0,0,0,1024);
+  gradient.addColorStop(0,"#030713");gradient.addColorStop(0.5,"#10152b");gradient.addColorStop(1,"#080b19");
+  sky.fillStyle=gradient;sky.fillRect(0,0,2048,1024);
+  let seed=93217;
+  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  for(let i=0;i<2200;i++){
+    const x=random()*2048,y=random()*1024,r=0.25+random()*1.15;
+    sky.beginPath();sky.arc(x,y,r,0,Math.PI*2);
+    sky.fillStyle="rgba(225,235,255,"+(0.2+random()*0.75)+")";sky.fill();
+  }
+  const starTexture=new THREE.CanvasTexture(skyCanvas);
+  starTexture.colorSpace=THREE.SRGBColorSpace;
+  starTexture.mapping=THREE.EquirectangularReflectionMapping;
+  scene.background=starTexture;
   const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance",logarithmicDepthBuffer:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -181,5 +198,5 @@ export async function startTerrain(host, mapName="human") {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();};
+  return ()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();starTexture.dispose();};
 }
