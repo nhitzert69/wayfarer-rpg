@@ -1,3 +1,8 @@
+# Wayfarer v3.0.29 — Rotate stylized floors 180 degrees (2026-10-30)
+
+- Rotated all three new stylized floor models 180° about the vertical Y axis around their existing exported origins. Original mountain terrain orientation, positions, scales, textures, camera, and saves are unchanged.
+- This is a reversible orientation experiment; exact alignment and ground overlap require visual testing on all three maps.
+
 # Wayfarer v3.0.28 — Stylized world-map floors (2026-10-30)
 
 - Added the Human Ashen, Greek Mediterranean, and Undead Mire FBX floors and their color, normal, and roughness textures to the world-map renderer without altering their artist-exported transforms.

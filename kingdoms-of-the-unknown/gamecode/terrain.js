@@ -74,12 +74,12 @@ export async function startTerrain(host, mapName="human") {
   } catch(error) {
     console.warn("Terrain textures unavailable; using imported materials.",error);
   }
-  // Floor and mountain FBX assets share the artist's coordinate system.
-  // Do not recenter or independently transform either asset.
+  // Preserve original terrain orientation; rotate only the new floors 180 degrees around their exported origin.
   let floor=null;
   try {
     const floorBase=floors[mapName];
     floor=await loader.loadAsync(floorBase+".fbx");
+    floor.rotation.y+=Math.PI; // 180° around world-up, not upside down.
     const floorColor=configureTexture(await textureLoader.loadAsync(floorBase+".png"));
     floorColor.colorSpace=THREE.SRGBColorSpace;
     const [floorNormal,floorRoughness]=await Promise.all([
