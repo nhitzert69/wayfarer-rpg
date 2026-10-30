@@ -82,11 +82,22 @@ export async function startTerrain(host, mapName="human") {
     // larger ground distance because of its elevated viewing angle.
     const groundVerticalScale=Math.max(0.2,direction.y);
     const visibleHalfZ=visibleHalfVertical/groundVerticalScale;
-    const marginX=width*0.025,marginZ=depth*0.025;
-    const xLimit=Math.max(0,width/2-visibleHalfX-marginX);
-    const zLimit=Math.max(0,depth/2-visibleHalfZ-marginZ);
-    state.target.x=THREE.MathUtils.clamp(state.target.x,center.x-xLimit,center.x+xLimit);
-    state.target.z=THREE.MathUtils.clamp(state.target.z,center.z-zLimit,center.z+zLimit);
+    // Inset elliptical perimeter approximates the oval mountain ring.
+    // Erode its radii by the camera footprint so the *visible edges*,
+    // rather than just the target point, stay inside the oval.
+    const radiusX=Math.max(0,width*0.47-visibleHalfX);
+    const radiusZ=Math.max(0,depth*0.47-visibleHalfZ);
+    const dx=state.target.x-center.x,dz=state.target.z-center.z;
+    if(radiusX<1e-6||radiusZ<1e-6){
+      state.target.x=center.x;
+      state.target.z=center.z;
+    }else{
+      const distance=Math.hypot(dx/radiusX,dz/radiusZ);
+      if(distance>1){
+        state.target.x=center.x+dx/distance;
+        state.target.z=center.z+dz/distance;
+      }
+    }
     state.target.y=baseY;
   };
   const updateCamera=()=>{
