@@ -85,8 +85,8 @@ export async function startTerrain(host, mapName="human") {
     // Inset elliptical perimeter approximates the oval mountain ring.
     // Erode its radii by the camera footprint so the *visible edges*,
     // rather than just the target point, stay inside the oval.
-    const radiusX=Math.max(0,width*0.47-visibleHalfX);
-    const radiusZ=Math.max(0,depth*0.47-visibleHalfZ);
+    const radiusX=Math.max(0,width*0.44-visibleHalfX);
+    const radiusZ=Math.max(0,depth*0.44-visibleHalfZ);
     const dx=state.target.x-center.x,dz=state.target.z-center.z;
     if(radiusX<1e-6||radiusZ<1e-6){
       state.target.x=center.x;
