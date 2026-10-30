@@ -110,8 +110,29 @@ export async function startTerrain(host, mapName="human") {
     return raycaster.intersectObject(model,true).find(hit=>hit.point)?.point||null;
   };
   let down=null;
-  const onDown=e=>{if(e.button!==0)return;down={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};renderer.domElement.setPointerCapture(e.pointerId);};
+  const touches=new Map();
+  let pinchDistance=null;
+  const onDown=e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    if(e.pointerType!=="mouse"){
+      touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+      if(touches.size>=2){down=null;pinchDistance=null;}
+    }
+    if(touches.size<2)down={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};
+    renderer.domElement.setPointerCapture(e.pointerId);
+  };
   const onMove=e=>{
+    if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(touches.size>=2){
+      const [a,b]=Array.from(touches.values());
+      const distance=Math.hypot(a.x-b.x,a.y-b.y);
+      if(pinchDistance&&distance>0){
+        state.zoom=THREE.MathUtils.clamp(state.zoom*distance/pinchDistance,zoomMin,zoomMax);
+        updateCamera();
+      }
+      pinchDistance=distance;
+      return;
+    }
     if(!down)return;
     const dx=e.clientX-down.lastX,dy=e.clientY-down.lastY;
     if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down.moved=true;
@@ -123,7 +144,13 @@ export async function startTerrain(host, mapName="human") {
     }
     down.lastX=e.clientX;down.lastY=e.clientY;
   };
-  const onUp=e=>{if(down&&!down.moved){const p=pick(e);if(p){state.target.x=p.x;state.target.z=p.z;updateCamera();}}down=null;};
+  const onUp=e=>{
+    const wasPinching=touches.size>=2;
+    touches.delete(e.pointerId);
+    pinchDistance=null;
+    if(!wasPinching&&down&&!down.moved){const p=pick(e);if(p){state.target.x=p.x;state.target.z=p.z;updateCamera();}}
+    down=null;
+  };
   const onWheel=e=>{e.preventDefault();state.zoom=THREE.MathUtils.clamp(state.zoom*Math.exp(-e.deltaY*0.001),zoomMin,zoomMax);updateCamera();};
   const canvas=renderer.domElement;
   canvas.style.touchAction="none";
