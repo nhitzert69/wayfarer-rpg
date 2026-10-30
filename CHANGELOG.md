@@ -1,3 +1,9 @@
+# Wayfarer v3.0.9 — Original terrain scale restored (2026-10-30)
+
+- Removed the 2× runtime scaling from all three terrain models, restoring their original FBX sizes.
+- Retained existing zoom limits and starting zoom; no model assets changed.
+- Updated on development branch only. Browser validation pending.
+
 # Wayfarer v3.0.8 — Kingdoms camera zoom-out adjustment (2026-10-30)
 
 - Reduced the minimum orthographic zoom from 4.2 to 1.8, allowing a wider zoom-out view; set initial zoom to 2.2 while retaining maximum zoom-in at 10.5.
