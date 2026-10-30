@@ -1,3 +1,12 @@
+# Wayfarer v3.0.23 — Starry world backdrop and Kingdoms Debug Sandbox (2026-10-30)
+
+- Created and verified backup branch `backup-pre-v3-0-23-2026-10-30` from pre-update main; previous backups untouched.
+- Replaced the grey terrain backdrop with a deterministic procedural starry night sky on all three maps; existing models, camera controls and oval panning limits remain unchanged.
+- Added a Debug entry inside the Kingdoms world menu for authenticated Admin and CHATGPT username/PIN identities only, checked against authenticated email rather than editable profile metadata.
+- Added Sandbox mode and visible test-mode badge. Per-account Sandbox map preferences are stored separately from live map preferences; switching modes restores each mode's selected map.
+- Kingdoms currently has no saved progression or gameplay mutations beyond map preference; future gameplay Debug tools must explicitly use isolated Sandbox state. Client-side menu gating is not server-side authorization.
+- Updated service-worker cache and Debug version references. Source-level implementation; not verified in a live browser.
+
 # Wayfarer v3.0.22 — Full-screen title, map loading overlay, tighter boundaries (2026-10-30)
 
 - Changed Kingdoms title artwork to fill the entire screen on desktop and landscape mobile without black letterbox bars; nonmatching aspect ratios stretch slightly.
