@@ -1,3 +1,9 @@
+# Wayfarer v3.0.28 — Stylized world-map floors (2026-10-30)
+
+- Added the Human Ashen, Greek Mediterranean, and Undead Mire FBX floors and their color, normal, and roughness textures to the world-map renderer without altering their artist-exported transforms.
+- Preserved original terrain and camera behavior; prioritized floor drawing with polygon offset and added floor-aware map picking. Original terrain floor geometry is still present; visual overlap must be checked in-browser.
+- Created backup `backup-pre-worldmap-floors-2026-10-30` before updating main. No live visual test claimed.
+
 # Wayfarer v3.0.27 — Organize Kingdoms model assets (2026-10-30)
 
 - Confirmed all three stylized floors and their textures were uploaded to GitHub; renamed them `ashen-floor`, `mediterranean-floor`, and `undead-mire-floor` with matching PBR suffixes.
