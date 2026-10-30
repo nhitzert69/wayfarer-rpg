@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-v3.0.15";
+const CACHE = "wayfarer-v3.0.16";
 const ASSETS = [
   "./assets/images/bloodthirst-background.webp", "./assets/images/bloodthirst-theme.webp", "./assets/images/male-bloodthirst.webp", "./assets/images/female-bloodthirst.webp", "./assets/sound/bloodthirst-theme.mp3",
   "./assets/images/ceo-background.webp", "./assets/images/male-ceo.webp", "./assets/images/female-ceo.webp", "./assets/images/ceo-theme.webp", "./assets/sound/ceo-theme.mp3",
@@ -43,6 +43,15 @@ self.addEventListener("fetch", event => {
         cached || caches.match("./index.html")
       ))
     );
+    return;
+  }
+
+  // Always refresh standalone game code to avoid stale arena orientation on different devices.
+  if (new URL(request.url).pathname.includes("/kingdoms-of-the-unknown/gamecode/") && /\\.(js|css)$/.test(new URL(request.url).pathname)) {
+    event.respondWith(fetch(request).then(response => {
+      if(response && response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(request,copy));}
+      return response;
+    }).catch(()=>caches.match(request)));
     return;
   }
 
