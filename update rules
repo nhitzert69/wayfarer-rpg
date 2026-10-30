@@ -8,11 +8,11 @@
 
 These rules are mandatory for every Wayfarer update, including documentation-only, bug-fix, Debug-only, theme, game, refactor, and release-packaging changes. They are the master development and release standard. The companion files `theme creation rules.md` and `game rules.md` are also mandatory whenever their scope applies. Read all applicable rule files before editing. If a required file cannot be read, stop and ask for it; do not proceed by assumption.
 
-## Mandatory three-branch release workflow (2026-10-30)
-- `main` is the production branch and is never the workspace for experiments or direct development edits.
-- `update-before-commit` is the permanent integration/testing branch: implement and verify proposed updates here first, then promote to `main` only after explicit user approval.
-- `Latest-backup` is the protected known-good recovery branch. Do not edit, reset, merge into, force-push, or repoint it as part of ordinary development. Refresh it only with explicit user approval after verifying a known-good release.
-- Before every update, confirm these exact branch names and compare the intended work branch to `main`. Preserve unrelated changes already present in the work branch; use a pull request for promotion. Never assume that a branch named backup also backs up Supabase data.
+## Active main-branch workflow (2026-10-30; supersedes prior branch instructions)
+- `main` is the active development and production branch. Apply authorized updates directly to `main` after inspecting current files; do not require `update-before-commit` or a pull request.
+- Create, update, or reset a backup branch **only when the user explicitly requests it**. Do not automatically create a new backup for each release. Preserve `Latest-backup` and historical backup branches unless expressly directed otherwise.
+- Before each edit record the starting commit and maintain precise versioned changelog entries so rollback consequences can be identified. A Git commit history is not a separate backup and does not protect Supabase data.
+- This active workflow overrides older instructions elsewhere in this file requiring a development branch, pull request, or automatic backup archive for ordinary updates. All testing, preservation, release metadata, and safety requirements remain applicable.
 
 ## v3.0.6 game viewer regression guidance
 - For Kingdoms terrain camera changes, verify camera-target clamping, full viewport zoom-out, pan limits, and duplicate navigation controls in a live browser before claiming the issue fixed. Keep the standalone game as owner of game navigation; do not show a second Wayfarer host menu over the game iframe.
@@ -32,8 +32,8 @@ These rules are mandatory for every Wayfarer update, including documentation-onl
 - When authorized GitHub access is available, inspect the current live repository and the intended branch before every update. The repository is the source of truth; an old ZIP or remembered project state is not.
 - Before modifying files, inspect the current project structure, working-tree/diff state, version metadata, relevant callers, dependencies, event listeners, save paths, and existing tests.
 - If live repository access is unavailable, state that limitation and work only from a clearly identified user-supplied archive or source. Never claim that GitHub or production was changed unless that action actually succeeded.
-- Establish a recoverable baseline before editing: preserve a known-good commit or equivalent version-control checkpoint and, for release deliveries, a complete backup archive outside the working copy. Verify that the backup opens and contains the expected project files.
-- Do not experiment directly on the production/deployment branch when a separate working branch is available. Keep changes reviewable and narrow. Do not merge/deploy without the user's explicit approval when the workflow provides an approval gate.
+- Record the starting commit before editing. Create a separate backup branch or archive only when explicitly requested; verify any requested backup before relying on it.
+- Authorized updates are applied directly to main under the active workflow; keep changes narrow, reviewable, and tested.
 - Source-code backups do not back up user data. Avoid destructive data or schema changes unless explicitly requested and separately backed up with a rollback plan.
 
 ## 3. Scope and preservation
