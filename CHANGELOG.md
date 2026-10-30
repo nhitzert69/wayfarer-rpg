@@ -1,3 +1,12 @@
+# Wayfarer v3.0.19 — Zoom-aware map exploration and compact game menu (2026-10-30)
+
+- Created and verified explicit pre-update backup branch backup-pre-v3-0-18-2026-10-30 from main; no subsequent edits to that branch.
+- Replaced fixed 8% X/Z camera target clamps with zoom- and viewport-dependent orthographic visible-footprint bounds, allowing deeper panning toward the terrain perimeter as zoom increases.
+- Combined in-world Main menu and faction selection into an expandable ☰ Menu; closes on selection, outside click, Escape, and main-menu navigation.
+- Set title artwork to contain in landscape to preserve the full illustrated composition, accepting letterboxing rather than cropping.
+- Updated cache and Debug version references; game auth, saves, and models unchanged.
+- Static code review only; physical phone/desktop panning and model-edge containment require live testing.
+
 # Wayfarer v3.0.18 — Axis-aligned terrain camera (2026-10-30)
 
 - Removed the added 10-degree Y-axis model rotation; original exported model axes are preserved.
