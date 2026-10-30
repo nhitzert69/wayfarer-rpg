@@ -7,28 +7,30 @@ export async function startTerrain(host, mapName="human") {
   const THREE=await import("three");
   const {FBXLoader}=await import(LOADER_URL);
   const files={
-    human:"../models/human-terrain/human-terrain.fbx",
-    greek:"../models/greek-terrain/greek-terrain.fbx",
-    undead:"../models/undead-terrain/undead-terrain.fbx"
+    human:"./models/human-terrain/human-terrain.fbx",
+    greek:"./models/greek-terrain/greek-terrain.fbx",
+    undead:"./models/undead-terrain/undead-terrain.fbx"
   };
   if(!files[mapName])throw new Error("Unknown map.");
   const scene=new THREE.Scene();
   scene.background=new THREE.Color(0x9aa6a8);
-  const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
+  const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance"});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
-  host.appendChild(renderer.domElement);
+  
   const camera=new THREE.PerspectiveCamera(45,1,0.1,100000);
   scene.add(new THREE.HemisphereLight(0xe9f1ff,0x515049,2));
   const sun=new THREE.DirectionalLight(0xffe7c7,2.2);sun.position.set(200,450,260);scene.add(sun);
   const loader=new FBXLoader();
   const model=await loader.loadAsync(files[mapName]);
+  const textures={human:"./models/human-terrain/Meshy_AI_grassy_mountain_basin_1030145654_texture.png",greek:"./models/greek-terrain/Meshy_AI_bare_stone_basin_40k_1030153252_texture.png",undead:"./models/undead-terrain/Meshy_AI_undead_mountain_basin_1030153644_texture.png"};
+  try{const texture=await new THREE.TextureLoader().loadAsync(textures[mapName]);texture.colorSpace=THREE.SRGBColorSpace;model.traverse(node=>{if(node.isMesh){for(const mat of (Array.isArray(node.material)?node.material:[node.material])){if(mat){mat.map=texture;mat.needsUpdate=true;}}}});}catch(error){console.warn("Terrain texture missing, showing material fallback.",error);}
   scene.add(model);
   // FBX files may contain several meshes and nested material groups.
   const bounds=new THREE.Box3().setFromObject(model);
   if(bounds.isEmpty())throw new Error("The terrain model has no geometry.");
   const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
-  const radius=Math.max(size.x,size.y,1);
+  const radius=Math.max(size.x,size.z,1);
   const minRange=Math.max(radius*0.2,5),maxRange=Math.max(radius*1.7,40);
   const state={target:new THREE.Vector3(center.x,center.y,center.z),range:Math.max(radius*0.9,15)};
   // Blender/FBX convention: world Z is vertical for exported terrain; THREE defaults to Y-up.
@@ -88,5 +90,5 @@ export async function startTerrain(host, mapName="human") {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();canvas.remove();};
+  return ()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();};
 }
