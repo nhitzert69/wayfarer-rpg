@@ -2,6 +2,13 @@
 const $=id=>document.getElementById(id);
 const status=$("authStatus"),form=$("authForm"),actions=$("accountActions"),ready=$("ready");
 const CONFIG=window.KOTU_AUTH_CONFIG;
+// Standalone orientation gate replaces the retired Wayfarer-hosted overlay gate.
+const orientationQuery=window.matchMedia("(max-width: 900px) and (orientation: portrait)");
+function updateOrientation(){ $("rotateGate").hidden=!orientationQuery.matches; }
+if(orientationQuery.addEventListener)orientationQuery.addEventListener("change",updateOrientation);
+else orientationQuery.addListener(updateOrientation);
+window.addEventListener("resize",updateOrientation);
+updateOrientation();
 let client=null,mode="login",cleanup=null,activeUser=null;
 function message(text){status.textContent=text;}
 function showForm(create){mode=create?"create":"login";form.hidden=false;actions.hidden=true;ready.hidden=true;$("formTitle").textContent=create?"Create account":"Log in";$("pin").autocomplete=create?"new-password":"current-password";}
