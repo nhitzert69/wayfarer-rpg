@@ -56,8 +56,8 @@ export async function startTerrain(host, mapName="human") {
   } catch(error) {
     console.warn("Terrain textures unavailable; using imported materials.",error);
   }
-  // All three arena exports share an entrance orientation: turn their entrance toward the screen bottom.
-  model.rotation.y += Math.PI;
+  // Small shared alignment correction; preserve the arena's original entrance orientation.
+  model.rotation.y += THREE.MathUtils.degToRad(10);
   model.updateMatrixWorld(true);
   scene.add(model);
   // FBX files may contain several meshes and nested material groups.
@@ -73,7 +73,7 @@ export async function startTerrain(host, mapName="human") {
   const cameraDistance=Math.max(width,depth)*1.5;
   // Orthographic strategy camera: no perspective-driven disappearance when zooming.
   const viewHeight=Math.min(width,depth)*0.42;
-  const zoomMin=1.4,zoomMax=10.5;
+  const zoomMin=1.1,zoomMax=10.5;
   const state={target,zoom:2.0};
   const clampTarget=()=>{
     // Reserve room around the center. The terrain is not rectangular, so this
