@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.0.3 QA fixes and conservative cleanup
+- Campaign and standalone Short/Day Adventure quests must share generation-time skill/theme reward snapshots; Store gold display must reflect current live or Sandbox state after every render. Retest with WorkGPT before calling the release browser-verified.
+
 ## v3.0.3 conservative cleanup rule
 - Remove assets only after checking application code, registered themes, service-worker precache, and documentation for references. Do not remove files merely for appearing old or redundant. Preserve all gameplay and account behavior.
 
