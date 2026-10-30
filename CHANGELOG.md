@@ -1,3 +1,11 @@
+# Wayfarer v3.0.5 — Kingdoms login and playable terrain preview (2026-10-30)
+
+- Added independent Kingdoms username/PIN login and registration using the existing Supabase Auth project but a separate session-storage key; does not read or write Wayfarer save data. Browser verification and backend account policies remain untested.
+- Added a standalone game entry point, Play button after session restoration, FBX terrain viewer for human, Greek and undead models, angled camera, click-to-recenter, drag-to-pan, wheel zoom and model-derived camera-target bounds.
+- Wayfarer Character Play still launches the game, now embedded through its standalone entry point. Removed the ENTERING THE UNKNOWN label.
+- Documented permanent main/update-before-commit/Latest-backup branch workflow; development branch only, no production merge.
+- Viewer uses CDN Three.js and Supabase SDK, and existing Wayfarer-hosted title artwork; fully independent asset packaging and offline operation remain pending. Static source review only; live WebGL, FBX and authentication flows INCONCLUSIVE.
+
 # Wayfarer v3.0.4 — Kingdoms of the Unknown folder separation (2026-10-30)
 
 - Moved the game shell JavaScript and CSS into `kingdoms-of-the-unknown/gamecode/` while keeping the red Character Play launcher in Wayfarer.
