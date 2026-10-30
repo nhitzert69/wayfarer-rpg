@@ -1,3 +1,10 @@
+# Wayfarer v3.0.20 — Oval terrain camera boundaries (2026-10-30)
+
+- Replaced rectangular X/Z target clamping with an elliptical clamp approximating the mountain-ring perimeter, preventing diagonal corner excursions into the outside background.
+- Ellipse radii shrink with the orthographic camera's zoom-dependent visible footprint, retaining zoom-aware access toward all four sides; very wide views recenter when the footprint exceeds a safe radius.
+- No changes to model assets, login, zoom values, navigation menu or touch controls. No new backup requested or created; existing backup branches untouched.
+- Source-level verification only; the actual irregular terrain silhouette and camera tilt can require further calibration on devices.
+
 # Wayfarer v3.0.19 — Zoom-aware map exploration and compact game menu (2026-10-30)
 
 - Created and verified explicit pre-update backup branch backup-pre-v3-0-18-2026-10-30 from main; no subsequent edits to that branch.
