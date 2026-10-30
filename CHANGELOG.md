@@ -1,3 +1,11 @@
+# Wayfarer v3.0.17 — Replacement arenas and landscape viewport (2026-10-30)
+
+- Updated Human arena to Dark Swamp Terrain, Greek arena to Grassy Meadow Terrain, and Undead arena to Volcanic Crater Terrain, using existing uploaded FBX files and matching color, normal, and roughness texture names.
+- Set standalone viewport-fit=cover and explicit full-viewport positioning for the title and terrain stage to improve iPhone landscape use, including display safe areas. Landscape title art uses cover; portrait rotation gate remains.
+- Corrected the service-worker standalone JS/CSS matching expression so the intended network-first refresh policy actually applies.
+- Preserved existing authentication, touch pinch controls, model rotation, and zoom values. No backup created.
+- Source/path checks only. Physical iPhone landscape fit, desktop framing and three-model rendering remain unverified.
+
 # Wayfarer v3.0.16 — Mobile Kingdoms usability and game-code cache refresh (2026-10-30)
 
 - Restored the standalone Kingdoms portrait orientation gate with a rotate-phone message and return link; it works independently of the former Wayfarer overlay.
