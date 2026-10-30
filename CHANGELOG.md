@@ -1,3 +1,10 @@
+# Wayfarer v3.0.14 — Arena orientation, zoom-out and main-branch rules (2026-10-30)
+
+- Rotated all three standalone arena models 180° around their vertical axis to bring their shared entrance side toward the bottom of the camera view. Precise entrance centering remains to be visually verified on each map.
+- Increased the minimum terrain zoom from 0.9 to 1.4 to reduce exposed background beyond the mountains. Edge containment across viewport sizes and pan positions requires live testing.
+- Updated mandatory update and game rules: future authorized changes go directly to main; backup branches are created or refreshed only on explicit request. Existing backup branches remain unchanged.
+- Updated service-worker cache and Debug version references to v3.0.14. Static text checks performed; live browser rendering, navigation, and Supabase behavior unverified.
+
 # Wayfarer v3.0.13 — New Kingdoms terrain assets and angled camera (2026-10-30)
 
 - Updated all three faction arena FBX paths to their new Meshy 20261030 filenames in the existing terrain folders.
