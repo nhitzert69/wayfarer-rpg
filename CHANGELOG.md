@@ -1,3 +1,8 @@
+# Wayfarer v3.0.26 — Rename Kingdoms terrain assets (2026-10-30)
+
+- Renamed all 15 existing Meshy-named terrain FBX and texture assets to concise descriptive filenames: `dark-swamp-terrain`, `grassy-meadow-terrain`, and `volcanic-crater-terrain`, retaining original blob bytes.
+- Updated the terrain loader's model and texture references. The separate stylized floor files are not included in this commit; their binary upload and game integration remain pending.
+
 # Wayfarer v3.0.25 — Simplify Kingdoms image directory (2026-10-30)
 
 - Moved original faction concept maps and the Town Hall folder from `kingdoms-of-the-unknown/gameassets/images/` to `kingdoms-of-the-unknown/images/`, preserving exact file contents.
