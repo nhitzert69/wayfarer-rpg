@@ -1,3 +1,11 @@
+# Wayfarer v3.0.7 — Kingdoms terrain scaling, closer zoom and texture stability (2026-10-30)
+
+- Uniformly scaled all three imported FBX terrain models 2× in the game viewer, leaving the source files unchanged; bounding boxes and camera framing now use the scaled model.
+- Set the previous maximum zoom-in (4.2) as the new minimum zoom, with a closer maximum of 10.5; initial camera zoom starts at the new minimum.
+- Enabled logarithmic depth buffering, tightened camera near/far planes, and configured texture mipmapping, linear filtering and anisotropy to reduce visible flickering and shimmering during movement. These changes may not resolve flicker caused by overlapping source mesh surfaces.
+- Corrected malformed literal backslash-n tokens in the previous drag-pan handler.
+- Updated rules, Debug version and service-worker cache metadata on `update-before-commit` only. Browser WebGL validation remains INCONCLUSIVE; test all three maps, zoom, panning and rendering before promoting to `main`.
+
 # Wayfarer v3.0.6 — Kingdoms terrain camera and duplicate menu correction (2026-10-30)
 
 - Changed the 3D terrain preview from perspective to elevated orthographic strategy framing, using the FBX Y-up convention, centered on the basin and constrained to a conservative central panning area. Limited zoom-out and retained click-to-recenter, drag-to-pan, and wheel zoom.
