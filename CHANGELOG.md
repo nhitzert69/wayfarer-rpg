@@ -1,3 +1,9 @@
+# Wayfarer v3.0.27 — Organize Kingdoms model assets (2026-10-30)
+
+- Confirmed all three stylized floors and their textures were uploaded to GitHub; renamed them `ashen-floor`, `mediterranean-floor`, and `undead-mire-floor` with matching PBR suffixes.
+- Renamed all three terrain and Town Hall FBX/texture sets, plus Town Hall concept images, using concise descriptive filenames; standardized `models/terrain/` and `models/townhall/` subdirectories. All binary files preserved byte-for-byte without recompression.
+- Repaired the terrain viewer's asset paths following the user's folder move. New floors are staged as assets only, not yet rendered over the existing terrain to avoid overlapping source floors.
+
 # Wayfarer v3.0.26 — Rename Kingdoms terrain assets (2026-10-30)
 
 - Renamed all 15 existing Meshy-named terrain FBX and texture assets to concise descriptive filenames: `dark-swamp-terrain`, `grassy-meadow-terrain`, and `volcanic-crater-terrain`, retaining original blob bytes.

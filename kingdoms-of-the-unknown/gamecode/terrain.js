@@ -7,9 +7,9 @@ export async function startTerrain(host, mapName="human") {
   const THREE=await import("three");
   const {FBXLoader}=await import(LOADER_URL);
   const files={
-    human:"./models/human-terrain/dark-swamp-terrain.fbx",
-    greek:"./models/greek-terrain/grassy-meadow-terrain.fbx",
-    undead:"./models/undead-terrain/volcanic-crater-terrain.fbx"
+    human:"./models/terrain/human-terrain/dark-swamp-terrain.fbx",
+    greek:"./models/terrain/greek-terrain/grassy-meadow-terrain.fbx",
+    undead:"./models/terrain/undead-terrain/volcanic-crater-terrain.fbx"
   };
   if(!files[mapName])throw new Error("Unknown map.");
   const scene=new THREE.Scene();
@@ -42,9 +42,9 @@ export async function startTerrain(host, mapName="human") {
   const model=await loader.loadAsync(files[mapName]);
   // Use the matching texture set exported alongside each replacement FBX.
   const textureBases={
-    human:"./models/human-terrain/dark-swamp-terrain",
-    greek:"./models/greek-terrain/grassy-meadow-terrain",
-    undead:"./models/undead-terrain/volcanic-crater-terrain"
+    human:"./models/terrain/human-terrain/dark-swamp-terrain",
+    greek:"./models/terrain/greek-terrain/grassy-meadow-terrain",
+    undead:"./models/terrain/undead-terrain/volcanic-crater-terrain"
   };
   const textureBase=textureBases[mapName];
   const textureLoader=new THREE.TextureLoader();
