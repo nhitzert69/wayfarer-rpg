@@ -1,9 +1,5 @@
 # Kingdoms of the Unknown
 
-Standalone game project, separate from Wayfarer RPG application logic and account data.
+Game entry point: `index.html`. Game source: `gamecode/`. Terrain models and textures: `models/`. Reference images: `images/`.
 
-- `gamecode/`: game runtime and styles, currently launched from Wayfarer's Character Play button.
-- `images/`: game-specific artwork and reference images (large binary assets awaiting upload).
-- `models/`: terrain models and textures (large binary assets awaiting upload).
-
-The existing game shell is not yet a fully standalone playable build. It currently uses the title image in Wayfarer's `assets/images/`; move/copy that asset here and update the reference before independent deployment. Game assets from `gameassets.rar` have **not** been uploaded by this text-only GitHub connector. No new terrain models are wired into the runtime yet.
+The game has an independent username/PIN login and map viewer, and can be launched through the Wayfarer Character Play button. It uses the existing Supabase Auth project, with a distinct browser session key, and does not access Wayfarer saves. For this prototype, account credentials are shared with Wayfarer, but account sessions are separate. Existing Wayfarer title artwork is referenced from the parent repository, so fully standalone asset packaging is pending. Three.js and Supabase SDK currently require CDN access. Browser rendering, login, and model compatibility have not been verified.
