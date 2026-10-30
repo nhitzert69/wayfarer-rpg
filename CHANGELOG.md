@@ -1,3 +1,12 @@
+# Wayfarer v3.0.22 — Full-screen title, map loading overlay, tighter boundaries (2026-10-30)
+
+- Changed Kingdoms title artwork to fill the entire screen on desktop and landscape mobile without black letterbox bars; nonmatching aspect ratios stretch slightly.
+- Added a centered animated loading overlay while terrain models and textures initialize, with safe handling of overlapping map loads and navigation away during loading.
+- Removed the bottom movement/zoom instruction banner; the game menu remains.
+- Tightened the existing zoom-aware oval camera boundary from 47% to 44% of the model dimensions per axis to reduce glimpses outside the mountain perimeter.
+- Updated changelog, Debug version and service-worker cache namespace. No backup requested or created; prior backups untouched.
+- Code changes committed; physical-device appearance and map-edge limits require live verification.
+
 # Wayfarer v3.0.21 — Organize Kingdoms concept art (2026-10-30)
 
 - Relocated the three existing original faction map concept PNGs to `kingdoms-of-the-unknown/gameassets/images/maps/` without altering image contents.
