@@ -14,6 +14,9 @@ These rules are mandatory for every Wayfarer update, including documentation-onl
 - `Latest-backup` is the protected known-good recovery branch. Do not edit, reset, merge into, force-push, or repoint it as part of ordinary development. Refresh it only with explicit user approval after verifying a known-good release.
 - Before every update, confirm these exact branch names and compare the intended work branch to `main`. Preserve unrelated changes already present in the work branch; use a pull request for promotion. Never assume that a branch named backup also backs up Supabase data.
 
+## v3.0.6 game viewer regression guidance
+- For Kingdoms terrain camera changes, verify camera-target clamping, full viewport zoom-out, pan limits, and duplicate navigation controls in a live browser before claiming the issue fixed. Keep the standalone game as owner of game navigation; do not show a second Wayfarer host menu over the game iframe.
+
 ## 1. Rule hierarchy and change control
 - Follow this master standard for every change.
 - Follow `theme creation rules.md` for theme registration, assets, visuals, music, Store, unlocks, Inventory, equipment, perks, rewards, theme diagnostics, and theme-related cleanup.
