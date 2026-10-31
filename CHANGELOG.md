@@ -1,3 +1,10 @@
+# Wayfarer v3.0.43 — Town Hall lighting and terrain contrast (2026-10-31)
+
+- Reduced playable-area texture saturation by 12% (previously 7%); retained the 3% brightness reduction, original textures and untouched decorative perimeter.
+- Reduced global hemisphere and directional light intensity to improve contrast; increased the dedicated southeast Town Hall light.
+- Replaced the map-wide Town Hall shadow camera with a building-sized shadow frustum that follows Town Hall movement, rotation and cancel/confirm, retaining northwest-directed shadows and existing placement/camera behavior.
+- Validation: GitHub source update and structural review. Live WebGL/mobile rendering, performance, visual direction, and regression behavior remain INCONCLUSIVE pending device testing.
+
 # Wayfarer v3.0.42 — correct Town Hall rotation direction (2026-10-31)
 
 - Reversed the Town Hall's 90° alternate orientation: Rotate now switches between the original southeast-facing direction and the opposite quarter-turn toward southwest, rather than the previous incorrect turn.
