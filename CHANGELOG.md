@@ -1,3 +1,11 @@
+# Wayfarer v3.0.39 — realistic Town Hall and closer camera (2026-10-31)
+
+- Reduced Level 1 Human Town Hall maximum footprint from 8.5% to 3% of the playable area width (30 × 30 game-world metres maximum), preserving its aspect ratio and saved position.
+- Set initial camera zoom to 2.5×, increased zoom-in limit to 20×, and preserved the Blender-authored 1× maximum zoom-out.
+- Compensated pointer pan sensitivity for zoom level so zooming in no longer reduces the camera's world movement per screen pixel as sharply.
+- Placement grid, drag-only movement, cancel/confirm, account isolation, GLB/FBX support remain unchanged.
+- Validation: GitHub source edit succeeded; visual gameplay on mobile not yet verified.
+
 # Wayfarer v3.0.38 — full placement snap grid (2026-10-31)
 
 - Display all 50 grid divisions in Move mode, matching the existing 50-division snapping interval rather than showing every other line.
