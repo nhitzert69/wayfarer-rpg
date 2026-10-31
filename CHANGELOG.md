@@ -1,3 +1,11 @@
+# Wayfarer v3.0.48 — terrain footprint, floating tile and Military Camp scale corrections (2026-10-31)
+
+- Sized building visuals to their 50 × 30 m, 40 × 30 m and 60 × 40 m plots to eliminate excessive rectangular dirt borders; geometry is unchanged but X/Z presentation scale is adjusted.
+- Rotated the Military Camp's imported visual by 90° and corrected its local-axis scaling so the camp spans the specified 60 m width rather than appearing smaller than the Town Hall.
+- Lowered terrain tile meshes by referencing their upper bounds rather than their lowest vertex, with a tiny offset to limit surface flicker.
+- No changes to saved building coordinates, selling/building prices, authentication or Sandbox state.
+- Validation: GitHub source edits PASS; live visual alignment, texture visibility and mobile gameplay INCONCLUSIVE pending deployment test.
+
 # Wayfarer v3.0.47 — three starting buildings, construction and isolated Sandbox (2026-10-31)
 
 - Added Barracks (40 × 30 m) and Military Camp (60 × 40 m) beside the existing 50 × 30 m Town Hall using uploaded Level 1 GLBs.
