@@ -5,11 +5,11 @@
 ## Active branch workflow (2026-10-30)
 - Apply authorized game updates directly to `main`; `update-before-commit` is retired from ordinary updates. Create or refresh backup branches only when explicitly requested by the user. Preserve `Latest-backup` and historical backups unless explicitly instructed otherwise. Record each version in the changelog with enough detail to understand rollback consequences.
 - Kingdoms username/PIN sign-in may use the same Supabase Auth project as Wayfarer, but its runtime and session storage must remain separate and it must never access Wayfarer save tables or application globals.
-- Single-map direction: load only `models/terrain/Playmap/terrain_kingdoms.fbx`. Preserve its exported Blender camera as the widest permitted view; zooming out past that camera framing is prohibited. Panning at closer zoom must stay within the original visible ground footprint. Export the Camera object in the FBX; missing camera must produce an actionable error rather than an invented view.
+- Single-map direction: load only `models/terrain/Playmap/terrain_kingdoms.glb`. Preserve its exported Blender camera as the widest permitted view; zooming out past that camera framing is prohibited. Panning at closer zoom must stay within the original visible ground footprint. Export the Camera object in the GLB; missing camera must produce an actionable error rather than an invented view.
 
 ## Single-map and camera authority (2026-10-31)
 - Kingdoms has one terrain, one active theme, and one Level 1 Town Hall. Do not expose a map/faction selector; historical map preferences must not affect game loading.
-- The Blender camera saved in the current terrain FBX defines the widest permitted camera framing. Camera zoom may move inward, but never outward beyond the Blender framing. The original ground footprint is the allowed view boundary. Preserve the authored camera transform and lens/projection.
+- The Blender camera saved in the current terrain GLB defines the widest permitted camera framing. Camera zoom may move inward, but never outward beyond the Blender framing. The original ground footprint is the allowed view boundary. Preserve the authored camera transform and lens/projection.
 - Do not delete historical Git assets or alter Wayfarer themes merely because the Kingdoms faction system was retired.
 
 ## 0. Map authoring scale — 10 m playable square (2026-10-31)
@@ -17,7 +17,7 @@
 - The gameplay design target remains a **1,000 × 1,000 gameplay-metre** kingdom. For this map, **1 Blender metre = 100 gameplay metres** and **1 gameplay metre = 0.01 Blender metres**. This is a game-world conversion convention, not a claim that Blender geometry is physically life-sized.
 - All newly authored scenery, buildings, units, camera distances, collision footprints, navigation, and building-placement grids must use a consistent documented conversion. At a proposed 4 gameplay-metre grid interval, one cell spans **0.04 Blender metres** and the square has **250 × 250 logical cells**. This is a proposed grid, not yet implemented gameplay.
 - Preserve the `Playable_Area` object as the buildable-boundary marker; forests and mountains are decorative perimeter scenery outside it. Keep asset proportions visually readable at game camera distances rather than blindly shrinking already-authored models.
-- Do not assume the current Three.js viewer implements this scale. Before adding placement or unit movement, verify FBX export transforms and bounds, the playable mesh's actual dimensions, camera controls, and picking in the loaded game, then implement conversion explicitly.
+- Do not assume the current Three.js viewer implements this scale. Before adding placement or unit movement, verify GLB export transforms and bounds, the playable mesh's actual dimensions, camera controls, and picking in the loaded game, then implement conversion explicitly.
 
 ## 1. Product direction and ownership
 - The game is named **Kingdoms of the Unknown**.

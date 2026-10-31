@@ -1,3 +1,10 @@
+# Wayfarer v3.0.34 — GLB terrain and authored camera (2026-10-31)
+
+- Switched Kingdoms terrain loader from FBXLoader to GLTFLoader, loading the user-uploaded `models/terrain/Playmap/terrain_kingdoms.glb` with supported embedded materials/textures.
+- Use the camera embedded in the GLB, preserving its exported world transform, orientation, projection, and maximum zoom-out framing. Retain bounded panning, zoom-in and error reporting for missing cameras.
+- Updated game rules to name the authoritative GLB asset. Existing FBX is not required; no account, save, theme or game economy changes.
+- Validation: repository source review; live browser rendering, GLB camera presence, and material fidelity INCONCLUSIVE pending game launch.
+
 # Wayfarer v3.0.33 — Kingdoms terrain camera visibility hotfix (2026-10-31)
 
 - Aim the exported Blender camera toward the named Playable_Area rather than relying on FBX camera forward-axis conversion.
