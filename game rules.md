@@ -170,3 +170,7 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 - Record each release in the top of `CHANGELOG.md`; align applicable version metadata and verify the complete ZIP.
 - Do not claim the game is standalone, save-safe, mobile-verified, or integrated with skills until those properties have been actually tested.
 - Preserve existing Wayfarer features and do not use game development as justification for unrelated core rewrites.
+
+## v3.0.57 Military Camp and ground alignment
+- Military Camp uses a 45 by 30 metre placement footprint.
+- Building dirt tiles are flattened and aligned close to Playable_Area; do not enable shadow casting or receiving on these tiles. Building visuals retain shadows.
