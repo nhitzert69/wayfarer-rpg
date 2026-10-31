@@ -166,368 +166,10 @@ export async function startTerrain(host, placement={}) {
   resizeCamera();updateCamera();
 
 
-  // v3.0.47: independently placeable starting buildings with a shared rectangular collision system.
-  const playBox=new THREE.Box3().setFromObject(playable||model);
-  if(!playable||playBox.isEmpty())throw new Error("Playable_Area is required for building placement.");
-  const playSize=playBox.getSize(new THREE.Vector3()),playCenter=playBox.getCenter(new THREE.Vector3());
-  const cell=Math.min(playSize.x,playSize.z)/250,unit=playSize.x/1000,groundLevel=playBox.max.y;
-  const definitions=[
-    {id:"townhall",name:"Town Hall",w:50,d:30,path:"./models/buildings/level%20one/Townhalllvl1.glb"},
-    {id:"barracks",name:"Barracks",w:40,d:30,path:"./models/buildings/level%20one/Militarybarrackslvl1.glb"},
-    {id:"camp",name:"Military Camp",w:45,d:30,path:"./models/buildings/level%20one/Militarycamplvl1.glb"}
-  ];
-  const saved=placement.read?.()||{};
-  const positions=saved.buildings||{};
-  const buildings=[];
-  const roadLayer=new THREE.Group();scene.add(roadLayer);
-  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),250,0x7eff68,0xb4ff94);
-  grid.position.set(playCenter.x,groundLevel+.07,playCenter.z);
-  grid.material.transparent=true;grid.material.opacity=.85;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
-  const gridFill=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(playSize.x,playSize.z),Math.min(playSize.x,playSize.z)),new THREE.MeshBasicMaterial({color:0x54ed5b,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide}));
-  gridFill.rotation.x=-Math.PI/2;gridFill.position.set(playCenter.x,groundLevel+.055,playCenter.z);gridFill.visible=false;scene.add(gridFill);
-  for(const def of definitions){
-    const visual=await loadGameModel(def.path);
-    if(def.id==='camp')visual.rotation.y+=Math.PI/2;
-    visual.updateMatrixWorld(true);
-    const box=new THREE.Box3().setFromObject(visual);
-    if(box.isEmpty())throw new Error(def.name+" GLB has no visible geometry.");
-    const size=box.getSize(new THREE.Vector3());
-    // Preserve the authored aspect ratio: never stretch the imported mesh independently
-    // along X and Z. The footprint remains the authoritative collision/ground plot.
-    const scale=Math.min(def.w*unit/Math.max(size.x,.00001),def.d*unit/Math.max(size.z,.00001));
-    visual.scale.multiplyScalar(scale);
-    visual.updateMatrixWorld(true);
-    const scaled=new THREE.Box3().setFromObject(visual);
-    visual.position.sub(new THREE.Vector3((scaled.min.x+scaled.max.x)/2,scaled.min.y,(scaled.min.z+scaled.max.z)/2));
-    // Entrance nodes are authored in Blender and travel with the building transform.
-    const entrances=[];
-    visual.traverse(node=>{
-      if(!/^entr(?:ance|ence)/i.test(node.name))return;
-      entrances.push(node);
-      // Mesh markers must not be rendered, cast shadows, or intercept building clicks.
-      node.traverse(part=>{if(part.isMesh){part.visible=false;part.raycast=()=>{};}});
-    });
-    const root=new THREE.Group();root.add(visual);
-    // Ground is authored directly in each building GLB. Never fetch the removed
-    // BuildingsTerrain.glb asset or synthesize rectangular dirt tiles.
-    const floor=new THREE.Group();
-    floor.name="AuthoredBuildingGround";
-    // Blender Plane meshes are already part of visual and move with the building.
-    // Keep imported ground materials untouched. UVs repeat inside the mesh,
-    // so using fract(vMapUv) for opacity creates black grid seams.
-    visual.traverse(node=>{
-      if(!node.isMesh)return;
-      node.layers.enable(1);
-      const isGround=/^Plane(?:\\.|$)/i.test(node.name)||/^BuildingGround/i.test(node.name);
-      node.castShadow=!isGround;
-      node.receiveShadow=true;
-      if(isGround){
-        node.renderOrder=0;
-        const setup=m=>{
-          const material=m.clone();
-          material.polygonOffset=true;
-          material.polygonOffsetFactor=2;
-          material.polygonOffsetUnits=2;
-          return material;
-        };
-        node.material=Array.isArray(node.material)?node.material.map(setup):setup(node.material);
-      }else node.renderOrder=2;
-    });
-    scene.add(root);
-    const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
-    const stored=positions[def.id]||old;
-    const defaultX=playCenter.x+(def.id==="barracks"?-65:def.id==="camp"?75:0)*unit;
-    const defaultZ=playCenter.z+(def.id==="barracks"?-40:def.id==="camp"?-35:0)*unit;
-    const item={...def,root,floor,entrances,finishAt:Number(stored?.finishAt)||0,visualWidth:scaled.max.x-scaled.min.x,visualDepth:scaled.max.z-scaled.min.z,present:stored?.present!==false,rotation:stored?.rotation===1?1:0};
-    root.rotation.y=item.rotation?Math.PI*.5:Math.PI;
-    root.position.set(Number.isFinite(stored?.x)?stored.x:defaultX,groundLevel+.015,Number.isFinite(stored?.z)?stored.z:defaultZ);
-    root.visible=item.present;
-    buildings.push(item);
-  }
-  const templates=new Map(buildings.map(item=>[item.id,item]));
-  let nextInstance=1;
-  const cloneBuilding=(base,id,stored=null)=>{
-    const root=base.root.clone(true),entrances=[];
-    root.traverse(node=>{if(/^entr(?:ance|ence)/i.test(node.name))entrances.push(node);});
-    const item={...base,id,templateId:base.id,root,floor:root.children[1],entrances,
-      present:stored?.present!==false,rotation:stored?.rotation===1?1:0,finishAt:Number(stored?.finishAt)||0};
-    root.rotation.y=item.rotation?Math.PI*.5:Math.PI;
-    root.position.set(Number.isFinite(stored?.x)?stored.x:base.root.position.x+nextInstance*cell*2,
-      groundLevel+.015,Number.isFinite(stored?.z)?stored.z:base.root.position.z+nextInstance*cell*2);
-    root.visible=item.present;scene.add(root);buildings.push(item);
-    return item;
-  };
-  for(const [id,stored] of Object.entries(positions)){
-    const match=/^(barracks|camp)-copy-([0-9]+)$/.exec(id);
-    if(!match||!templates.has(match[1]))continue;
-    nextInstance=Math.max(nextInstance,Number(match[2])+1);
-    cloneBuilding(templates.get(match[1]),id,stored);
-  }
-  const refreshConstruction=()=>{for(const item of buildings){if(item.finishAt&&item.finishAt<=Date.now())item.finishAt=0;if(item.root.children[0])item.root.children[0].visible=!item.finishAt;}};
-  refreshConstruction();
-  const constructionTimer=setInterval(refreshConstruction,1000);
-  const dims=item=>item.rotation?{x:item.d*unit,z:item.w*unit}:{x:item.w*unit,z:item.d*unit};
-  const snap=(item,x,z)=>{
-    const dim=dims(item);
-    return new THREE.Vector3(
-      THREE.MathUtils.clamp(playCenter.x+Math.round((x-playCenter.x)/cell)*cell,playBox.min.x+dim.x/2,playBox.max.x-dim.x/2),
-      groundLevel+.015,
-      THREE.MathUtils.clamp(playCenter.z+Math.round((z-playCenter.z)/cell)*cell,playBox.min.z+dim.z/2,playBox.max.z-dim.z/2)
-    );
-  };
-  for(const item of buildings)item.root.position.copy(snap(item,item.root.position.x,item.root.position.z));
-  const collisionDims=item=>item.rotation?{x:item.visualDepth,z:item.visualWidth}:{x:item.visualWidth,z:item.visualDepth};
-  const overlaps=item=>buildings.some(other=>{
-    if(other===item||!other.present)return false;
-    const a=collisionDims(item),b=collisionDims(other);
-    return Math.abs(item.root.position.x-other.root.position.x)<(a.x+b.x)/2-1e-7 &&
-      Math.abs(item.root.position.z-other.root.position.z)<(a.z+b.z)/2-1e-7;
-  });
-  // Road connections use exported Entrance nodes, never guessed building centres.
-  // Build a low-cost grid path around occupied plots, then merge straight runs.
-  // Low-cost repeatable soil texture: mottled earth rather than a flat brown band.
-  const roadCanvas=document.createElement("canvas");roadCanvas.width=128;roadCanvas.height=256;
-  const roadCtx=roadCanvas.getContext("2d");
-  roadCtx.fillStyle="#927552";roadCtx.fillRect(0,0,128,256);
-  let roadSeed=18479;
-  const roadRandom=()=>{roadSeed=(Math.imul(roadSeed,1664525)+1013904223)>>>0;return roadSeed/4294967296;};
-  for(let i=0;i<5000;i++){
-    const x=roadRandom()*128,y=roadRandom()*256,r=.3+roadRandom()*3.2;
-    roadCtx.fillStyle=roadRandom()<.55?"rgba(70,48,27,.10)":"rgba(211,179,120,.12)";
-    roadCtx.beginPath();roadCtx.ellipse(x,y,r,r*.7,roadRandom()*Math.PI,0,Math.PI*2);roadCtx.fill();
-  }
-  // Road runs vertically in UV space. Paint narrow irregular stone kerbs at
-  // both horizontal texture edges; UVs follow the spline around every bend.
-  for(const side of [0,1]){
-    for(let y=0;y<256;y+=7){
-      const size=6+Math.floor(roadRandom()*7);
-      const x=side===0?roadRandom()*3:128-13+roadRandom()*3;
-      roadCtx.fillStyle="#39352e";
-      roadCtx.fillRect(x-1,y-1,size+2,8);
-      roadCtx.fillStyle=["#726b5b","#888071","#5b574e","#a09883"][Math.floor(roadRandom()*4)];
-      roadCtx.fillRect(x,y,size,6);
-      roadCtx.fillStyle="rgba(204,191,163,.24)";
-      roadCtx.fillRect(x+1,y+1,Math.max(1,size-3),1);
-    }
-  }
-  const roadTexture=new THREE.CanvasTexture(roadCanvas);
-  roadTexture.colorSpace=THREE.SRGBColorSpace;
-  roadTexture.wrapS=THREE.RepeatWrapping;roadTexture.wrapT=THREE.RepeatWrapping;
-  roadTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-  const roadMaterials=[new THREE.MeshStandardMaterial({
-    map:roadTexture,color:0xffffff,roughness:1,side:THREE.DoubleSide,
-    polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2
-  })];
-  const roadGridStep=2*unit;
-  const roadAnchor=item=>{
-    if(!item.entrances.length)return null;
-    item.root.updateMatrixWorld(true);
-    const marker=item.entrances[0];
-    const center=marker.getWorldPosition(new THREE.Vector3());
-    // Find the outward face of the plot closest to the authored marker.
-    const d=collisionDims(item),dx=center.x-item.root.position.x,dz=center.z-item.root.position.z;
-    const sides=[
-      {score:Math.abs(dx-d.x/2),x:item.root.position.x+d.x/2+roadGridStep*1.5,z:center.z},
-      {score:Math.abs(dx+d.x/2),x:item.root.position.x-d.x/2-roadGridStep*1.5,z:center.z},
-      {score:Math.abs(dz-d.z/2),x:center.x,z:item.root.position.z+d.z/2+roadGridStep*1.5},
-      {score:Math.abs(dz+d.z/2),x:center.x,z:item.root.position.z-d.z/2-roadGridStep*1.5}
-    ].sort((a,b)=>a.score-b.score);
-    const chosen=sides[0];
-    const bounds=new THREE.Box3().setFromObject(marker);
-    const worldScale=marker.getWorldScale(new THREE.Vector3());
-    const boxWidth=bounds.isEmpty()?0:Math.max(bounds.max.x-bounds.min.x,bounds.max.z-bounds.min.z);
-    // Empty marker scale is an optional authored doorway width. Use a generous
-    // entrance apron even for zero-size empties.
-    const width=THREE.MathUtils.clamp(Math.max(boxWidth,Math.abs(worldScale.x),5*unit),5*unit,11*unit);
-    return {point:new THREE.Vector3(chosen.x,groundLevel+.019,chosen.z),door:new THREE.Vector3(center.x,groundLevel+.019,center.z),width};
-  };
-  const clearRoads=()=>{
-    for(const child of [...roadLayer.children]){roadLayer.remove(child);child.geometry?.dispose();}
-  };
-  const updateRoads=()=>{
-    clearRoads();
-    const hall=buildings.find(b=>b.id==="townhall"&&b.present);
-    if(!hall)return;
-    const start=roadAnchor(hall);
-    if(!start)return;
-    const gridX=x=>Math.round((x-playBox.min.x)/roadGridStep);
-    const gridZ=z=>Math.round((z-playBox.min.z)/roadGridStep);
-    const world=(x,z)=>new THREE.Vector3(playBox.min.x+x*roadGridStep,groundLevel+.019,playBox.min.z+z*roadGridStep);
-    const nx=Math.floor(playSize.x/roadGridStep),nz=Math.floor(playSize.z/roadGridStep);
-    const blocked=(x,z)=>{
-      if(x<0||z<0||x>nx||z>nz)return true;
-      const p=world(x,z);
-      return buildings.some(b=>{
-        if(!b.present)return false;
-        const d=collisionDims(b),margin=roadGridStep*.55;
-        return Math.abs(p.x-b.root.position.x)<d.x/2+margin&&Math.abs(p.z-b.root.position.z)<d.z/2+margin;
-      });
-    };
-    const route=(from,to)=>{
-      const sx=gridX(from.x),sz=gridZ(from.z),tx=gridX(to.x),tz=gridZ(to.z);
-      const key=(x,z)=>x+","+z;
-      const initial=key(sx,sz),goal=key(tx,tz);
-      const open=[{x:sx,z:sz,g:0,f:Math.abs(sx-tx)+Math.abs(sz-tz)}],seen=new Map([[initial,0]]),previous=new Map();
-      let found=false,iterations=0;
-      while(open.length&&iterations++<16000){
-        let best=0;for(let i=1;i<open.length;i++)if(open[i].f<open[best].f)best=i;
-        const cur=open.splice(best,1)[0],k=key(cur.x,cur.z);
-        if(cur.g!==seen.get(k))continue;
-        if(k===goal){found=true;break;}
-        for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){
-          const x=cur.x+dx,z=cur.z+dz,nk=key(x,z);
-          if(blocked(x,z)&&nk!==goal)continue;
-          const g=cur.g+1;
-          if(g>=(seen.get(nk)??Infinity))continue;
-          seen.set(nk,g);previous.set(nk,k);
-          open.push({x,z,g,f:g+Math.abs(x-tx)+Math.abs(z-tz)});
-        }
-      }
-      if(!found)return [];
-      const points=[];let k=goal;
-      while(k){const [x,z]=k.split(",").map(Number);points.push(world(x,z));k=previous.get(k);}
-      points.reverse();
-      // Preserve corners, discarding collinear grid points.
-      return points.filter((p,i)=>i===0||i===points.length-1||
-        Math.abs((points[i+1].x-p.x)*(p.z-points[i-1].z)-(points[i+1].z-p.z)*(p.x-points[i-1].x))>1e-8);
-    };
-    const drawTrail=(points,width,startWidth,endWidth)=>{
-      if(points.length<2)return;
-      // Smooth a routed centreline while keeping the authored entrance positions.
-      const curve=new THREE.CatmullRomCurve3(points,false,"centripetal",.3);
-      const length=points.reduce((sum,p,i)=>i?sum+p.distanceTo(points[i-1]):0,0);
-      const count=Math.max(8,Math.min(320,Math.ceil(length/(roadGridStep*.65))));
-      const positions=[],uvs=[],indices=[];
-      for(let i=0;i<=count;i++){
-        const u=i/count,p=curve.getPoint(u),tangent=curve.getTangent(u);
-        const lateral=new THREE.Vector3(-tangent.z,0,tangent.x).normalize();
-        // Subtle irregular edges, with no sharp zigzags.
-        const wobble=(Math.sin(u*67+1.7)*.055+Math.sin(u*129)*.025)*width;
-        const taper=Math.max(roadGridStep*3,8*unit);
-        const smooth=t=>{const x=THREE.MathUtils.clamp(t,0,1);return x*x*(3-2*x);};
-        const localWidth=Math.max(width,startWidth*(1-smooth(u*length/taper)),endWidth*(1-smooth((1-u)*length/taper)));
-        const spread=localWidth*(.5+Math.sin(u*51)*.025);
-        for(const side of [-1,1]){
-          positions.push(p.x+lateral.x*(side*spread+wobble),groundLevel+.031,p.z+lateral.z*(side*spread+wobble));
-          uvs.push(side===-1?0:1,u*length/Math.max(width,.001));
-        }
-        if(i<count){const k=i*2;indices.push(k,k+2,k+1,k+1,k+2,k+3);}
-      }
-      const geometry=new THREE.BufferGeometry();
-      geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
-      geometry.setAttribute("uv",new THREE.Float32BufferAttribute(uvs,2));
-      geometry.setIndex(indices);geometry.computeVertexNormals();
-      const mesh=new THREE.Mesh(geometry,roadMaterials[0]);
-      mesh.receiveShadow=true;mesh.castShadow=false;mesh.renderOrder=1;roadLayer.add(mesh);
-    };
-    for(const item of buildings){
-      if(item===hall||!item.present)continue;
-      const end=roadAnchor(item);if(!end)continue;
-      const path=route(start.point,end.point);
-      if(!path.length)continue;
-      const width=Math.min(start.width,end.width,3.5*unit);
-      const points=[start.door,start.point,...path.slice(1,-1),end.point,end.door];
-      const clean=points.filter((p,i)=>i===0||p.distanceTo(points[i-1])>.00001);
-      drawTrail(clean,width,start.width,end.width);
-    }
-  };
-  updateRoads();
-  const valid=()=>!!active&&!overlaps(active);
-  let active=null,moving=false,draggingHall=false,original=null,pendingBuild=false;
-  const moveUi=document.createElement("div");moveUi.className="kotu-townhall-actions";
-  moveUi.innerHTML='<div class="kotu-townhall-select" hidden><strong data-building-name></strong><button type="button" data-action="move">⚒ Move</button><button type="button" data-action="sell">🪙 Sell</button></div><div class="kotu-townhall-move" hidden><strong data-placement-status>Move building</strong><button type="button" data-action="rotate">↻ Rotate</button><button type="button" data-action="confirm">✓</button><button type="button" data-action="cancel">✕</button></div>';
-  host.appendChild(moveUi);
-  const selectPanel=moveUi.querySelector(".kotu-townhall-select"),movePanel=moveUi.querySelector(".kotu-townhall-move");
-  const showPanels=()=>{
-    selectPanel.hidden=!active||moving;movePanel.hidden=!moving;grid.visible=moving;gridFill.visible=moving;
-    if(active)moveUi.querySelector("[data-building-name]").textContent=active.name+" · Level 1";
-    if(moving){
-      const ok=valid();grid.material.color.setHex(ok?0xffffff:0xff3333);
-      gridFill.material.color.setHex(ok?0x54ed5b:0xff2424);
-      moveUi.querySelector("[data-placement-status]").textContent=ok?"Move "+active.name:"Overlap — cannot place here";
-      moveUi.querySelector('[data-action="confirm"]').disabled=!ok;
-    }
-  };
-  const persist=()=>placement.write?.({version:1,buildings:Object.fromEntries(buildings.map(item=>[item.id,{x:item.root.position.x,z:item.root.position.z,rotation:item.rotation,present:item.present,finishAt:item.finishAt||0}]))});
-  const updateHallLight=()=>{const hall=buildings[0];gameSun.target.position.copy(hall.root.position);gameSun.position.copy(hall.root.position).add(new THREE.Vector3(.6,1.4,.6));gameSun.target.updateMatrixWorld();gameSun.updateMatrixWorld();};
-  const reach=Math.max(playSize.x,playSize.z)*.15;
-  Object.assign(gameSun.shadow.camera,{left:-reach,right:reach,top:reach,bottom:-reach,far:reach*12});
-  gameSun.shadow.camera.updateProjectionMatrix();updateHallLight();
-  const beginMove=(item,isNew=false)=>{
-    // While placement is open, selecting a different building switches the
-    // moving target without committing the first building's draft location.
-    if(moving&&active&&active!==item){
-      active.root.position.copy(original.position);
-      active.rotation=original.rotation;
-      active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;
-      active.present=original.present;active.root.visible=active.present;
-      pendingBuild=false;
-    }
-    active=item;original={position:item.root.position.clone(),rotation:item.rotation,present:item.present};
-    pendingBuild=isNew;moving=true;item.present=true;item.root.visible=true;showPanels();
-  };
-  const finishMove=commit=>{
-    if(!active)return;
-    if(commit&&!valid())return;
-    if(!commit){active.root.position.copy(original.position);active.rotation=original.rotation;active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;active.present=original.present;active.root.visible=active.present;}
-    else if(pendingBuild&&!placement.buy?.(active.id)){return;}
-    if(commit&&pendingBuild){
-      active.finishAt=placement.sandboxOptions?.()?.instant?0:Date.now()+60000;
-      refreshConstruction();
-    }
-    if(commit)persist();
-    updateRoads();
-    refreshCatalog();
-    moving=false;draggingHall=false;active=null;original=null;pendingBuild=false;updateHallLight();showPanels();
-  };
-  moveUi.querySelector('[data-action="move"]').onclick=()=>{if(active)beginMove(active);};
-  moveUi.querySelector('[data-action="rotate"]').onclick=()=>{if(!active)return;active.rotation=1-active.rotation;active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;active.root.position.copy(snap(active,active.root.position.x,active.root.position.z));showPanels();};
-  moveUi.querySelector('[data-action="confirm"]').onclick=()=>finishMove(true);
-  moveUi.querySelector('[data-action="cancel"]').onclick=()=>finishMove(false);
-  moveUi.querySelector('[data-action="sell"]').onclick=()=>{
-    if(!active||active.id==="townhall")return;
-    if(!window.confirm("Sell "+active.name+" for 1,000 gold, 150 wood and 100 stone?"))return;
-    if(!placement.sell?.(active.id))return;
-    active.present=false;active.root.visible=false;persist();updateRoads();active=null;refreshCatalog();showPanels();
-  };
-  placement.setBuildHandler?.(id=>{
-    const item=buildings.find(b=>b.id===id);
-    if(!placement.sandboxOptions?.()?.active||moving||!item)return false;
-    if(item.present){
-      if(!placement.sandboxOptions?.()?.unlimited)return false;
-      const copy=cloneBuilding(item,id+"-copy-"+nextInstance++);
-      copy.present=false;copy.root.visible=false;beginMove(copy,true);return true;
-    }
-    beginMove(item,true);return true;
-  });
-  const refreshCatalog=()=>placement.refreshBuild?.([...templates.values()].map(item=>({id:item.id,name:item.name,present:item.present})));
-  refreshCatalog();
-  const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-groundLevel);
-  const terrainPoint=e=>{
-    const rect=renderer.domElement.getBoundingClientRect();
-    const ray=new THREE.Raycaster();
-    ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);
-    return ray.ray.intersectPlane(placementPlane,new THREE.Vector3());
-  };
-  const hallHit=e=>{
-    const rect=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();
-    ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);
-    return buildings.find(item=>item.present&&ray.intersectObject(item.root,true).length>0)||null;
-  };
-  const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
-  const pick=(e)=>{
-    const rect=renderer.domElement.getBoundingClientRect();
-    pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
-    raycaster.setFromCamera(pointer,camera);
-    return raycaster.intersectObject(model,true).find(hit=>hit.point)?.point||null;
-  };
   let down=null;
   const touches=new Map();
   let pinchDistance=null;
   const onDown=e=>{
-    if(moving){const hit=hallHit(e);if(hit){if(hit!==active)beginMove(hit);draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);return;}}
-    if(!moving&&hallHit(e)){active=hallHit(e);showPanels();return;}
-    if(!moving&&active){active=null;showPanels();}
     if(e.pointerType==="mouse"&&e.button!==0)return;
     if(e.pointerType!=="mouse"){
       touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -537,7 +179,6 @@ export async function startTerrain(host, placement={}) {
     renderer.domElement.setPointerCapture(e.pointerId);
   };
   const onMove=e=>{
-    if(draggingHall){const point=terrainPoint(e);if(point){active.root.position.copy(snap(active,point.x,point.z));updateHallLight();showPanels();}return;}
     if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(touches.size>=2){
       const [a,b]=Array.from(touches.values());
@@ -564,8 +205,6 @@ export async function startTerrain(host, placement={}) {
     down.lastX=e.clientX;down.lastY=e.clientY;
   };
   const onUp=e=>{
-    if(draggingHall){draggingHall=false;return;}
-    const wasPinching=touches.size>=2;
     touches.delete(e.pointerId);
     pinchDistance=null;
     // Keep Blender camera framing; tapping terrain does not recenter.
@@ -586,14 +225,10 @@ export async function startTerrain(host, placement={}) {
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
   // Visual QA only adjusts this browser's camera, never persistent game data.
-  const qaViews=[{id:"overview",label:"World overview",zoom:2},{id:"townhall",label:"Town Hall",building:"townhall",zoom:12},{id:"barracks",label:"Barracks",building:"barracks",zoom:12},{id:"camp",label:"Military Camp",building:"camp",zoom:12},{id:"roads",label:"Road connections",zoom:7}];
+  const qaViews=[{id:"overview",label:"World overview",zoom:2},{id:"center",label:"Terrain center",zoom:8},{id:"close",label:"Terrain close-up",zoom:16}];
   const qaView=id=>{
     const view=qaViews.find(v=>v.id===id);if(!view)return false;
-    const focus=view.building?buildings.find(b=>b.id===view.building&&b.present):null;
-    if(view.building&&!focus)return false;
-    state.zoom=view.zoom;state.offset.set(0,0,0);
-    if(focus)state.offset.set(focus.root.position.x-playCenter.x,0,focus.root.position.z-playCenter.z);
-    updateCamera();return true;
+    state.zoom=view.zoom;state.offset.set(0,0,0);updateCamera();return true;
   };
   const qaCapture=()=>{
     renderer.render(scene,camera);
@@ -602,5 +237,5 @@ export async function startTerrain(host, placement={}) {
     a.href=renderer.domElement.toDataURL("image/png");a.click();
   };
   placement.setQAHandler?.({views:qaViews,view:qaView,capture:qaCapture});
-  return ()=>{placement.setQAHandler?.(null);placement.setBuildHandler?.(null);moveUi.remove();clearInterval(constructionTimer);clearRoads();roadMaterials.forEach(m=>m.dispose());roadTexture.dispose();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
+  return ()=>{placement.setQAHandler?.(null);disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
 }
