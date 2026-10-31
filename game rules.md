@@ -184,3 +184,7 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 ## v3.0.60 Building model filenames and entrances
 - Load Townhalllvl1.glb, Militarybarrackslvl1.glb and Militarycamplvl1.glb from the level one building models directory.
 - Updated models are intended to include invisible entrance markers for future road generation. Do not treat markers as visible building geometry or include them in placement footprint calculations; verify marker names, transforms and dimensions before implementing roads.
+
+## Automatic entrance roads (v3.0.62)
+- Use Blender-exported Entrance or Entrence marker nodes to find building road access points; do not display marker meshes. Roads link Town Hall to present buildings and re-route around occupied plots when buildings are moved, rotated, built, or sold. Keep roads visual-only, no resource cost or save format changes.
+- Cache invalidation is mandatory: update root sw.js CACHE identifier with every game release and version the standalone module entry URLs. Verify actual browser rendering before asserting that roads or entrance marker dimensions are correct.
