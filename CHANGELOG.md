@@ -1,3 +1,10 @@
+# Wayfarer v3.0.36 — Level 1 Town Hall placement (2026-10-31)
+
+- Load `human-townhall.fbx` at the centre of `Playable_Area`, size it relative to the authored 10 m square, and expose selection → Move → drag/tap grid → green confirm / red cancel.
+- Show a 50×50 placement grid only during Move mode; snap placement within playable-area bounds with the building footprint accounted for.
+- Confirm saves Town Hall position in per-account local storage (separate live and Sandbox keys); cancel restores the original position without saving. No Supabase or Wayfarer save changes.
+- Preserve GLB terrain, FBX support, Blender camera and camera restrictions. Source-level inspection completed; browser appearance, FBX texture loading and gameplay interactions remain INCONCLUSIVE pending live testing.
+
 # Wayfarer v3.0.35 — preserve Blender camera framing (2026-10-31)
 
 - Backup branch `backup-pre-camera-framing-2026-10-31` created from `039ddc617adfb3fb5eaa043de0b31be2f9cdf2ad` before editing.
