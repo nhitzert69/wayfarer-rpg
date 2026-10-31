@@ -46,8 +46,8 @@ export async function startTerrain(host, placement={}) {
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   
-  scene.add(new THREE.HemisphereLight(0xe9f1ff,0x515049,2));
-  const sun=new THREE.DirectionalLight(0xffe7c7,2.2);sun.position.set(200,450,260);scene.add(sun);
+  scene.add(new THREE.HemisphereLight(0xe9f1ff,0x515049,1.35));
+  const sun=new THREE.DirectionalLight(0xffe7c7,1.5);sun.position.set(200,450,260);scene.add(sun);
   const model=await loadGameModel(terrainFile);
   // GLB preserves supported Blender PBR materials and packed textures.
   // The single arena includes its own rectangular ground surface.
@@ -77,7 +77,7 @@ export async function startTerrain(host, placement={}) {
           "#include <map_fragment>",
           "#include <map_fragment>\n" +
           "float groundLuma=dot(diffuseColor.rgb,vec3(0.2126,0.7152,0.0722));\n" +
-          "diffuseColor.rgb=mix(vec3(groundLuma),diffuseColor.rgb,0.93)*0.97;"
+          "diffuseColor.rgb=mix(vec3(groundLuma),diffuseColor.rgb,0.88)*0.97;"
         );
       };
       adjusted.customProgramCacheKey=()=>"kotu-playable-grade-v1";
@@ -88,26 +88,15 @@ export async function startTerrain(host, placement={}) {
     node.receiveShadow=true;
     node.layers.enable(1);
   });
-  // Only the playable ground and Town Hall receive the new directional light.
-  // Light arrives from the southeast, projecting shadows toward northwest (-X, -Z).
-  const sunBounds=new THREE.Box3().setFromObject(playable||model);
-  const sunCenter=sunBounds.getCenter(new THREE.Vector3());
-  const sunSize=sunBounds.getSize(new THREE.Vector3());
-  const sunSpan=Math.max(sunSize.x,sunSize.z);
-  const gameSun=new THREE.DirectionalLight(0xffe9cf,1.25);
-  gameSun.position.copy(sunCenter).add(new THREE.Vector3(sunSpan*.8,sunSpan*1.4,sunSpan*.8));
-  gameSun.target.position.copy(sunCenter);
+  // A local shadow frustum follows the Town Hall instead of wasting resolution on the whole map.
+  // The light is on layer 1, shared only by Playable_Area and the Town Hall.
+  const gameSun=new THREE.DirectionalLight(0xffe9cf,1.7);
   gameSun.layers.set(1);
   gameSun.castShadow=true;
   gameSun.shadow.mapSize.set(2048,2048);
-  gameSun.shadow.camera.left=-sunSpan*.65;
-  gameSun.shadow.camera.right=sunSpan*.65;
-  gameSun.shadow.camera.top=sunSpan*.65;
-  gameSun.shadow.camera.bottom=-sunSpan*.65;
-  gameSun.shadow.camera.near=.1;
-  gameSun.shadow.camera.far=sunSpan*4;
+  gameSun.shadow.camera.near=.01;
   gameSun.shadow.bias=-.00008;
-  gameSun.shadow.normalBias=.015;
+  gameSun.shadow.normalBias=.004;
   gameSun.shadow.radius=2;
   scene.add(gameSun,gameSun.target);
   camera.layers.enable(1);
@@ -181,6 +170,23 @@ export async function startTerrain(host, placement={}) {
   hallRoot.add(hall);hallRoot.rotation.y=Math.PI;scene.add(hallRoot);
   hallRoot.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
   const halfX=(scaledBox.max.x-scaledBox.min.x)/2,halfZ=(scaledBox.max.z-scaledBox.min.z)/2;
+  // Fit the shadow camera to the actual scaled building (including its tall towers).
+  // Recenter whenever the Town Hall is moved, so distant placements keep crisp shadows.
+  const hallHeight=scaledBox.max.y-scaledBox.min.y;
+  const shadowReach=Math.max(halfX,halfZ,hallHeight)*3.5;
+  gameSun.shadow.camera.left=-shadowReach;
+  gameSun.shadow.camera.right=shadowReach;
+  gameSun.shadow.camera.top=shadowReach;
+  gameSun.shadow.camera.bottom=-shadowReach;
+  gameSun.shadow.camera.far=shadowReach*9;
+  gameSun.shadow.camera.updateProjectionMatrix();
+  const updateHallLight=()=>{
+    gameSun.target.position.copy(hallRoot.position);
+    gameSun.position.copy(hallRoot.position).add(new THREE.Vector3(shadowReach*1.1,shadowReach*2.4,shadowReach*1.1));
+    gameSun.target.updateMatrixWorld();
+    gameSun.updateMatrixWorld();
+  };
+  updateHallLight();
   const rotationAngle=()=>hallRoot.rotation.y;
   const limits=()=>{const quarter=Math.abs(Math.sin(rotationAngle()))>.5;return {x:Math.max(0,playSize.x/2-(quarter?halfZ:halfX)),z:Math.max(0,playSize.z/2-(quarter?halfX:halfZ))};};
   const snap=(x,z)=>{const limit=limits();return new THREE.Vector3(
@@ -205,9 +211,9 @@ export async function startTerrain(host, placement={}) {
   let moving=false,selected=false,draggingHall=false,originalPosition=null,originalRotation=null;
   const showPanels=()=>{selectPanel.hidden=!selected||moving;movePanel.hidden=!moving;grid.visible=moving;gridFill.visible=moving;};
   const beginMove=()=>{originalPosition=hallRoot.position.clone();originalRotation=hallRoot.rotation.y;moving=true;selected=false;showPanels();};
-  const finishMove=confirm=>{if(!confirm&&originalPosition){hallRoot.position.copy(originalPosition);hallRoot.rotation.y=originalRotation;}if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z,rotation:Math.abs(hallRoot.rotation.y-Math.PI*.5)<.01?1:0});moving=false;selected=false;draggingHall=false;originalPosition=null;originalRotation=null;showPanels();};
+  const finishMove=confirm=>{if(!confirm&&originalPosition){hallRoot.position.copy(originalPosition);hallRoot.rotation.y=originalRotation;}updateHallLight();if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z,rotation:Math.abs(hallRoot.rotation.y-Math.PI*.5)<.01?1:0});moving=false;selected=false;draggingHall=false;originalPosition=null;originalRotation=null;showPanels();};
   moveUi.querySelector('[data-action="move"]').onclick=beginMove;
-  moveUi.querySelector('[data-action="rotate"]').onclick=()=>{hallRoot.rotation.y=Math.abs(hallRoot.rotation.y-Math.PI*.5)<.01?Math.PI:Math.PI*.5;hallRoot.position.copy(snap(hallRoot.position.x,hallRoot.position.z));};
+  moveUi.querySelector('[data-action="rotate"]').onclick=()=>{hallRoot.rotation.y=Math.abs(hallRoot.rotation.y-Math.PI*.5)<.01?Math.PI:Math.PI*.5;hallRoot.position.copy(snap(hallRoot.position.x,hallRoot.position.z));updateHallLight();};
   moveUi.querySelector('[data-action="confirm"]').onclick=()=>finishMove(true);
   moveUi.querySelector('[data-action="cancel"]').onclick=()=>finishMove(false);
   const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-playBox.max.y);
@@ -250,7 +256,7 @@ export async function startTerrain(host, placement={}) {
     renderer.domElement.setPointerCapture(e.pointerId);
   };
   const onMove=e=>{
-    if(draggingHall){const point=terrainPoint(e);if(point)hallRoot.position.copy(snap(point.x,point.z));return;}
+    if(draggingHall){const point=terrainPoint(e);if(point){hallRoot.position.copy(snap(point.x,point.z));updateHallLight();}return;}
     if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(touches.size>=2){
       const [a,b]=Array.from(touches.values());
