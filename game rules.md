@@ -201,3 +201,7 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.68 authored building ground
 - Do not load the deleted TerrainTiles/BuildingsTerrain.glb. Building ground comes from Plane meshes embedded in each building GLB. Preserve their transforms and textures, keep them shadow-receiving and non-shadow-casting, and avoid adding old procedural dirt tiles. Do not conflate ground planes with building collision or entrance markers.
+
+## v3.0.69 ground shadows and road borders
+- Authored building Plane or BuildingGround meshes receive shadows but do not cast them; do not override this with a blanket visual castShadow=true. UV-mapped ground planes may use feathered alpha edges to blend into the terrain. Preserve their source material texture and building transform.
+- Road edge stones must follow the curved road UVs at the left and right edges, not form straight world-space segments. This release uses generated stone edging pending a verified uploaded road image.
