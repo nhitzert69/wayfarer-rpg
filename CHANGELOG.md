@@ -1,3 +1,10 @@
+# Wayfarer v3.0.59 — consistent building dirt texture density (2026-10-31)
+
+- Adjusted UVs on cloned dirt tile geometry to account for partial edge tiles, preventing the full texture from being compressed into narrow strips.
+- Retained current tile geometry, flush ground alignment, shadow receiving, and non-casting dirt surfaces.
+- Preserved building dimensions, model assets, rotation, placement and saved progress.
+- GitHub source committed; live visual verification pending.
+
 # Wayfarer v3.0.58 — building shadows on dirt terrain (2026-10-31)
 
 - Dirt terrain tiles now receive shadows from building meshes but do not cast shadows themselves.
