@@ -73,7 +73,7 @@ export async function startTerrain(host, placement={}) {
   const orthoCenterY=camera.isOrthographicCamera?(camera.top+camera.bottom)/2:0;
   camera.near=0.1;camera.far=100000;scene.add(camera);
   const groundY=targetBounds.min.y;
-  const state={zoom:1,offset:new THREE.Vector3()},zoomMin=1,zoomMax=5.25;
+  const state={zoom:1,offset:new THREE.Vector3()},zoomMin=1,zoomMax=10;
   const resizeCamera=()=>{
     const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
     viewportCrop=Math.max(1,aspect/authoredAspect);
@@ -121,14 +121,14 @@ export async function startTerrain(host, placement={}) {
   const hallBox=new THREE.Box3().setFromObject(hall);
   if(hallBox.isEmpty())throw new Error("Town Hall FBX contains no visible geometry.");
   const hallSize=hallBox.getSize(new THREE.Vector3());
-  const hallScale=Math.min(playSize.x*.17/Math.max(hallSize.x,.0001),playSize.z*.17/Math.max(hallSize.z,.0001));
+  const hallScale=Math.min(playSize.x*.085/Math.max(hallSize.x,.0001),playSize.z*.085/Math.max(hallSize.z,.0001));
   hall.scale.multiplyScalar(hallScale);
   hall.updateMatrixWorld(true);
   const scaledBox=new THREE.Box3().setFromObject(hall);
   // Wrap the imported mesh so its visual base rests on the playable surface.
   const hallRoot=new THREE.Group();
   hall.position.sub(new THREE.Vector3((scaledBox.min.x+scaledBox.max.x)/2,scaledBox.min.y,(scaledBox.min.z+scaledBox.max.z)/2));
-  hallRoot.add(hall);scene.add(hallRoot);
+  hallRoot.add(hall);hallRoot.rotation.y=Math.PI;scene.add(hallRoot);
   const halfX=(scaledBox.max.x-scaledBox.min.x)/2,halfZ=(scaledBox.max.z-scaledBox.min.z)/2;
   const limitX=Math.max(0,(playSize.x/2-halfX)),limitZ=Math.max(0,(playSize.z/2-halfZ));
   const snap=(x,z)=>new THREE.Vector3(
@@ -139,9 +139,9 @@ export async function startTerrain(host, placement={}) {
   const saved=placement.read?.();
   const initial=saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)?snap(saved.x,saved.z):snap(playCenter.x,playCenter.z);
   hallRoot.position.copy(initial);
-  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),50,0x92e864,0x4f9d55);
-  grid.position.set(playCenter.x,playBox.max.y+.025,playCenter.z);
-  grid.material.transparent=true;grid.material.opacity=.65;grid.visible=false;scene.add(grid);
+  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),25,0x7eff68,0xb4ff94);
+  grid.position.set(playCenter.x,playBox.max.y+.07,playCenter.z);
+  grid.material.transparent=true;grid.material.opacity=.98;grid.visible=false;scene.add(grid);
   const moveUi=document.createElement("div");
   moveUi.className="kotu-townhall-actions";
   moveUi.innerHTML='<div class="kotu-townhall-select" hidden><strong>Town Hall · Level 1</strong><button type="button" data-action="move">Move</button></div><div class="kotu-townhall-move" hidden><strong>Move Town Hall · drag to reposition</strong><button type="button" data-action="confirm" aria-label="Confirm position">✓</button><button type="button" data-action="cancel" aria-label="Cancel movement">✕</button></div>';
