@@ -85,3 +85,12 @@ html,body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;max-width:
 .kotu-townhall-actions [data-action="confirm"]{background:#268f3b;border-color:#83ed90;color:#fff;font-size:22px}
 .kotu-townhall-actions [data-action="cancel"]{background:#a12626;border-color:#ed8585;color:#fff;font-size:22px}
 @media(max-width:900px) and (orientation:landscape){.kotu-townhall-actions{bottom:5px;font-size:11px}.kotu-townhall-actions>div:not([hidden]){padding:4px 7px;gap:6px}.kotu-townhall-actions button{padding:5px 9px;font-size:15px}}
+
+/* v3.0.47: compact medieval building action cards and construction catalog. */
+.kotu-townhall-actions>div:not([hidden]){background:linear-gradient(180deg,#e9d8ad,#b99b67);border:3px solid #4b3422;color:#241b12;box-shadow:inset 0 2px 0 #fff7d6,0 5px 0 #24170c,0 9px 20px #0008}
+.kotu-townhall-actions button{background:linear-gradient(#f8e7b8,#d3b67b);color:#2a2016;border:2px solid #58412c;box-shadow:0 3px 0 #6e5338;font-weight:800}
+.kotu-townhall-actions button[data-action="sell"]{background:linear-gradient(#f8c986,#dc8739)}
+.kotu-townhall-actions button:disabled{opacity:.45;cursor:not-allowed}
+.kotu-build-catalog{display:grid;gap:8px;max-height:35vh;overflow:auto}
+.kotu-build-catalog button{font:700 13px/1.3 system-ui;text-align:left}
+.kotu-build-panel{width:min(320px,80vw)}
