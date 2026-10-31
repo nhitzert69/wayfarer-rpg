@@ -493,7 +493,7 @@ export async function startTerrain(host, placement={}) {
     }
     beginMove(item,true);return true;
   });
-  const refreshCatalog=()=>placement.refreshBuild?.(buildings.map(item=>({id:item.id,name:item.name,present:item.present})));
+  const refreshCatalog=()=>placement.refreshBuild?.([...templates.values()].map(item=>({id:item.id,name:item.name,present:item.present})));
   refreshCatalog();
   const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-groundLevel);
   const terrainPoint=e=>{
