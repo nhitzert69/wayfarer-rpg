@@ -190,7 +190,7 @@ export async function startTerrain(host, placement={}) {
   );};
   const saved=placement.read?.();
   const initial=saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)?snap(saved.x,saved.z):snap(playCenter.x,playCenter.z);
-  if(saved?.rotation===1)hallRoot.rotation.y=Math.PI*1.5;
+  if(saved?.rotation===1)hallRoot.rotation.y=Math.PI*.5;
   hallRoot.position.copy(snap(initial.x,initial.z));
   const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),divisions,0x7eff68,0xb4ff94);
   grid.position.set(playCenter.x,playBox.max.y+.07,playCenter.z);
@@ -205,9 +205,9 @@ export async function startTerrain(host, placement={}) {
   let moving=false,selected=false,draggingHall=false,originalPosition=null,originalRotation=null;
   const showPanels=()=>{selectPanel.hidden=!selected||moving;movePanel.hidden=!moving;grid.visible=moving;gridFill.visible=moving;};
   const beginMove=()=>{originalPosition=hallRoot.position.clone();originalRotation=hallRoot.rotation.y;moving=true;selected=false;showPanels();};
-  const finishMove=confirm=>{if(!confirm&&originalPosition){hallRoot.position.copy(originalPosition);hallRoot.rotation.y=originalRotation;}if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z,rotation:hallRoot.rotation.y>Math.PI*1.25?1:0});moving=false;selected=false;draggingHall=false;originalPosition=null;originalRotation=null;showPanels();};
+  const finishMove=confirm=>{if(!confirm&&originalPosition){hallRoot.position.copy(originalPosition);hallRoot.rotation.y=originalRotation;}if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z,rotation:Math.abs(hallRoot.rotation.y-Math.PI*.5)<.01?1:0});moving=false;selected=false;draggingHall=false;originalPosition=null;originalRotation=null;showPanels();};
   moveUi.querySelector('[data-action="move"]').onclick=beginMove;
-  moveUi.querySelector('[data-action="rotate"]').onclick=()=>{hallRoot.rotation.y=hallRoot.rotation.y>Math.PI*1.25?Math.PI:Math.PI*1.5;hallRoot.position.copy(snap(hallRoot.position.x,hallRoot.position.z));};
+  moveUi.querySelector('[data-action="rotate"]').onclick=()=>{hallRoot.rotation.y=Math.abs(hallRoot.rotation.y-Math.PI*.5)<.01?Math.PI:Math.PI*.5;hallRoot.position.copy(snap(hallRoot.position.x,hallRoot.position.z));};
   moveUi.querySelector('[data-action="confirm"]').onclick=()=>finishMove(true);
   moveUi.querySelector('[data-action="cancel"]').onclick=()=>finishMove(false);
   const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-playBox.max.y);
