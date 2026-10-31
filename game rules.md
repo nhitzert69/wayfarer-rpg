@@ -224,3 +224,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.75 playable terrain and lighting
 - Keep terrain texture grading and macro variation scoped to Playable_Area only; preserve imported texture assets and other model materials. Maintain directional sun and shadow settings while adjusting ambient bounce conservatively. Use read-only Visual QA screenshots to judge changes in a WebGL-capable browser. Do not adjust foundations or roads in this release.
+
+## v3.0.76 RPG transition — strategy runtime retired
+- The build menu, strategy building placement/model loading and automatic road rendering are removed from the live game. Preserve GLB files and existing saved building data for possible reuse; do not delete or reset account storage. The imported Blender terrain, forest and mountains remain. Visual QA presets are terrain-only until RPG points of interest exist. Older building and road rules document historical behavior only and no longer govern the active runtime.

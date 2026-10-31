@@ -1,3 +1,9 @@
+# Wayfarer v3.0.76 — retire strategy building and road runtime (2026-10-31)
+
+- Removed the Kingdoms Build menu, construction placement/move/rotation/sell UI and logic, runtime building model loading, and procedural road generation. The GLB model assets remain intact in the repository for future RPG reuse.
+- Preserved the Blender-authored terrain, trees, mountains, camera pan/zoom, lighting, username/PIN authentication, account isolation, resource HUD, Sandbox and Visual QA screenshot capture (now terrain-focused presets).
+- Existing building save keys and data are left untouched for reversibility; no migration or destructive save reset. Updated frontend version identifiers and service-worker cache. Static source checks only; live WebGL verification pending.
+
 # Wayfarer v3.0.75 — playable terrain visual refinement (2026-10-31)
 
 - Backed up v3.0.74 to branch backup-2026-10-31-v3.0.74 before editing.
