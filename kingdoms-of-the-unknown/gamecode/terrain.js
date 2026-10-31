@@ -49,7 +49,7 @@ export async function startTerrain(host, placement={}) {
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   
   // Stage 1: soft sky bounce and warm directional key light, without a second competing sun.
-  scene.add(new THREE.HemisphereLight(0xe3efff,0x74664f,1.05));
+  scene.add(new THREE.HemisphereLight(0xe3efff,0x82775f,1.12));
   const sun=new THREE.DirectionalLight(0xffe3bd,2.0);sun.position.set(200,450,260);scene.add(sun);
   const model=await loadGameModel(terrainFile);
   // GLB preserves supported Blender PBR materials and packed textures.
@@ -80,10 +80,20 @@ export async function startTerrain(host, placement={}) {
           "#include <map_fragment>",
           "#include <map_fragment>\n" +
           "float groundLuma=dot(diffuseColor.rgb,vec3(0.2126,0.7152,0.0722));\n" +
-          "diffuseColor.rgb=mix(vec3(groundLuma),diffuseColor.rgb,0.88)*0.97;"
+          "diffuseColor.rgb=mix(vec3(groundLuma),diffuseColor.rgb,0.84);\n" +
+          "diffuseColor.rgb=mix(vec3(groundLuma),diffuseColor.rgb,0.79);\n" +
+          "vec2 terrainMacro=floor(vMapUv*5.0);\n" +
+          "vec2 terrainFrac=fract(vMapUv*5.0);\n" +
+          "terrainFrac=terrainFrac*terrainFrac*(3.0-2.0*terrainFrac);\n" +
+          "float macroA=fract(sin(dot(terrainMacro,vec2(127.1,311.7)))*43758.5453);\n" +
+          "float macroB=fract(sin(dot(terrainMacro+vec2(1.0,0.0),vec2(127.1,311.7)))*43758.5453);\n" +
+          "float macroC=fract(sin(dot(terrainMacro+vec2(0.0,1.0),vec2(127.1,311.7)))*43758.5453);\n" +
+          "float macroD=fract(sin(dot(terrainMacro+vec2(1.0,1.0),vec2(127.1,311.7)))*43758.5453);\n" +
+          "float macroNoise=mix(mix(macroA,macroB,terrainFrac.x),mix(macroC,macroD,terrainFrac.x),terrainFrac.y);\n" +
+          "diffuseColor.rgb*=0.99+(macroNoise-0.5)*0.15;"
         );
       };
-      adjusted.customProgramCacheKey=()=>"kotu-playable-grade-v1";
+      adjusted.customProgramCacheKey=()=>"kotu-playable-grade-v2";
       groundMaterials.push(adjusted);
       return adjusted;
     };

@@ -1,3 +1,10 @@
+# Wayfarer v3.0.75 — playable terrain visual refinement (2026-10-31)
+
+- Backed up v3.0.74 to branch backup-2026-10-31-v3.0.74 before editing.
+- Reduced fine-detail contrast and saturation in the Playable_Area material using a terrain-only shader grade; added restrained low-frequency color variation to reduce visible repetition without modifying original GLB texture assets.
+- Slightly lifted the ground bounce component of the hemisphere light while retaining the existing directional sun and shadow system.
+- Preserved building materials, imported ground planes, roads, camera controls, building placement and account data. Updated versioned modules and service-worker cache to v3.0.75. Live visual verification pending.
+
 # Wayfarer v3.0.74 — Visual QA screenshot capture (2026-10-31)
 
 - Added a read-only Visual QA panel for authorized Debug users, with World overview, Town Hall, Barracks, Military Camp and Road connections camera presets.

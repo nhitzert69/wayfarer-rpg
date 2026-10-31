@@ -221,3 +221,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.74 read-only Visual QA
 - Authorized Debug users can select local camera presets and download PNG screenshots from WebGL-enabled browsers. Do not mutate saved placements, resources, authentication or Sandbox state. Do not claim this enables WebGL in cloud browsers. Clean up QA callbacks on world exit.
+
+## v3.0.75 playable terrain and lighting
+- Keep terrain texture grading and macro variation scoped to Playable_Area only; preserve imported texture assets and other model materials. Maintain directional sun and shadow settings while adjusting ambient bounce conservatively. Use read-only Visual QA screenshots to judge changes in a WebGL-capable browser. Do not adjust foundations or roads in this release.
