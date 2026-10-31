@@ -1,3 +1,10 @@
+# Wayfarer v3.0.56 — smaller Military Camp and ground tile shadow fix (2026-10-31)
+
+- Reduced Military Camp gameplay placement footprint from 60 × 40 to 45 × 35 metres. Existing uniform visual scaling follows the smaller bounds; Town Hall and Barracks dimensions unchanged.
+- Fixed the combined-root shadow traversal that mistakenly enabled shadow casting on BuildingsTerrain floor tiles. Tiles now neither cast nor receive shadows; building visuals still cast shadows onto Playable_Area.
+- Preserved gameplay IDs, building centres and saved progress, rotation, collision checks, economy and Sandbox isolation.
+- GitHub source changes committed; live WebGL rendering and saved-position regression testing pending.
+
 # Wayfarer v3.0.55 — load newly uploaded Military Camp GLB (2026-10-31)
 
 - Confirmed the new compressed Military Camp asset (4,327,164 bytes) is present on main as `military%20camp%20model%20level%201.glb`.
