@@ -202,36 +202,14 @@ export async function startTerrain(host, placement={}) {
     const floor=new THREE.Group();
     floor.name="AuthoredBuildingGround";
     // Blender Plane meshes are already part of visual and move with the building.
+    // Keep imported ground materials untouched. UVs repeat inside the mesh,
+    // so using fract(vMapUv) for opacity creates black grid seams.
     visual.traverse(node=>{
       if(!node.isMesh)return;
       node.layers.enable(1);
       const isGround=/^Plane(?:\\.|$)/i.test(node.name)||/^BuildingGround/i.test(node.name);
       node.castShadow=!isGround;
       node.receiveShadow=true;
-      if(!isGround)return;
-      // Fade only the authored ground's outside UV perimeter into the playfield.
-      // Preserve its original image and keep the middle fully opaque.
-      const soften=material=>{
-        const m=material.clone();
-        m.transparent=true;
-        m.depthWrite=false;
-        m.side=THREE.DoubleSide;
-        m.onBeforeCompile=shader=>{
-          shader.fragmentShader=shader.fragmentShader.replace(
-            "#include <map_fragment>",
-            "#include <map_fragment>\n"+
-            "vec2 groundEdge=min(fract(vMapUv),1.0-fract(vMapUv));\n"+
-            "float groundFade=smoothstep(0.0,0.075,min(groundEdge.x,groundEdge.y));\n"+
-            "diffuseColor.a*=groundFade;"
-          );
-        };
-        m.customProgramCacheKey=()=>"kotu-ground-edge-v1";
-        return m;
-      };
-      // Only UV-mapped ground materials can be feathered.
-      if(node.geometry?.attributes?.uv&&node.material){
-        node.material=Array.isArray(node.material)?node.material.map(m=>m.map?soften(m):m):node.material.map?soften(node.material):node.material;
-      }
     });
     scene.add(root);
     const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
