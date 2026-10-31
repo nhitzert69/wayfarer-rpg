@@ -12,6 +12,7 @@ updateOrientation();
 let client=null,mode="login",cleanup=null,activeUser=null,loadGeneration=0;
 
 let sandboxActive=false,sandboxSnapshot=null,buildHandler=null,buildItems=[];
+const sandboxBuild={free:false,unlimited:false,instant:false};
 const allowedDebugNames=new Set(["admin","chatgpt"]);
 const authenticatedName=user=>{
   const email=String(user?.email||"").toLowerCase();
