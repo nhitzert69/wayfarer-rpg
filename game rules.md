@@ -7,6 +7,10 @@
 - Kingdoms username/PIN sign-in may use the same Supabase Auth project as Wayfarer, but its runtime and session storage must remain separate and it must never access Wayfarer save tables or application globals.
 - Single-map direction: load only `models/terrain/Playmap/terrain_kingdoms.glb`. Preserve its exported Blender camera as the widest permitted view; zooming out past that camera framing is prohibited. Panning at closer zoom must stay within the original visible ground footprint. Export the Camera object in the GLB; missing camera must produce an actionable error rather than an invented view.
 
+## Model loading and authored framing (2026-10-31)
+- Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
+- The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
+
 ## Single-map and camera authority (2026-10-31)
 - Kingdoms has one terrain, one active theme, and one Level 1 Town Hall. Do not expose a map/faction selector; historical map preferences must not affect game loading.
 - The Blender camera saved in the current terrain GLB defines the widest permitted camera framing. Camera zoom may move inward, but never outward beyond the Blender framing. The original ground footprint is the allowed view boundary. Preserve the authored camera transform and lens/projection.
