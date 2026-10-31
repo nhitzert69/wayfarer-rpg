@@ -215,3 +215,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 ## v3.0.72 road placement and cinematic loading
 - Roads draw above imported ground Plane meshes with a small depth bias and below building meshes/steps; preserve depth testing, building shadows, and entrance marker positions. Taper road width at both ends toward each entrance's authored or fallback opening width. Never change gameplay collision footprints or saved placements to adjust visual road widths.
 - Display Lanterns Beneath the Ominous Castle.png only while the standalone map is loading, keeping the separate login title image intact. Update service-worker cache and versioned standalone assets together.
+
+## v3.0.73 CSS image relocation check
+- When relocating a title-screen image, search the entire CSS file for repeated later background-image overrides and update every reference, not just the first shorthand declaration. Keep the login and loading images separate.

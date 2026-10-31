@@ -1,3 +1,8 @@
+# Wayfarer v3.0.73 — fix black Kingdoms title screen (2026-10-31)
+
+- Corrected a later, higher-priority standalone CSS title-screen background override that still referenced the deleted shared image path. Both CSS declarations now reference kingdoms-of-the-unknown/images/titlecreens/kingdoms-of-the-unknown-title.png.
+- Bumped the service-worker cache to v3.0.73. Road and loading-screen changes from v3.0.72 are retained. Live visual verification pending.
+
 # Wayfarer v3.0.72 — road layering, entrance aprons and loading screen (2026-10-31)
 
 - Created backup branch backup-2026-10-31-v3.0.71 at starting commit 1aeabb799af1854e307ea6b5c8bf39256742e2ec before changes.
