@@ -93,16 +93,16 @@ export async function startTerrain(host, placement={}) {
   });
   // A local shadow frustum follows the Town Hall instead of wasting resolution on the whole map.
   // The light is on layer 1, shared only by Playable_Area and the Town Hall.
-  // Shadow-only local light: global sunlight handles direct illumination of every model.
-  const gameSun=new THREE.DirectionalLight(0xffffff,0);
-  gameSun.layers.set(1);
+  // One directional sun provides both illumination and shadows (no doubled key light).
+  const gameSun=sun;
+  gameSun.layers.enable(1);
   gameSun.castShadow=true;
   gameSun.shadow.mapSize.set(2048,2048);
   gameSun.shadow.camera.near=.01;
   gameSun.shadow.bias=-.00008;
   gameSun.shadow.normalBias=.002;
   gameSun.shadow.radius=3;
-  scene.add(gameSun,gameSun.target);
+  scene.add(gameSun.target);
   camera.layers.enable(1);
 
   // Keep the authored camera rotation, including its intentional framing.
