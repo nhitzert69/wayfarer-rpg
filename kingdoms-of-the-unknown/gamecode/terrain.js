@@ -277,12 +277,25 @@ export async function startTerrain(host, placement={}) {
   });
   // Road connections use exported Entrance nodes, never guessed building centres.
   // Build a low-cost grid path around occupied plots, then merge straight runs.
-  const roadMaterials=[
-    new THREE.MeshStandardMaterial({color:0x927452,roughness:1,polygonOffset:true,polygonOffsetFactor:-2}),
-    new THREE.MeshStandardMaterial({color:0x806b53,roughness:1,polygonOffset:true,polygonOffsetFactor:-2}),
-    new THREE.MeshStandardMaterial({color:0x898780,roughness:1,polygonOffset:true,polygonOffsetFactor:-2}),
-    new THREE.MeshStandardMaterial({color:0x8e8980,roughness:1,polygonOffset:true,polygonOffsetFactor:-2})
-  ];
+  // Low-cost repeatable soil texture: mottled earth rather than a flat brown band.
+  const roadCanvas=document.createElement("canvas");roadCanvas.width=128;roadCanvas.height=256;
+  const roadCtx=roadCanvas.getContext("2d");
+  roadCtx.fillStyle="#927552";roadCtx.fillRect(0,0,128,256);
+  let roadSeed=18479;
+  const roadRandom=()=>{roadSeed=(Math.imul(roadSeed,1664525)+1013904223)>>>0;return roadSeed/4294967296;};
+  for(let i=0;i<5000;i++){
+    const x=roadRandom()*128,y=roadRandom()*256,r=.3+roadRandom()*3.2;
+    roadCtx.fillStyle=roadRandom()<.55?"rgba(70,48,27,.10)":"rgba(211,179,120,.12)";
+    roadCtx.beginPath();roadCtx.ellipse(x,y,r,r*.7,roadRandom()*Math.PI,0,Math.PI*2);roadCtx.fill();
+  }
+  const roadTexture=new THREE.CanvasTexture(roadCanvas);
+  roadTexture.colorSpace=THREE.SRGBColorSpace;
+  roadTexture.wrapS=THREE.RepeatWrapping;roadTexture.wrapT=THREE.RepeatWrapping;
+  roadTexture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+  const roadMaterials=[new THREE.MeshStandardMaterial({
+    map:roadTexture,color:0xffffff,roughness:1,side:THREE.DoubleSide,
+    polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2
+  })];
   const roadGridStep=2*unit;
   const roadAnchor=item=>{
     if(!item.entrances.length)return null;
@@ -534,5 +547,5 @@ export async function startTerrain(host, placement={}) {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{placement.setBuildHandler?.(null);moveUi.remove();clearRoads();roadMaterials.forEach(m=>m.dispose());grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
+  return ()=>{placement.setBuildHandler?.(null);moveUi.remove();clearRoads();roadMaterials.forEach(m=>m.dispose());roadTexture.dispose();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
 }
