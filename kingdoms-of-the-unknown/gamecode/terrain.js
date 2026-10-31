@@ -260,6 +260,7 @@ export async function startTerrain(host, placement={}) {
     if(!commit){active.root.position.copy(original.position);active.rotation=original.rotation;active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;active.present=original.present;active.root.visible=active.present;}
     else if(pendingBuild&&!placement.buy?.(active.id)){return;}
     if(commit)persist();
+    refreshCatalog();
     moving=false;draggingHall=false;active=null;original=null;pendingBuild=false;updateHallLight();showPanels();
   };
   moveUi.querySelector('[data-action="move"]').onclick=()=>{if(active)beginMove(active);};
@@ -270,14 +271,15 @@ export async function startTerrain(host, placement={}) {
     if(!active||active.id==="townhall")return;
     if(!window.confirm("Sell "+active.name+" for 1,000 gold, 150 wood and 100 stone?"))return;
     if(!placement.sell?.(active.id))return;
-    active.present=false;active.root.visible=false;persist();active=null;showPanels();
+    active.present=false;active.root.visible=false;persist();active=null;refreshCatalog();showPanels();
   };
   placement.setBuildHandler?.(id=>{
     const item=buildings.find(b=>b.id===id);
     if(!item||item.present||moving)return false;
     beginMove(item,true);return true;
   });
-  placement.refreshBuild?.(buildings.map(item=>({id:item.id,name:item.name,present:item.present})));
+  const refreshCatalog=()=>placement.refreshBuild?.(buildings.map(item=>({id:item.id,name:item.name,present:item.present})));
+  refreshCatalog();
   const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-groundLevel);
   const terrainPoint=e=>{
     const rect=renderer.domElement.getBoundingClientRect();
