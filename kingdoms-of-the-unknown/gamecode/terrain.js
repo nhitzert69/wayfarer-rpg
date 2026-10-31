@@ -162,7 +162,7 @@ export async function startTerrain(host, placement={}) {
   const cell=Math.min(playSize.x,playSize.z)/250,unit=playSize.x/1000,groundLevel=playBox.max.y;
   const definitions=[
     {id:"townhall",name:"Town Hall",w:50,d:30,path:"./models/buildings/level%20one/townhall%2520level%25201%2520compressed.glb"},
-    {id:"barracks",name:"Barracks",w:40,d:30,path:"./models/buildings/level%20one/military%20camp%20level%201.glb"},
+    {id:"barracks",name:"Barracks",w:40,d:30,path:"./models/buildings/level%20one/barracks%20level%201.glb"},
     {id:"camp",name:"Military Camp",w:60,d:40,path:"./models/buildings/level%20one/military%20camp%20model%20level%201.glb"}
   ];
   const saved=placement.read?.()||{};
