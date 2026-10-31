@@ -188,3 +188,7 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 ## Automatic entrance roads (v3.0.62)
 - Use Blender-exported Entrance or Entrence marker nodes to find building road access points; do not display marker meshes. Roads link Town Hall to present buildings and re-route around occupied plots when buildings are moved, rotated, built, or sold. Keep roads visual-only, no resource cost or save format changes.
 - Cache invalidation is mandatory: update root sw.js CACHE identifier with every game release and version the standalone module entry URLs. Verify actual browser rendering before asserting that roads or entrance marker dimensions are correct.
+
+## v3.0.63 building terrain and collision
+- Dirt underlays must cover each building's entire reserved gameplay plot, including Barracks and Military Camp. Keep dirt flat, shadow-receiving, and tiled at consistent texture density.
+- Building-to-building collision checks use scaled visible model dimensions (including 90-degree rotations) rather than the oversized reserved plot, so players can place buildings closer without visual mesh overlap. Keep grid placement and map-edge limits based on reserved dimensions.
