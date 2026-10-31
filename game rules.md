@@ -11,6 +11,11 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Daytime lighting stage 1 v3.0.50 (2026-10-31)
+- Preserve imported terrain/building meshes, textures, gameplay scale, authored camera, positions and Sandbox data. Render with sRGB output, ACES filmic tone mapping and modest 1.12 exposure.
+- Use one warm directional sun for illumination and local shadow casting, with a cooler sky/warm-ground hemisphere fill. Avoid double-counting a second key light. Maintain the existing 2048 shadow map, Town Hall-following shadow frustum and mobile-friendly PCFSoftShadowMap; modestly soften shadow radius and reduce normal bias.
+- Stage 1 does not add postprocessing, ambient-occlusion passes, day/night transitions or edits to source Blender models. Verify lighting and mobile GPU performance live before declaring visual quality final.
+
 ## Correct Barracks/Camp GLB assignments v3.0.49 (2026-10-31)
 - The two uploaded files had been assigned the opposite names: load the red-roofed barracks visual from `military camp level 1.glb` for the Barracks gameplay ID, and the tent-filled camp visual from `barracks level 1.glb` for the Military Camp gameplay ID. Do not rename gameplay IDs or move existing saves.
 - Remove the mistaken imported-model 90° rotation and independent X/Z stretching. Preserve source geometry proportions with uniform scaling inside the 40 × 30 and 60 × 40 m gameplay footprints. Existing plot dimensions, ground tiles, prices, placement, saves and Sandbox isolation remain unchanged.
