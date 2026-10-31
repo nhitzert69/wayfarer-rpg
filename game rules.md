@@ -198,3 +198,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.67 dirt fitting
 - Building dirt extents can be independently adjusted in terrain.js using grid-cell margins. Keep Town Hall dirt tighter and enlarge Barracks and Military Camp coverage; do not change building models, saved placements, collision, or road geometry for cosmetic dirt corrections.
+
+## v3.0.68 authored building ground
+- Do not load the deleted TerrainTiles/BuildingsTerrain.glb. Building ground comes from Plane meshes embedded in each building GLB. Preserve their transforms and textures, keep them shadow-receiving and non-shadow-casting, and avoid adding old procedural dirt tiles. Do not conflate ground planes with building collision or entrance markers.
