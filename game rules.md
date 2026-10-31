@@ -180,3 +180,7 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.59 Dirt tile texture continuity
 - Adjust UVs of partial BuildingsTerrain edge tiles in separate cloned geometry to preserve texture density; never mutate the shared imported GLB geometry. Preserve flush positioning and shadow reception without tile shadow casting.
+
+## v3.0.60 Building model filenames and entrances
+- Load Townhalllvl1.glb, Militarybarrackslvl1.glb and Militarycamplvl1.glb from the level one building models directory.
+- Updated models are intended to include invisible entrance markers for future road generation. Do not treat markers as visible building geometry or include them in placement footprint calculations; verify marker names, transforms and dimensions before implementing roads.
