@@ -11,6 +11,12 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Building ground alignment and Military Camp orientation v3.0.48 (2026-10-31)
+- Keep Town Hall, Barracks and Camp placement footprints at 50 × 30, 40 × 30 and 60 × 40 gameplay metres respectively. Fit each visible model to its designated footprint so terrain does not extend beyond the model's rectangular ground perimeter.
+- Rotate the Military Camp's imported visual 90° to put its long axis along the 60 m footprint; retain the existing player-controlled 90° rotation and collision bounds.
+- Align the highest surface of the building terrain tiles nearly flush with the Playable_Area instead of placing the lowest tile vertex above ground. Maintain slight depth clearance against z-fighting.
+- Do not modify existing saved positions, transactions or Sandbox state.
+
 ## Starting buildings, placement and Sandbox v3.0.47 (2026-10-31)
 - Start with Town Hall 50 × 30 m, Barracks 40 × 30 m and Military Camp 60 × 40 m, with the latter two near the Town Hall.
 - Underlay each building with repeated BuildingsTerrain GLB tiles clipped to the building's rectangular plot. Use the existing 250 × 250 placement grid; invalid overlaps must turn the grid red and disable confirmation.
