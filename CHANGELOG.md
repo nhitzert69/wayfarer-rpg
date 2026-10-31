@@ -1,3 +1,10 @@
+# Wayfarer v3.0.55 — load newly uploaded Military Camp GLB (2026-10-31)
+
+- Confirmed the new compressed Military Camp asset (4,327,164 bytes) is present on main as `military%20camp%20model%20level%201.glb`.
+- Updated the Military Camp loader URL to encode literal percent signs (`%25`) so GitHub Pages resolves the uploaded asset correctly.
+- Preserved the Barracks/Town Hall paths, camp gameplay footprint, model-fitting behavior, visual rotation, saved progress, building economy and Sandbox isolation.
+- GitHub code update successful; live WebGL visual verification not performed.
+
 # Wayfarer v3.0.54 — correct Barracks GLB filename (2026-10-31)
 
 - Renamed the red-roofed Barracks GLB from `military camp level 1.glb` to `barracks level 1.glb` by reusing the existing 6.8 MB Git blob, without modifying model bytes.
