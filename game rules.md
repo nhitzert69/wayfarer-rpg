@@ -11,6 +11,9 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Town Hall placement and camera tuning v3.0.40 (2026-10-31)
+- Use a 250 × 250 grid (4 gameplay metres per cell) with snap and rotated bounds for the 30 m Town Hall. Movement mode toggles between original and +90° orientation; confirm persists position/rotation, cancel reverts both. Default initial zoom 5×, maximum 20×, minimum 1×. Pan sensitivity reduces gradually at closer zoom. Preserve account and Sandbox isolation.
+
 ## Town Hall scale and camera tuning (2026-10-31)
 - Level 1 Town Hall has a maximum 30 × 30 gameplay-metre footprint (3% of the 1,000 m square per axis), preserving original proportions. Initial camera zoom is 2.5×, maximum zoom-in 20×, maximum zoom-out 1×; compensate pan sensitivity for zoom.
 
