@@ -39,6 +39,15 @@ function setSandbox(enabled){
 }
 $("debugToggle").onclick=()=>{if(debugAllowed())$("debugPanel").hidden=!$("debugPanel").hidden;};
 $("sandboxToggle").onclick=()=>setSandbox(!sandboxActive);
+const sandboxOptions=document.createElement("div");sandboxOptions.id="sandboxBuildOptions";sandboxOptions.hidden=true;
+for(const [key,label] of [["free","Free purchases"],["unlimited","Unlimited buildings"],["instant","Instant construction"]]){
+  const row=document.createElement("label");
+  const box=document.createElement("input");box.type="checkbox";box.id="sandbox-"+key;
+  box.onchange=()=>{if(!sandboxActive){box.checked=false;return;}sandboxBuild[key]=box.checked;renderBuild();};
+  row.append(box,document.createTextNode(label));sandboxOptions.append(row);
+}
+$("sandboxToggle").after(sandboxOptions);
+
 
 
 const RESOURCE_NAMES=["gold","wood","stone","food"];
