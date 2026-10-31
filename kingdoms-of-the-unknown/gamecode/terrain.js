@@ -168,6 +168,7 @@ export async function startTerrain(host, placement={}) {
   const saved=placement.read?.()||{};
   const positions=saved.buildings||{};
   const buildings=[];
+  const roadLayer=new THREE.Group();scene.add(roadLayer);
   const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),250,0x7eff68,0xb4ff94);
   grid.position.set(playCenter.x,groundLevel+.07,playCenter.z);
   grid.material.transparent=true;grid.material.opacity=.85;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
@@ -222,6 +223,14 @@ export async function startTerrain(host, placement={}) {
     visual.updateMatrixWorld(true);
     const scaled=new THREE.Box3().setFromObject(visual);
     visual.position.sub(new THREE.Vector3((scaled.min.x+scaled.max.x)/2,scaled.min.y,(scaled.min.z+scaled.max.z)/2));
+    // Entrance nodes are authored in Blender and travel with the building transform.
+    const entrances=[];
+    visual.traverse(node=>{
+      if(!/^entr(?:ance|ence)/i.test(node.name))return;
+      entrances.push(node);
+      // Mesh markers must not be rendered, cast shadows, or intercept building clicks.
+      node.traverse(part=>{if(part.isMesh){part.visible=false;part.raycast=()=>{};}});
+    });
     const root=new THREE.Group();root.add(visual);
     const floor=makeFloor(scaled.max.x-scaled.min.x,scaled.max.z-scaled.min.z);root.add(floor);
     visual.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
@@ -230,7 +239,7 @@ export async function startTerrain(host, placement={}) {
     const stored=positions[def.id]||old;
     const defaultX=playCenter.x+(def.id==="barracks"?-65:def.id==="camp"?75:0)*unit;
     const defaultZ=playCenter.z+(def.id==="barracks"?-40:def.id==="camp"?-35:0)*unit;
-    const item={...def,root,floor,present:stored?.present!==false,rotation:stored?.rotation===1?1:0};
+    const item={...def,root,floor,entrances,present:stored?.present!==false,rotation:stored?.rotation===1?1:0};
     root.rotation.y=item.rotation?Math.PI*.5:Math.PI;
     root.position.set(Number.isFinite(stored?.x)?stored.x:defaultX,groundLevel+.015,Number.isFinite(stored?.z)?stored.z:defaultZ);
     root.visible=item.present;
@@ -252,6 +261,103 @@ export async function startTerrain(host, placement={}) {
     return Math.abs(item.root.position.x-other.root.position.x)<(a.x+b.x)/2-1e-7 &&
       Math.abs(item.root.position.z-other.root.position.z)<(a.z+b.z)/2-1e-7;
   });
+  // Road connections use exported Entrance nodes, never guessed building centres.
+  // Build a low-cost grid path around occupied plots, then merge straight runs.
+  const roadMaterials=[
+    new THREE.MeshStandardMaterial({color:0x927452,roughness:1,polygonOffset:true,polygonOffsetFactor:-2}),
+    new THREE.MeshStandardMaterial({color:0x806b53,roughness:1,polygonOffset:true,polygonOffsetFactor:-2}),
+    new THREE.MeshStandardMaterial({color:0x898780,roughness:1,polygonOffset:true,polygonOffsetFactor:-2}),
+    new THREE.MeshStandardMaterial({color:0x8e8980,roughness:1,polygonOffset:true,polygonOffsetFactor:-2})
+  ];
+  const roadGridStep=2*unit;
+  const roadAnchor=item=>{
+    if(!item.entrances.length)return null;
+    item.root.updateMatrixWorld(true);
+    const marker=item.entrances[0];
+    const center=marker.getWorldPosition(new THREE.Vector3());
+    // Find the outward face of the plot closest to the authored marker.
+    const d=dims(item),dx=center.x-item.root.position.x,dz=center.z-item.root.position.z;
+    const sides=[
+      {score:Math.abs(dx-d.x/2),x:item.root.position.x+d.x/2+roadGridStep*1.5,z:center.z},
+      {score:Math.abs(dx+d.x/2),x:item.root.position.x-d.x/2-roadGridStep*1.5,z:center.z},
+      {score:Math.abs(dz-d.z/2),x:center.x,z:item.root.position.z+d.z/2+roadGridStep*1.5},
+      {score:Math.abs(dz+d.z/2),x:center.x,z:item.root.position.z-d.z/2-roadGridStep*1.5}
+    ].sort((a,b)=>a.score-b.score);
+    const chosen=sides[0];
+    const bounds=new THREE.Box3().setFromObject(marker);
+    const width=bounds.isEmpty()?3*unit:THREE.MathUtils.clamp(Math.max(bounds.max.x-bounds.min.x,bounds.max.z-bounds.min.z),2*unit,5*unit);
+    return {point:new THREE.Vector3(chosen.x,groundLevel+.019,chosen.z),width};
+  };
+  const clearRoads=()=>{
+    for(const child of [...roadLayer.children]){roadLayer.remove(child);child.geometry?.dispose();}
+  };
+  const updateRoads=()=>{
+    clearRoads();
+    const hall=buildings.find(b=>b.id==="townhall"&&b.present);
+    if(!hall)return;
+    const start=roadAnchor(hall);
+    if(!start)return;
+    const gridX=x=>Math.round((x-playBox.min.x)/roadGridStep);
+    const gridZ=z=>Math.round((z-playBox.min.z)/roadGridStep);
+    const world=(x,z)=>new THREE.Vector3(playBox.min.x+x*roadGridStep,groundLevel+.019,playBox.min.z+z*roadGridStep);
+    const nx=Math.floor(playSize.x/roadGridStep),nz=Math.floor(playSize.z/roadGridStep);
+    const blocked=(x,z)=>{
+      if(x<0||z<0||x>nx||z>nz)return true;
+      const p=world(x,z);
+      return buildings.some(b=>{
+        if(!b.present)return false;
+        const d=dims(b),margin=roadGridStep*.55;
+        return Math.abs(p.x-b.root.position.x)<d.x/2+margin&&Math.abs(p.z-b.root.position.z)<d.z/2+margin;
+      });
+    };
+    const route=(from,to)=>{
+      const sx=gridX(from.x),sz=gridZ(from.z),tx=gridX(to.x),tz=gridZ(to.z);
+      const key=(x,z)=>x+","+z;
+      const initial=key(sx,sz),goal=key(tx,tz);
+      const open=[{x:sx,z:sz,g:0,f:Math.abs(sx-tx)+Math.abs(sz-tz)}],seen=new Map([[initial,0]]),previous=new Map();
+      let found=false,iterations=0;
+      while(open.length&&iterations++<16000){
+        let best=0;for(let i=1;i<open.length;i++)if(open[i].f<open[best].f)best=i;
+        const cur=open.splice(best,1)[0],k=key(cur.x,cur.z);
+        if(cur.g!==seen.get(k))continue;
+        if(k===goal){found=true;break;}
+        for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){
+          const x=cur.x+dx,z=cur.z+dz,nk=key(x,z);
+          if(blocked(x,z)&&nk!==goal)continue;
+          const g=cur.g+1;
+          if(g>=(seen.get(nk)??Infinity))continue;
+          seen.set(nk,g);previous.set(nk,k);
+          open.push({x,z,g,f:g+Math.abs(x-tx)+Math.abs(z-tz)});
+        }
+      }
+      if(!found)return [];
+      const points=[];let k=goal;
+      while(k){const [x,z]=k.split(",").map(Number);points.push(world(x,z));k=previous.get(k);}
+      points.reverse();
+      // Preserve corners, discarding collinear grid points.
+      return points.filter((p,i)=>i===0||i===points.length-1||
+        Math.abs((points[i+1].x-p.x)*(p.z-points[i-1].z)-(points[i+1].z-p.z)*(p.x-points[i-1].x))>1e-8);
+    };
+    const drawSegment=(a,b,width)=>{
+      const distance=a.distanceTo(b);if(distance<.0001)return;
+      const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,distance),roadMaterials[0]);
+      mesh.rotation.x=-Math.PI/2;
+      mesh.rotation.z=0;
+      mesh.rotation.y=-Math.atan2(b.z-a.z,b.x-a.x)+Math.PI/2;
+      mesh.position.copy(a).add(b).multiplyScalar(.5);
+      mesh.position.y=groundLevel+.021;
+      mesh.receiveShadow=true;mesh.castShadow=false;roadLayer.add(mesh);
+    };
+    for(const item of buildings){
+      if(item===hall||!item.present)continue;
+      const end=roadAnchor(item);if(!end)continue;
+      const path=route(start.point,end.point);
+      if(!path.length)continue;
+      const width=Math.min(start.width,end.width,3.5*unit);
+      for(let i=1;i<path.length;i++)drawSegment(path[i-1],path[i],width);
+    }
+  };
+  updateRoads();
   const valid=()=>!!active&&!overlaps(active);
   let active=null,moving=false,draggingHall=false,original=null,pendingBuild=false;
   const moveUi=document.createElement("div");moveUi.className="kotu-townhall-actions";
@@ -283,6 +389,7 @@ export async function startTerrain(host, placement={}) {
     if(!commit){active.root.position.copy(original.position);active.rotation=original.rotation;active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;active.present=original.present;active.root.visible=active.present;}
     else if(pendingBuild&&!placement.buy?.(active.id)){return;}
     if(commit)persist();
+    updateRoads();
     refreshCatalog();
     moving=false;draggingHall=false;active=null;original=null;pendingBuild=false;updateHallLight();showPanels();
   };
@@ -294,7 +401,7 @@ export async function startTerrain(host, placement={}) {
     if(!active||active.id==="townhall")return;
     if(!window.confirm("Sell "+active.name+" for 1,000 gold, 150 wood and 100 stone?"))return;
     if(!placement.sell?.(active.id))return;
-    active.present=false;active.root.visible=false;persist();active=null;refreshCatalog();showPanels();
+    active.present=false;active.root.visible=false;persist();updateRoads();active=null;refreshCatalog();showPanels();
   };
   placement.setBuildHandler?.(id=>{
     const item=buildings.find(b=>b.id===id);
@@ -386,5 +493,5 @@ export async function startTerrain(host, placement={}) {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{placement.setBuildHandler?.(null);moveUi.remove();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
+  return ()=>{placement.setBuildHandler?.(null);moveUi.remove();clearRoads();roadMaterials.forEach(m=>m.dispose());grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
 }
