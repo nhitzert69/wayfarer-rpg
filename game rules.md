@@ -11,6 +11,11 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Level 1 Town Hall GLB and footprint v3.0.44 (2026-10-31)
+- Load the uploaded compressed GLB from `models/townhall/level one/townhall%20level%201%20compressed.glb` (literal percent signs in the GitHub filename require `%25` URL escaping).
+- Reserve a 50 × 30 gameplay-metre rectangular placement footprint, swapping axes on 90° rotation. Preserve original GLB proportions, the 250 × 250 placement grid, per-account saves, camera and existing FBX asset as a fallback in the repository.
+- This supersedes the earlier 30 × 30 maximum footprint rule for the active Level 1 Town Hall. Live browser verification remains required.
+
 ## Playable-area lighting refinement v3.0.43 (2026-10-31)
 - Use 12% playable-only desaturation and 3% brightness reduction. Balance global ambient and sunlight to reveal contact contrast. Keep the dedicated southeast light and its shadow camera centered on the moving Town Hall for northwest shadows; preserve decorative terrain textures and all placement controls. Live mobile/WebGL testing remains mandatory.
 
