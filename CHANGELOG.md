@@ -1,3 +1,9 @@
+# Wayfarer v3.0.33 — Kingdoms terrain camera visibility hotfix (2026-10-31)
+
+- Aim the exported Blender camera toward the named Playable_Area rather than relying on FBX camera forward-axis conversion.
+- Preserve exported camera position and lens, maximum zoom-out, zoom-in, and bounded panning; derive ground level from playable surface instead of mountain bounds.
+- No asset, account, save or Wayfarer theme changes. Live browser/FBX verification remains INCONCLUSIVE.
+
 # Wayfarer v3.0.32 — Single Kingdoms map and Blender camera framing (2026-10-31)
 
 - Removed the obsolete three-map selector and per-account map preferences; Kingdoms now loads only `models/terrain/Playmap/terrain_kingdoms.fbx`.
