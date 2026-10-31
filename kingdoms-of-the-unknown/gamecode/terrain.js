@@ -232,14 +232,14 @@ export async function startTerrain(host, placement={}) {
       node.traverse(part=>{if(part.isMesh){part.visible=false;part.raycast=()=>{};}});
     });
     const root=new THREE.Group();root.add(visual);
-    const floor=makeFloor(scaled.max.x-scaled.min.x,scaled.max.z-scaled.min.z);root.add(floor);
+    const floor=makeFloor(def.w*unit,def.d*unit);root.add(floor);
     visual.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
     scene.add(root);
     const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
     const stored=positions[def.id]||old;
     const defaultX=playCenter.x+(def.id==="barracks"?-65:def.id==="camp"?75:0)*unit;
     const defaultZ=playCenter.z+(def.id==="barracks"?-40:def.id==="camp"?-35:0)*unit;
-    const item={...def,root,floor,entrances,present:stored?.present!==false,rotation:stored?.rotation===1?1:0};
+    const item={...def,root,floor,entrances,visualWidth:scaled.max.x-scaled.min.x,visualDepth:scaled.max.z-scaled.min.z,present:stored?.present!==false,rotation:stored?.rotation===1?1:0};
     root.rotation.y=item.rotation?Math.PI*.5:Math.PI;
     root.position.set(Number.isFinite(stored?.x)?stored.x:defaultX,groundLevel+.015,Number.isFinite(stored?.z)?stored.z:defaultZ);
     root.visible=item.present;
@@ -255,9 +255,10 @@ export async function startTerrain(host, placement={}) {
     );
   };
   for(const item of buildings)item.root.position.copy(snap(item,item.root.position.x,item.root.position.z));
+  const collisionDims=item=>item.rotation?{x:item.visualDepth,z:item.visualWidth}:{x:item.visualWidth,z:item.visualDepth};
   const overlaps=item=>buildings.some(other=>{
     if(other===item||!other.present)return false;
-    const a=dims(item),b=dims(other);
+    const a=collisionDims(item),b=collisionDims(other);
     return Math.abs(item.root.position.x-other.root.position.x)<(a.x+b.x)/2-1e-7 &&
       Math.abs(item.root.position.z-other.root.position.z)<(a.z+b.z)/2-1e-7;
   });
@@ -276,7 +277,7 @@ export async function startTerrain(host, placement={}) {
     const marker=item.entrances[0];
     const center=marker.getWorldPosition(new THREE.Vector3());
     // Find the outward face of the plot closest to the authored marker.
-    const d=dims(item),dx=center.x-item.root.position.x,dz=center.z-item.root.position.z;
+    const d=collisionDims(item),dx=center.x-item.root.position.x,dz=center.z-item.root.position.z;
     const sides=[
       {score:Math.abs(dx-d.x/2),x:item.root.position.x+d.x/2+roadGridStep*1.5,z:center.z},
       {score:Math.abs(dx+d.x/2),x:item.root.position.x-d.x/2-roadGridStep*1.5,z:center.z},
@@ -306,7 +307,7 @@ export async function startTerrain(host, placement={}) {
       const p=world(x,z);
       return buildings.some(b=>{
         if(!b.present)return false;
-        const d=dims(b),margin=roadGridStep*.55;
+        const d=collisionDims(b),margin=roadGridStep*.55;
         return Math.abs(p.x-b.root.position.x)<d.x/2+margin&&Math.abs(p.z-b.root.position.z)<d.z/2+margin;
       });
     };
