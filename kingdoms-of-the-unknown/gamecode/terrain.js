@@ -43,6 +43,8 @@ export async function startTerrain(host, placement={}) {
   const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance",logarithmicDepthBuffer:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   
   scene.add(new THREE.HemisphereLight(0xe9f1ff,0x515049,2));
   const sun=new THREE.DirectionalLight(0xffe7c7,2.2);sun.position.set(200,450,260);scene.add(sun);
@@ -63,6 +65,53 @@ export async function startTerrain(host, placement={}) {
   // GLB camera axes are defined consistently with Three.js; retain Blender orientation.
   const playable=model.getObjectByName("Playable_Area")||model.getObjectByName("Playable Area");
   const targetBounds=new THREE.Box3().setFromObject(playable||model);
+  // Grade only Playable_Area: keep imported texture images, UVs and perimeter materials untouched.
+  // Apply the correction after sampling the texture, rather than tinting the Town Hall.
+  const groundMaterials=[];
+  if(playable)playable.traverse(node=>{
+    if(!node.isMesh)return;
+    const grade=material=>{
+      const adjusted=material.clone();
+      adjusted.onBeforeCompile=shader=>{
+        shader.fragmentShader=shader.fragmentShader.replace(
+          "#include <map_fragment>",
+          "#include <map_fragment>\n" +
+          "float groundLuma=dot(diffuseColor.rgb,vec3(0.2126,0.7152,0.0722));\n" +
+          "diffuseColor.rgb=mix(vec3(groundLuma),diffuseColor.rgb,0.93)*0.97;"
+        );
+      };
+      adjusted.customProgramCacheKey=()=>"kotu-playable-grade-v1";
+      groundMaterials.push(adjusted);
+      return adjusted;
+    };
+    node.material=Array.isArray(node.material)?node.material.map(grade):grade(node.material);
+    node.receiveShadow=true;
+    node.layers.enable(1);
+  });
+  // Only the playable ground and Town Hall receive the new directional light.
+  // Light arrives from the southeast, projecting shadows toward northwest (-X, -Z).
+  const sunBounds=new THREE.Box3().setFromObject(playable||model);
+  const sunCenter=sunBounds.getCenter(new THREE.Vector3());
+  const sunSize=sunBounds.getSize(new THREE.Vector3());
+  const sunSpan=Math.max(sunSize.x,sunSize.z);
+  const gameSun=new THREE.DirectionalLight(0xffe9cf,1.25);
+  gameSun.position.copy(sunCenter).add(new THREE.Vector3(sunSpan*.8,sunSpan*1.4,sunSpan*.8));
+  gameSun.target.position.copy(sunCenter);
+  gameSun.layers.set(1);
+  gameSun.castShadow=true;
+  gameSun.shadow.mapSize.set(2048,2048);
+  gameSun.shadow.camera.left=-sunSpan*.65;
+  gameSun.shadow.camera.right=sunSpan*.65;
+  gameSun.shadow.camera.top=sunSpan*.65;
+  gameSun.shadow.camera.bottom=-sunSpan*.65;
+  gameSun.shadow.camera.near=.1;
+  gameSun.shadow.camera.far=sunSpan*4;
+  gameSun.shadow.bias=-.00008;
+  gameSun.shadow.normalBias=.015;
+  gameSun.shadow.radius=2;
+  scene.add(gameSun,gameSun.target);
+  camera.layers.enable(1);
+
   // Keep the authored camera rotation, including its intentional framing.
   const origin=camera.position.clone(),rotation=camera.quaternion.clone(),baseZoom=camera.zoom||1;
   // Blender authored frame is 16:9. Wider viewports must crop, not reveal terrain outside it.
@@ -130,6 +179,7 @@ export async function startTerrain(host, placement={}) {
   const hallRoot=new THREE.Group();
   hall.position.sub(new THREE.Vector3((scaledBox.min.x+scaledBox.max.x)/2,scaledBox.min.y,(scaledBox.min.z+scaledBox.max.z)/2));
   hallRoot.add(hall);hallRoot.rotation.y=Math.PI;scene.add(hallRoot);
+  hallRoot.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
   const halfX=(scaledBox.max.x-scaledBox.min.x)/2,halfZ=(scaledBox.max.z-scaledBox.min.z)/2;
   const rotationAngle=()=>hallRoot.rotation.y;
   const limits=()=>{const quarter=Math.abs(Math.sin(rotationAngle()))>.5;return {x:Math.max(0,playSize.x/2-(quarter?halfZ:halfX)),z:Math.max(0,playSize.z/2-(quarter?halfX:halfZ))};};
@@ -248,5 +298,5 @@ export async function startTerrain(host, placement={}) {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{moveUi.remove();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();starTexture.dispose();};
+  return ()=>{moveUi.remove();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
 }
