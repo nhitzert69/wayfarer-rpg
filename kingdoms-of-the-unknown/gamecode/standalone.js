@@ -76,13 +76,15 @@ function buyBuilding(){if(sandboxActive&&sandboxBuild.free)return true;return ch
 function renderBuild(){
   const list=$("buildCatalog");if(!list)return;
   list.replaceChildren();
-  for(const item of buildItems.filter(b=>!b.present&&b.id!=="townhall")){
-    const button=document.createElement("button");
-    button.type="button";button.textContent=item.name+" · 1,250 gold · 200 wood · 150 stone";
+  const options=sandboxActive;
+  for(const item of buildItems.filter(b=>b.id!=="townhall"&&(!b.present||(options&&sandboxBuild.unlimited)))){
+    const button=document.createElement("button");button.type="button";
+    button.textContent=item.name+(options&&sandboxBuild.free?" · FREE":" · 1,250 gold · 200 wood · 150 stone")+(options?"":" · Requires Town Hall Level 2");
+    button.disabled=!options;
     button.onclick=()=>{if(buildHandler?.(item.id))closeBuild();};
     list.append(button);
   }
-  if(!list.children.length){const note=document.createElement("p");note.textContent="All available buildings are already placed.";list.append(note);}
+  if(!list.children.length){const note=document.createElement("p");note.textContent=options?"No additional buildings available.":"New buildings unlock at Town Hall Level 2.";list.append(note);}
 }
 function readResources(kind){
   try{
