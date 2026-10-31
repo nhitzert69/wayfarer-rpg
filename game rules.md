@@ -11,6 +11,10 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Town Hall placement (2026-10-31)
+- The Level 1 Human Town Hall is loaded from `models/townhall/Level1/human-townhall.fbx`. Selecting it offers Move; moving reveals a 50×50 grid over `Playable_Area`. Confirm commits the snapped position; cancel returns to the exact pre-move position.
+- Keep placement inside the playable square and isolate saved building positions by user and live/Sandbox mode. Do not modify Wayfarer account data or saved progress.
+
 ## Single-map and camera authority (2026-10-31)
 - Kingdoms has one terrain, one active theme, and one Level 1 Town Hall. Do not expose a map/faction selector; historical map preferences must not affect game loading.
 - The Blender camera saved in the current terrain GLB defines the widest permitted camera framing. Camera zoom may move inward, but never outward beyond the Blender framing. The original ground footprint is the allowed view boundary. Preserve the authored camera transform and lens/projection.
