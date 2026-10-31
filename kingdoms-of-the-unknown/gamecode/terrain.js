@@ -192,7 +192,7 @@ export async function startTerrain(host, placement={}) {
       tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
       // Root sits 0.015 above ground; place the tile top just 0.001 above ground.
       tile.position.y=-floorBox.max.y*tile.scale.y-.014;
-      tile.traverse(node=>{if(node.isMesh){node.receiveShadow=false;node.castShadow=false;}});
+      tile.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=false;}});
       group.add(tile);
     }
     return group;
