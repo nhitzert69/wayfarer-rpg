@@ -174,41 +174,6 @@ export async function startTerrain(host, placement={}) {
   grid.material.transparent=true;grid.material.opacity=.85;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
   const gridFill=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(playSize.x,playSize.z),Math.min(playSize.x,playSize.z)),new THREE.MeshBasicMaterial({color:0x54ed5b,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide}));
   gridFill.rotation.x=-Math.PI/2;gridFill.position.set(playCenter.x,groundLevel+.055,playCenter.z);gridFill.visible=false;scene.add(gridFill);
-  const floorModel=await loadGameModel("./models/terrain/TerrainTiles/BuildingsTerrain.glb");
-  const floorBox=new THREE.Box3().setFromObject(floorModel),floorSize=floorBox.getSize(new THREE.Vector3());
-  if(floorBox.isEmpty()||floorSize.x<=0||floorSize.z<=0)throw new Error("BuildingsTerrain tile has invalid dimensions.");
-  const makeFloor=(width,depth,offsetX=0,offsetZ=0)=>{
-    // The dirt follows the actual scaled mesh bounds, not the larger gameplay collision plot.
-    // Keep 10 gameplay-metre tile repeats and trim the final row/column to the mesh footprint.
-    const group=new THREE.Group(),tileSpan=10*unit;
-    const nx=Math.max(1,Math.ceil(width/tileSpan)),nz=Math.max(1,Math.ceil(depth/tileSpan));
-    for(let ix=0;ix<nx;ix++)for(let iz=0;iz<nz;iz++){
-      const tw=Math.min(tileSpan,width-ix*tileSpan),td=Math.min(tileSpan,depth-iz*tileSpan);
-      const tile=floorModel.clone(true);
-      // Flatten the imported terrain tile so its vertical sides cannot form a raised platform.
-      const sy=Math.min(tw/floorSize.x,td/floorSize.z)*.002;
-      tile.scale.set(tw/floorSize.x,sy,td/floorSize.z);
-      tile.position.set(offsetX-width/2+ix*tileSpan+tw/2,0,offsetZ-depth/2+iz*tileSpan+td/2);
-      tile.position.x-=((floorBox.min.x+floorBox.max.x)/2)*tile.scale.x;
-      tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
-      // Root sits 0.015 above ground; place the tile top just 0.001 above ground.
-      tile.position.y=-floorBox.max.y*tile.scale.y-.014;
-      // Preserve the same texel density on partial edge tiles as on full tiles.
-      // Each clone gets its own geometry so the source GLB and neighboring tiles stay untouched.
-      tile.traverse(node=>{
-        if(!node.isMesh)return;
-        node.receiveShadow=true;node.castShadow=false;
-        if(!node.geometry?.attributes?.uv)return;
-        node.geometry=node.geometry.clone();
-        const uv=node.geometry.attributes.uv;
-        const repeatX=tw/tileSpan,repeatZ=td/tileSpan;
-        for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*repeatX,uv.getY(i)*repeatZ);
-        uv.needsUpdate=true;
-      });
-      group.add(tile);
-    }
-    return group;
-  };
   for(const def of definitions){
     const visual=await loadGameModel(def.path);
     if(def.id==='camp')visual.rotation.y+=Math.PI/2;
@@ -232,20 +197,16 @@ export async function startTerrain(host, placement={}) {
       node.traverse(part=>{if(part.isMesh){part.visible=false;part.raycast=()=>{};}});
     });
     const root=new THREE.Group();root.add(visual);
-    // The authored entrance/visual alignment is not necessarily centred on the
-    // collision plot. Tailor dirt bounds in grid-cell increments per building.
-    // Offsets are in unrotated local plot coordinates and rotate with the root.
-    const dirtAdjust={
-      townhall:{left:0.5,right:-2.5,front:1,back:-1},
-      camp:{left:-1,right:1.5,front:-1,back:1},
-      barracks:{left:-0.5,right:1,front:-1,back:1}
-    }[def.id];
-    const dirtStep=cell;
-    const dirtLeft=-def.w*unit/2+dirtAdjust.left*dirtStep;
-    const dirtRight=def.w*unit/2+dirtAdjust.right*dirtStep;
-    const dirtFront=-def.d*unit/2+dirtAdjust.front*dirtStep;
-    const dirtBack=def.d*unit/2+dirtAdjust.back*dirtStep;
-    const floor=makeFloor(dirtRight-dirtLeft,dirtBack-dirtFront,(dirtLeft+dirtRight)/2,(dirtFront+dirtBack)/2);root.add(floor);
+    // Ground is authored directly in each building GLB. Never fetch the removed
+    // BuildingsTerrain.glb asset or synthesize rectangular dirt tiles.
+    const floor=new THREE.Group();
+    floor.name="AuthoredBuildingGround";
+    // Blender Plane meshes are already part of visual and move with the building.
+    visual.traverse(node=>{
+      if(!node.isMesh||!/^Plane(?:\\.|$)/i.test(node.name))return;
+      node.receiveShadow=true;
+      node.castShadow=false;
+    });
     visual.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
     scene.add(root);
     const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
