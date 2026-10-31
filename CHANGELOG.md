@@ -1,3 +1,10 @@
+# Wayfarer v3.0.32 — Single Kingdoms map and Blender camera framing (2026-10-31)
+
+- Removed the obsolete three-map selector and per-account map preferences; Kingdoms now loads only `models/terrain/Playmap/terrain_kingdoms.fbx`.
+- The viewer uses an exported Blender camera as its initial/widest view and limits zoom-out to that framing. Closer views may pan within the original ground footprint; missing FBX camera reports an actionable loading error.
+- Updated game rules and release metadata. Existing accounts, resources, Sandbox, Town Hall assets, and Wayfarer themes remain unchanged. No historical assets deleted.
+- Validation: source-level references inspected. Browser rendering and presence of camera inside the uploaded binary FBX are **INCONCLUSIVE** until tested; if the camera was not included in FBX export, re-export it.
+
 # Wayfarer v3.0.31 — Kingdoms 10-metre playable-area authoring rule (2026-10-31)
 
 - Documented the new Greek map authoring reference: a 10 × 10 Blender-metre `Playable_Area` representing a logical 1 × 1 km kingdom, with explicit 1:100 model-to-gameplay metre conversion.
