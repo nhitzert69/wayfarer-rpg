@@ -11,6 +11,9 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Buildings directory v3.0.46 (2026-10-31)
+- Rename `models/buildings level 1/` to `models/buildings/` while retaining `level one/` and all existing GLB bytes. Update the Town Hall model loader accordingly; placement, scaling, saved positions and rotation remain unchanged.
+
 ## Building model folder v3.0.45 (2026-10-31)
 - Rename `models/townhall/` to `models/buildings level 1/`, preserving all contents, including the Level 1 Town Hall GLB. Load the Town Hall from its new URL-encoded folder path. No geometry, placement, save or camera changes.
 
