@@ -26,6 +26,7 @@ function refreshDebug(){
   $("debugToggle").hidden=!allowed;
   if(!allowed)$("debugPanel").hidden=true;
   $("sandboxBadge").hidden=!sandboxActive;
+  if($("sandboxBuildOptions"))$("sandboxBuildOptions").hidden=!sandboxActive;
   $("sandboxToggle").textContent=sandboxActive?"Exit Sandbox":"Enter Sandbox";
   $("sandboxToggle").setAttribute("aria-pressed",String(sandboxActive));
   $("debugModeStatus").textContent=sandboxActive?"Sandbox active · isolated test resources":"Live mode · normal resources";
@@ -34,6 +35,7 @@ function setSandbox(enabled){
   if(!debugAllowed()||sandboxActive===enabled)return;
   if(enabled){sandboxSnapshot={resources:readResources("live"),buildings:readBuildings("live")};}else{sandboxSnapshot=null;}
   sandboxActive=enabled;
+  if(!enabled){for(const key of ["free","unlimited","instant"]){sandboxBuild[key]=false;$("sandbox-"+key).checked=false;}}
   refreshDebug();renderResources();closeBuild();
   if(!$("world").hidden)enterWorld();
 }
