@@ -18,7 +18,7 @@ export async function loadGameModel(path) {
   throw new Error("Unsupported 3D model format: "+extension);
 }
 // CDN addons import "three" as a bare specifier, resolved by the game's import map.
-export async function startTerrain(host) {
+export async function startTerrain(host, placement={}) {
   const THREE=await import("three");
   const terrainFile="./models/terrain/Playmap/terrain_kingdoms.glb";
   const scene=new THREE.Scene();
@@ -111,6 +111,62 @@ export async function startTerrain(host) {
     camera.updateMatrixWorld(true);
   };
   resizeCamera();updateCamera();
+
+  // Town Hall Level 1: placement is scoped to the playable square, not the decorative mountains.
+  const hall=await loadGameModel("./models/townhall/Level1/human-townhall.fbx");
+  const playBox=new THREE.Box3().setFromObject(playable||model);
+  if(!playable||playBox.isEmpty())throw new Error("Playable_Area missing: Town Hall placement needs the authored playable square.");
+  const playSize=playBox.getSize(new THREE.Vector3()),playCenter=playBox.getCenter(new THREE.Vector3());
+  const cell=Math.min(playSize.x,playSize.z)/50;
+  const hallBox=new THREE.Box3().setFromObject(hall);
+  if(hallBox.isEmpty())throw new Error("Town Hall FBX contains no visible geometry.");
+  const hallSize=hallBox.getSize(new THREE.Vector3());
+  const hallScale=Math.min(playSize.x*.17/Math.max(hallSize.x,.0001),playSize.z*.17/Math.max(hallSize.z,.0001));
+  hall.scale.multiplyScalar(hallScale);
+  hall.updateMatrixWorld(true);
+  const scaledBox=new THREE.Box3().setFromObject(hall);
+  // Wrap the imported mesh so its visual base rests on the playable surface.
+  const hallRoot=new THREE.Group();
+  hall.position.sub(new THREE.Vector3((scaledBox.min.x+scaledBox.max.x)/2,scaledBox.min.y,(scaledBox.min.z+scaledBox.max.z)/2));
+  hallRoot.add(hall);scene.add(hallRoot);
+  const halfX=(scaledBox.max.x-scaledBox.min.x)/2,halfZ=(scaledBox.max.z-scaledBox.min.z)/2;
+  const limitX=Math.max(0,(playSize.x/2-halfX)),limitZ=Math.max(0,(playSize.z/2-halfZ));
+  const snap=(x,z)=>new THREE.Vector3(
+    THREE.MathUtils.clamp(playCenter.x+Math.round((x-playCenter.x)/cell)*cell,playCenter.x-limitX,playCenter.x+limitX),
+    playBox.max.y+.015,
+    THREE.MathUtils.clamp(playCenter.z+Math.round((z-playCenter.z)/cell)*cell,playCenter.z-limitZ,playCenter.z+limitZ)
+  );
+  const saved=placement.read?.();
+  const initial=saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)?snap(saved.x,saved.z):snap(playCenter.x,playCenter.z);
+  hallRoot.position.copy(initial);
+  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),50,0x92e864,0x4f9d55);
+  grid.position.set(playCenter.x,playBox.max.y+.025,playCenter.z);
+  grid.material.transparent=true;grid.material.opacity=.65;grid.visible=false;scene.add(grid);
+  const moveUi=document.createElement("div");
+  moveUi.className="kotu-townhall-actions";
+  moveUi.innerHTML='<div class="kotu-townhall-select" hidden><strong>Town Hall · Level 1</strong><button type="button" data-action="move">Move</button></div><div class="kotu-townhall-move" hidden><strong>Move Town Hall · drag to reposition</strong><button type="button" data-action="confirm" aria-label="Confirm position">✓</button><button type="button" data-action="cancel" aria-label="Cancel movement">✕</button></div>';
+  host.appendChild(moveUi);
+  const selectPanel=moveUi.querySelector(".kotu-townhall-select"),movePanel=moveUi.querySelector(".kotu-townhall-move");
+  let moving=false,selected=false,draggingHall=false,originalPosition=null;
+  const showPanels=()=>{selectPanel.hidden=!selected||moving;movePanel.hidden=!moving;grid.visible=moving;};
+  const beginMove=()=>{originalPosition=hallRoot.position.clone();moving=true;selected=false;showPanels();};
+  const finishMove=confirm=>{if(!confirm&&originalPosition)hallRoot.position.copy(originalPosition);if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z});moving=false;selected=false;draggingHall=false;originalPosition=null;showPanels();};
+  moveUi.querySelector('[data-action="move"]').onclick=beginMove;
+  moveUi.querySelector('[data-action="confirm"]').onclick=()=>finishMove(true);
+  moveUi.querySelector('[data-action="cancel"]').onclick=()=>finishMove(false);
+  const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-playBox.max.y);
+  const terrainPoint=e=>{
+    const rect=renderer.domElement.getBoundingClientRect();
+    const ndc=new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
+    const ray=new THREE.Raycaster();ray.setFromCamera(ndc,camera);
+    return ray.ray.intersectPlane(placementPlane,new THREE.Vector3());
+  };
+  const hallHit=e=>{
+    const rect=renderer.domElement.getBoundingClientRect();
+    const ray=new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);
+    return ray.intersectObject(hallRoot,true).length>0;
+  };
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   const pick=(e)=>{
     const rect=renderer.domElement.getBoundingClientRect();
@@ -122,6 +178,10 @@ export async function startTerrain(host) {
   const touches=new Map();
   let pinchDistance=null;
   const onDown=e=>{
+    if(moving&&hallHit(e)){draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);return;}
+    if(!moving&&hallHit(e)){selected=true;showPanels();return;}
+    if(!moving&&selected){selected=false;showPanels();}
+    if(moving){const point=terrainPoint(e);if(point){hallRoot.position.copy(snap(point.x,point.z));draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);}return;}
     if(e.pointerType==="mouse"&&e.button!==0)return;
     if(e.pointerType!=="mouse"){
       touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -131,6 +191,7 @@ export async function startTerrain(host) {
     renderer.domElement.setPointerCapture(e.pointerId);
   };
   const onMove=e=>{
+    if(moving){if(draggingHall){const point=terrainPoint(e);if(point)hallRoot.position.copy(snap(point.x,point.z));}return;}
     if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(touches.size>=2){
       const [a,b]=Array.from(touches.values());
@@ -157,6 +218,7 @@ export async function startTerrain(host) {
     down.lastX=e.clientX;down.lastY=e.clientY;
   };
   const onUp=e=>{
+    if(moving){draggingHall=false;return;}
     const wasPinching=touches.size>=2;
     touches.delete(e.pointerId);
     pinchDistance=null;
@@ -177,5 +239,5 @@ export async function startTerrain(host) {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();starTexture.dispose();};
+  return ()=>{moveUi.remove();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();starTexture.dispose();};
 }
