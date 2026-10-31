@@ -11,6 +11,10 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Model-fitted building terrain v3.0.52 (2026-10-31)
+- Size each building's repeated dirt underlay to its actual uniformly scaled visible X/Z model bounds, trimming the last tiles as needed. Do not stretch or resize the models to match terrain.
+- Preserve the 50 x 30, 40 x 30 and 60 x 40 gameplay placement and collision footprints, model rotations, saved positions, economy and Sandbox isolation.
+
 ## Military Camp visual orientation v3.0.51 (2026-10-31)
 - Rotate only the tent-filled Military Camp GLB visual 90 degrees around Y before uniform scaling. Preserve its 60 x 40 metre plot, tile orientation, collision bounds, player-saved rotation and all other buildings.
 
