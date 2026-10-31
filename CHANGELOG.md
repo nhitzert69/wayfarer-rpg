@@ -1,3 +1,9 @@
+# Wayfarer v3.0.77 — fix Kingdoms login resource regression (2026-10-31)
+
+- Restored the currentResources() accessor used by the resource HUD during sign-in, preventing the ReferenceError that was incorrectly displayed as an authentication failure after v3.0.76.
+- Removed the remaining retired building-data lookup from Sandbox initialization; Sandbox still snapshots live resources without writing them back.
+- Preserved login configuration, terrain-only rendering, camera, existing saved resources and dormant building data. Updated game asset query versions and service-worker cache to v3.0.77. Static source review performed; live login/WebGL testing pending.
+
 # Wayfarer v3.0.76 — retire strategy building and road runtime (2026-10-31)
 
 - Removed the Kingdoms Build menu, construction placement/move/rotation/sell UI and logic, runtime building model loading, and procedural road generation. The GLB model assets remain intact in the repository for future RPG reuse.

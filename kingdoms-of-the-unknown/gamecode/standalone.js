@@ -32,7 +32,7 @@ function refreshDebug(){
 }
 function setSandbox(enabled){
   if(!debugAllowed()||sandboxActive===enabled)return;
-  if(enabled){sandboxSnapshot={resources:readResources("live"),buildings:readBuildings("live")};}else{sandboxSnapshot=null;}
+  if(enabled){sandboxSnapshot={resources:readResources("live")};}else{sandboxSnapshot=null;}
   sandboxActive=enabled;
   refreshDebug();renderResources();
   if(!$("world").hidden)enterWorld();
@@ -54,6 +54,7 @@ function readResources(kind){
     return Object.fromEntries(RESOURCE_NAMES.map(name=>[name,Math.max(0,Math.floor(Number(raw[name])||0))]));
   }catch{return Object.fromEntries(RESOURCE_NAMES.map(name=>[name,0]));}
 }
+function currentResources(){return sandboxActive&&sandboxSnapshot?sandboxSnapshot.resources:readResources("live");}
 function renderResources(){
   const resources=activeUser?currentResources():Object.fromEntries(RESOURCE_NAMES.map(name=>[name,0]));
   for(const name of RESOURCE_NAMES) $("resource"+name[0].toUpperCase()+name.slice(1)).textContent=resources[name].toLocaleString();
@@ -100,7 +101,7 @@ async function enterWorld(){
   $("terrainLoading").hidden=false;
   $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
-    const {startTerrain}=await import("./terrain.js?v=3.0.76");
+    const {startTerrain}=await import("./terrain.js?v=3.0.77");
     if(generation!==loadGeneration)return;
     const dispose=await startTerrain($("world"),{setQAHandler});
     if(generation!==loadGeneration){dispose();return;}
