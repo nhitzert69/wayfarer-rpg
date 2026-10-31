@@ -141,14 +141,16 @@ export async function startTerrain(host, placement={}) {
   hallRoot.position.copy(initial);
   const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),25,0x7eff68,0xb4ff94);
   grid.position.set(playCenter.x,playBox.max.y+.07,playCenter.z);
-  grid.material.transparent=true;grid.material.opacity=.98;grid.visible=false;scene.add(grid);
+  grid.material.transparent=true;grid.material.opacity=.98;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
+  const gridFill=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(playSize.x,playSize.z),Math.min(playSize.x,playSize.z)),new THREE.MeshBasicMaterial({color:0x54ed5b,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide}));
+  gridFill.rotation.x=-Math.PI/2;gridFill.position.set(playCenter.x,playBox.max.y+.055,playCenter.z);gridFill.visible=false;scene.add(gridFill);
   const moveUi=document.createElement("div");
   moveUi.className="kotu-townhall-actions";
   moveUi.innerHTML='<div class="kotu-townhall-select" hidden><strong>Town Hall · Level 1</strong><button type="button" data-action="move">Move</button></div><div class="kotu-townhall-move" hidden><strong>Move Town Hall · drag to reposition</strong><button type="button" data-action="confirm" aria-label="Confirm position">✓</button><button type="button" data-action="cancel" aria-label="Cancel movement">✕</button></div>';
   host.appendChild(moveUi);
   const selectPanel=moveUi.querySelector(".kotu-townhall-select"),movePanel=moveUi.querySelector(".kotu-townhall-move");
   let moving=false,selected=false,draggingHall=false,originalPosition=null;
-  const showPanels=()=>{selectPanel.hidden=!selected||moving;movePanel.hidden=!moving;grid.visible=moving;};
+  const showPanels=()=>{selectPanel.hidden=!selected||moving;movePanel.hidden=!moving;grid.visible=moving;gridFill.visible=moving;};
   const beginMove=()=>{originalPosition=hallRoot.position.clone();moving=true;selected=false;showPanels();};
   const finishMove=confirm=>{if(!confirm&&originalPosition)hallRoot.position.copy(originalPosition);if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z});moving=false;selected=false;draggingHall=false;originalPosition=null;showPanels();};
   moveUi.querySelector('[data-action="move"]').onclick=beginMove;
@@ -238,5 +240,5 @@ export async function startTerrain(host, placement={}) {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{moveUi.remove();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();starTexture.dispose();};
+  return ()=>{moveUi.remove();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);renderer.dispose();starTexture.dispose();};
 }
