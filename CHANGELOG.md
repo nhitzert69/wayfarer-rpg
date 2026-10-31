@@ -1,3 +1,10 @@
+# Wayfarer v3.0.44 — new Town Hall GLB and 50 × 30 m placement (2026-10-31)
+
+- Load the user-uploaded 6.34 MB compressed Town Hall GLB from `models/townhall/level one/` (the uploaded filename contains literal `%20` sequences).
+- Scale proportionally to fit a 50 × 30 gameplay-metre plot, reserve the rectangular plot in movement bounds, and swap its dimensions on 90° rotation.
+- Apply saved rotation before snapping previously saved positions, preserving existing account/Sandbox placement records. Retain old FBX in GitHub without deleting it.
+- Validation: source-level path and logic inspection PASS; browser/WebGL render, GLB materials, model orientation and mobile placement INCONCLUSIVE until tested.
+
 # Wayfarer v3.0.43 — Town Hall lighting and terrain contrast (2026-10-31)
 
 - Reduced playable-area texture saturation by 12% (previously 7%); retained the 3% brightness reduction, original textures and untouched decorative perimeter.
