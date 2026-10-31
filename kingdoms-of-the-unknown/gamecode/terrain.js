@@ -1,11 +1,25 @@
 // Kingdoms of the Unknown — standalone Three.js terrain viewer.
 // Uses browser ES modules; does not depend on Wayfarer state.
 const THREE_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-const LOADER_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
+const GLTF_LOADER_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
+const FBX_LOADER_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/FBXLoader.js";
+// Reusable asset loader: GLB for the authored terrain, FBX for future game models.
+export async function loadGameModel(path) {
+  const extension=path.split(/[?#]/,1)[0].split(".").pop().toLowerCase();
+  if(extension==="fbx"){
+    const {FBXLoader}=await import(FBX_LOADER_URL);
+    return new FBXLoader().loadAsync(path);
+  }
+  if(extension==="glb"||extension==="gltf"){
+    const {GLTFLoader}=await import(GLTF_LOADER_URL);
+    const asset=await new GLTFLoader().loadAsync(path);
+    return asset.scene;
+  }
+  throw new Error("Unsupported 3D model format: "+extension);
+}
 // CDN addons import "three" as a bare specifier, resolved by the game's import map.
 export async function startTerrain(host) {
   const THREE=await import("three");
-  const {GLTFLoader}=await import(LOADER_URL);
   const terrainFile="./models/terrain/Playmap/terrain_kingdoms.glb";
   const scene=new THREE.Scene();
   // Procedural starfield behind the terrain, with no external asset dependency.
@@ -32,9 +46,7 @@ export async function startTerrain(host) {
   
   scene.add(new THREE.HemisphereLight(0xe9f1ff,0x515049,2));
   const sun=new THREE.DirectionalLight(0xffe7c7,2.2);sun.position.set(200,450,260);scene.add(sun);
-  const loader=new GLTFLoader();
-  const gltf=await loader.loadAsync(terrainFile);
-  const model=gltf.scene;
+  const model=await loadGameModel(terrainFile);
   // GLB preserves supported Blender PBR materials and packed textures.
   // The single arena includes its own rectangular ground surface.
   // Keep the exported orientation and avoid loading obsolete separate floors.
