@@ -163,7 +163,7 @@ export async function startTerrain(host, placement={}) {
   const definitions=[
     {id:"townhall",name:"Town Hall",w:50,d:30,path:"./models/buildings/level%20one/townhall%2520level%25201%2520compressed.glb"},
     {id:"barracks",name:"Barracks",w:40,d:30,path:"./models/buildings/level%20one/barracks%20level%201.glb"},
-    {id:"camp",name:"Military Camp",w:45,d:35,path:"./models/buildings/level%20one/military%2520camp%2520model%2520level%25201.glb"}
+    {id:"camp",name:"Military Camp",w:45,d:30,path:"./models/buildings/level%20one/military%2520camp%2520model%2520level%25201.glb"}
   ];
   const saved=placement.read?.()||{};
   const positions=saved.buildings||{};
@@ -184,12 +184,14 @@ export async function startTerrain(host, placement={}) {
     for(let ix=0;ix<nx;ix++)for(let iz=0;iz<nz;iz++){
       const tw=Math.min(tileSpan,width-ix*tileSpan),td=Math.min(tileSpan,depth-iz*tileSpan);
       const tile=floorModel.clone(true);
-      const sy=Math.min(tw/floorSize.x,td/floorSize.z);
+      // Flatten the imported terrain tile so its vertical sides cannot form a raised platform.
+      const sy=Math.min(tw/floorSize.x,td/floorSize.z)*.002;
       tile.scale.set(tw/floorSize.x,sy,td/floorSize.z);
       tile.position.set(-width/2+ix*tileSpan+tw/2,0,-depth/2+iz*tileSpan+td/2);
       tile.position.x-=((floorBox.min.x+floorBox.max.x)/2)*tile.scale.x;
       tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
-      tile.position.y=-floorBox.max.y*tile.scale.y+.0005;
+      // Root sits 0.015 above ground; place the tile top just 0.001 above ground.
+      tile.position.y=-floorBox.max.y*tile.scale.y-.014;
       tile.traverse(node=>{if(node.isMesh){node.receiveShadow=false;node.castShadow=false;}});
       group.add(tile);
     }
