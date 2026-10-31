@@ -163,7 +163,7 @@ export async function startTerrain(host, placement={}) {
   const definitions=[
     {id:"townhall",name:"Town Hall",w:50,d:30,path:"./models/buildings/level%20one/townhall%2520level%25201%2520compressed.glb"},
     {id:"barracks",name:"Barracks",w:40,d:30,path:"./models/buildings/level%20one/barracks%20level%201.glb"},
-    {id:"camp",name:"Military Camp",w:60,d:40,path:"./models/buildings/level%20one/military%2520camp%2520model%2520level%25201.glb"}
+    {id:"camp",name:"Military Camp",w:45,d:35,path:"./models/buildings/level%20one/military%2520camp%2520model%2520level%25201.glb"}
   ];
   const saved=placement.read?.()||{};
   const positions=saved.buildings||{};
@@ -190,7 +190,7 @@ export async function startTerrain(host, placement={}) {
       tile.position.x-=((floorBox.min.x+floorBox.max.x)/2)*tile.scale.x;
       tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
       tile.position.y=-floorBox.max.y*tile.scale.y+.0005;
-      tile.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=false;}});
+      tile.traverse(node=>{if(node.isMesh){node.receiveShadow=false;node.castShadow=false;}});
       group.add(tile);
     }
     return group;
@@ -211,7 +211,7 @@ export async function startTerrain(host, placement={}) {
     visual.position.sub(new THREE.Vector3((scaled.min.x+scaled.max.x)/2,scaled.min.y,(scaled.min.z+scaled.max.z)/2));
     const root=new THREE.Group();root.add(visual);
     const floor=makeFloor(scaled.max.x-scaled.min.x,scaled.max.z-scaled.min.z);root.add(floor);
-    root.traverse(node=>{if(node.isMesh&&node!==floor){node.castShadow=true;node.layers.enable(1);}});
+    visual.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
     scene.add(root);
     const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
     const stored=positions[def.id]||old;
