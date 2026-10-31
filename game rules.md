@@ -11,6 +11,10 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Military Camp asset rename v3.0.53 (2026-10-31)
+- Rename the file previously called `barracks level 1.glb` (which actually contains the tent-filled Military Camp) to `military camp model level 1.glb`. Point only the Military Camp loader to the new filename.
+- The actual red-roofed Barracks remains in `military camp level 1.glb` pending a separate rename. Preserve all models, rotations, placement, Sandbox and saved progress.
+
 ## Model-fitted building terrain v3.0.52 (2026-10-31)
 - Size each building's repeated dirt underlay to its actual uniformly scaled visible X/Z model bounds, trimming the last tiles as needed. Do not stretch or resize the models to match terrain.
 - Preserve the 50 x 30, 40 x 30 and 60 x 40 gameplay placement and collision footprints, model rotations, saved positions, economy and Sandbox isolation.
