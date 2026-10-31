@@ -1,3 +1,9 @@
+# Wayfarer v3.0.52 — building terrain fitted to models (2026-10-31)
+
+- Sized repeated dirt terrain tiles to the actual scaled visible X/Z bounds of each Town Hall, Barracks and Military Camp model rather than the larger reserved placement plots.
+- Kept the models' current scale, orientation and positions; preserved their original gameplay footprints, collision and rotation logic, resources, Sandbox and account saves.
+- GitHub source edit PASS; live visual fit, terrain seams and mobile gameplay INCONCLUSIVE pending testing.
+
 # Wayfarer v3.0.51 — Military Camp orientation (2026-10-31)
 
 - Rotated only the Military Camp imported visual 90 degrees around Y before uniform scaling.
