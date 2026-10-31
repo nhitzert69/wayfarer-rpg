@@ -11,6 +11,9 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Playable-area lighting v3.0.41 (2026-10-31)
+- Restrict colour grading to Playable_Area material instances (7% less saturation, 3% less brightness), preserving source textures and decorative perimeter. Enable directional Town Hall shadows pointing northwest on playable terrain only; avoid altering camera and placement controls. Verify mobile performance and shadow rendering in browser.
+
 ## Town Hall placement and camera tuning v3.0.40 (2026-10-31)
 - Use a 250 × 250 grid (4 gameplay metres per cell) with snap and rotated bounds for the 30 m Town Hall. Movement mode toggles between original and +90° orientation; confirm persists position/rotation, cancel reverts both. Default initial zoom 5×, maximum 20×, minimum 1×. Pan sensitivity reduces gradually at closer zoom. Preserve account and Sandbox isolation.
 
