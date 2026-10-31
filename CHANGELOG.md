@@ -1,3 +1,10 @@
+# Wayfarer v3.0.57 — Military Camp dimensions and ground alignment (2026-10-31)
+
+- Set Military Camp footprint to 45 by 30 gameplay metres.
+- Flattened building dirt tiles and lowered them to align with the playable terrain, reducing raised edges.
+- Dirt tiles do not cast or receive shadows. Building visuals retain shadows.
+- Existing saved positions and placement behavior preserved; live browser testing pending.
+
 # Wayfarer v3.0.56 — smaller Military Camp and ground tile shadow fix (2026-10-31)
 
 - Reduced Military Camp gameplay placement footprint from 60 × 40 to 45 × 35 metres. Existing uniform visual scaling follows the smaller bounds; Town Hall and Barracks dimensions unchanged.
