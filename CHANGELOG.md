@@ -1,3 +1,9 @@
+# Wayfarer v3.0.67 — per-building dirt fit adjustments (2026-10-31)
+
+- Tightened the Town Hall dirt surface and expanded Barracks and Military Camp dirt surfaces independently using local grid-cell offsets.
+- Preserved building meshes, scaling, placement, roads, collision, construction and account saves.
+- Bumped service-worker cache and standalone module URLs to v3.0.67. Visual browser verification pending.
+
 # Wayfarer v3.0.66 — Sandbox building controls (2026-10-31)
 
 - Sandbox free purchases, unlimited Barracks/Camp instances, instant construction.
