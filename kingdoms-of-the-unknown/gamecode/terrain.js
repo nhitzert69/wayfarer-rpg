@@ -158,8 +158,8 @@ export async function startTerrain(host, placement={}) {
   const cell=Math.min(playSize.x,playSize.z)/250,unit=playSize.x/1000,groundLevel=playBox.max.y;
   const definitions=[
     {id:"townhall",name:"Town Hall",w:50,d:30,path:"./models/buildings/level%20one/townhall%2520level%25201%2520compressed.glb"},
-    {id:"barracks",name:"Barracks",w:40,d:30,path:"./models/buildings/level%20one/barracks%20level%201.glb"},
-    {id:"camp",name:"Military Camp",w:60,d:40,path:"./models/buildings/level%20one/military%20camp%20level%201.glb"}
+    {id:"barracks",name:"Barracks",w:40,d:30,path:"./models/buildings/level%20one/military%20camp%20level%201.glb"},
+    {id:"camp",name:"Military Camp",w:60,d:40,path:"./models/buildings/level%20one/barracks%20level%201.glb"}
   ];
   const saved=placement.read?.()||{};
   const positions=saved.buildings||{};
@@ -195,19 +195,14 @@ export async function startTerrain(host, placement={}) {
   };
   for(const def of definitions){
     const visual=await loadGameModel(def.path);
-    // The camp asset was exported with its long side along Z; align it to the 60 m X footprint.
-    if(def.id==="camp")visual.rotation.y=Math.PI/2;
     visual.updateMatrixWorld(true);
     const box=new THREE.Box3().setFromObject(visual);
     if(box.isEmpty())throw new Error(def.name+" GLB has no visible geometry.");
     const size=box.getSize(new THREE.Vector3());
-    // Fit the actual visible model to its authored rectangular footprint, so the dirt stops
-    // at the building perimeter. Independent horizontal factors also fix the camp appearing
-    // smaller than the 50 m Town Hall despite its 60 m specified width.
-    const sx=def.w*unit/Math.max(size.x,.00001),sz=def.d*unit/Math.max(size.z,.00001);
-    if(def.id==="camp"){visual.scale.x*=sz;visual.scale.z*=sx;}
-    else{visual.scale.x*=sx;visual.scale.z*=sz;}
-    visual.scale.y*=Math.min(sx,sz);
+    // Preserve the authored aspect ratio: never stretch the imported mesh independently
+    // along X and Z. The footprint remains the authoritative collision/ground plot.
+    const scale=Math.min(def.w*unit/Math.max(size.x,.00001),def.d*unit/Math.max(size.z,.00001));
+    visual.scale.multiplyScalar(scale);
     visual.updateMatrixWorld(true);
     const scaled=new THREE.Box3().setFromObject(visual);
     visual.position.sub(new THREE.Vector3((scaled.min.x+scaled.max.x)/2,scaled.min.y,(scaled.min.z+scaled.max.z)/2));
