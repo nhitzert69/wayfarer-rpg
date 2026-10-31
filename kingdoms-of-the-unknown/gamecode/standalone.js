@@ -130,7 +130,7 @@ async function enterWorld(){
   $("terrainLoading").hidden=false;
   $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
-    const {startTerrain}=await import("./terrain.js");
+    const {startTerrain}=await import("./terrain.js?v=3.0.61");
     if(generation!==loadGeneration)return;
     const legacyKey=storageKey("live-townhall-level1");
     const dispose=await startTerrain($("world"),{
