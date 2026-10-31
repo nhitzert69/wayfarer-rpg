@@ -192,3 +192,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 ## v3.0.63 building terrain and collision
 - Dirt underlays must cover each building's entire reserved gameplay plot, including Barracks and Military Camp. Keep dirt flat, shadow-receiving, and tiled at consistent texture density.
 - Building-to-building collision checks use scaled visible model dimensions (including 90-degree rotations) rather than the oversized reserved plot, so players can place buildings closer without visual mesh overlap. Keep grid placement and map-edge limits based on reserved dimensions.
+
+## v3.0.64 road geometry
+- Flat road planes must rotate around world vertical Y after being laid in the XZ ground plane; avoid Euler order causing raised/diagonal panels. Connect each road path to the actual exported doorway marker at both ends. Validate in browser before declaring visually verified.
