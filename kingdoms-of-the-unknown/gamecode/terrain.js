@@ -73,7 +73,7 @@ export async function startTerrain(host, placement={}) {
   const orthoCenterY=camera.isOrthographicCamera?(camera.top+camera.bottom)/2:0;
   camera.near=0.1;camera.far=100000;scene.add(camera);
   const groundY=targetBounds.min.y;
-  const state={zoom:2.5,offset:new THREE.Vector3()},zoomMin=1,zoomMax=20;
+  const state={zoom:5,offset:new THREE.Vector3()},zoomMin=1,zoomMax=20;
   const resizeCamera=()=>{
     const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
     viewportCrop=Math.max(1,aspect/authoredAspect);
@@ -117,7 +117,8 @@ export async function startTerrain(host, placement={}) {
   const playBox=new THREE.Box3().setFromObject(playable||model);
   if(!playable||playBox.isEmpty())throw new Error("Playable_Area missing: Town Hall placement needs the authored playable square.");
   const playSize=playBox.getSize(new THREE.Vector3()),playCenter=playBox.getCenter(new THREE.Vector3());
-  const cell=Math.min(playSize.x,playSize.z)/50;
+  const divisions=250; // 4 gameplay metres per placement cell on the 1,000 m map.
+  const cell=Math.min(playSize.x,playSize.z)/divisions;
   const hallBox=new THREE.Box3().setFromObject(hall);
   if(hallBox.isEmpty())throw new Error("Town Hall FBX contains no visible geometry.");
   const hallSize=hallBox.getSize(new THREE.Vector3());
@@ -130,30 +131,33 @@ export async function startTerrain(host, placement={}) {
   hall.position.sub(new THREE.Vector3((scaledBox.min.x+scaledBox.max.x)/2,scaledBox.min.y,(scaledBox.min.z+scaledBox.max.z)/2));
   hallRoot.add(hall);hallRoot.rotation.y=Math.PI;scene.add(hallRoot);
   const halfX=(scaledBox.max.x-scaledBox.min.x)/2,halfZ=(scaledBox.max.z-scaledBox.min.z)/2;
-  const limitX=Math.max(0,(playSize.x/2-halfX)),limitZ=Math.max(0,(playSize.z/2-halfZ));
-  const snap=(x,z)=>new THREE.Vector3(
-    THREE.MathUtils.clamp(playCenter.x+Math.round((x-playCenter.x)/cell)*cell,playCenter.x-limitX,playCenter.x+limitX),
+  const rotationAngle=()=>hallRoot.rotation.y;
+  const limits=()=>{const quarter=Math.abs(Math.sin(rotationAngle()))>.5;return {x:Math.max(0,playSize.x/2-(quarter?halfZ:halfX)),z:Math.max(0,playSize.z/2-(quarter?halfX:halfZ))};};
+  const snap=(x,z)=>{const limit=limits();return new THREE.Vector3(
+    THREE.MathUtils.clamp(playCenter.x+Math.round((x-playCenter.x)/cell)*cell,playCenter.x-limit.x,playCenter.x+limit.x),
     playBox.max.y+.015,
-    THREE.MathUtils.clamp(playCenter.z+Math.round((z-playCenter.z)/cell)*cell,playCenter.z-limitZ,playCenter.z+limitZ)
-  );
+    THREE.MathUtils.clamp(playCenter.z+Math.round((z-playCenter.z)/cell)*cell,playCenter.z-limit.z,playCenter.z+limit.z)
+  );};
   const saved=placement.read?.();
   const initial=saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)?snap(saved.x,saved.z):snap(playCenter.x,playCenter.z);
-  hallRoot.position.copy(initial);
-  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),50,0x7eff68,0xb4ff94);
+  if(saved?.rotation===1)hallRoot.rotation.y=Math.PI*1.5;
+  hallRoot.position.copy(snap(initial.x,initial.z));
+  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),divisions,0x7eff68,0xb4ff94);
   grid.position.set(playCenter.x,playBox.max.y+.07,playCenter.z);
   grid.material.transparent=true;grid.material.opacity=.98;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
   const gridFill=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(playSize.x,playSize.z),Math.min(playSize.x,playSize.z)),new THREE.MeshBasicMaterial({color:0x54ed5b,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide}));
   gridFill.rotation.x=-Math.PI/2;gridFill.position.set(playCenter.x,playBox.max.y+.055,playCenter.z);gridFill.visible=false;scene.add(gridFill);
   const moveUi=document.createElement("div");
   moveUi.className="kotu-townhall-actions";
-  moveUi.innerHTML='<div class="kotu-townhall-select" hidden><strong>Town Hall · Level 1</strong><button type="button" data-action="move">Move</button></div><div class="kotu-townhall-move" hidden><strong>Move Town Hall · drag to reposition</strong><button type="button" data-action="confirm" aria-label="Confirm position">✓</button><button type="button" data-action="cancel" aria-label="Cancel movement">✕</button></div>';
+  moveUi.innerHTML='<div class="kotu-townhall-select" hidden><strong>Town Hall · Level 1</strong><button type="button" data-action="move">Move</button></div><div class="kotu-townhall-move" hidden><strong>Move Town Hall · drag to reposition</strong><button type="button" data-action="rotate" aria-label="Rotate Town Hall 90 degrees">↻ Rotate</button><button type="button" data-action="confirm" aria-label="Confirm position">✓</button><button type="button" data-action="cancel" aria-label="Cancel movement">✕</button></div>';
   host.appendChild(moveUi);
   const selectPanel=moveUi.querySelector(".kotu-townhall-select"),movePanel=moveUi.querySelector(".kotu-townhall-move");
-  let moving=false,selected=false,draggingHall=false,originalPosition=null;
+  let moving=false,selected=false,draggingHall=false,originalPosition=null,originalRotation=null;
   const showPanels=()=>{selectPanel.hidden=!selected||moving;movePanel.hidden=!moving;grid.visible=moving;gridFill.visible=moving;};
-  const beginMove=()=>{originalPosition=hallRoot.position.clone();moving=true;selected=false;showPanels();};
-  const finishMove=confirm=>{if(!confirm&&originalPosition)hallRoot.position.copy(originalPosition);if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z});moving=false;selected=false;draggingHall=false;originalPosition=null;showPanels();};
+  const beginMove=()=>{originalPosition=hallRoot.position.clone();originalRotation=hallRoot.rotation.y;moving=true;selected=false;showPanels();};
+  const finishMove=confirm=>{if(!confirm&&originalPosition){hallRoot.position.copy(originalPosition);hallRoot.rotation.y=originalRotation;}if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z,rotation:hallRoot.rotation.y>Math.PI*1.25?1:0});moving=false;selected=false;draggingHall=false;originalPosition=null;originalRotation=null;showPanels();};
   moveUi.querySelector('[data-action="move"]').onclick=beginMove;
+  moveUi.querySelector('[data-action="rotate"]').onclick=()=>{hallRoot.rotation.y=hallRoot.rotation.y>Math.PI*1.25?Math.PI:Math.PI*1.5;hallRoot.position.copy(snap(hallRoot.position.x,hallRoot.position.z));};
   moveUi.querySelector('[data-action="confirm"]').onclick=()=>finishMove(true);
   moveUi.querySelector('[data-action="cancel"]').onclick=()=>finishMove(false);
   const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-playBox.max.y);
@@ -167,7 +171,11 @@ export async function startTerrain(host, placement={}) {
     const rect=renderer.domElement.getBoundingClientRect();
     const ray=new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);
-    return ray.intersectObject(hallRoot,true).length>0;
+    if(ray.intersectObject(hallRoot,true).length>0)return true;
+    // Small models remain selectable on touch screens without changing their visual size.
+    const center=hallRoot.position.clone().add(new THREE.Vector3(0,(scaledBox.max.y-scaledBox.min.y)*.35,0)).project(camera);
+    const px=(center.x+1)*rect.width/2+rect.left,py=(1-center.y)*rect.height/2+rect.top;
+    return Math.hypot(e.clientX-px,e.clientY-py)<(e.pointerType==="mouse"?14:28);
   };
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   const pick=(e)=>{
@@ -209,7 +217,7 @@ export async function startTerrain(host, placement={}) {
     if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down.moved=true;
     if(down.moved){
       const area=footprint(camera.position,state.zoom);
-      const factor=area?(area.maxX-area.minX)*state.zoom/Math.max(150,host.clientWidth):0;
+      const factor=area?(area.maxX-area.minX)*Math.pow(state.zoom,.55)/Math.max(150,host.clientWidth):0;
       const right=new THREE.Vector3(1,0,0).applyQuaternion(rotation);
       const up=new THREE.Vector3(0,1,0).applyQuaternion(rotation);
       state.offset.addScaledVector(right,-dx*factor).addScaledVector(up,dy*factor);
