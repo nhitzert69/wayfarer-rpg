@@ -1,3 +1,12 @@
+# Wayfarer v3.0.50 — Stage 1 daytime lighting and shading (2026-10-31)
+
+- Created requested backup branch `backup-2026-10-31-pre-lighting-stage1` at v3.0.49 commit `b863951e45efc6439ac001a0c1a3e73e81b673e1` before changing source.
+- Enabled ACES filmic tone mapping with exposure 1.12 and retained sRGB output.
+- Balanced hemisphere fill to a cooler sky and warmer ground with intensity 1.05, and set a single warm directional sun to intensity 2.0 for illumination and shadows rather than overlapping two key lights.
+- Preserved existing 2048² PCF soft-shadow mapping, local Town Hall-following frustum and shadow direction; softened radius to 3 and adjusted normal bias to 0.002.
+- No model, material asset, terrain geometry, building placement, save, login or Sandbox edits.
+- Validation: GitHub edits and source-level inspection PASS; live WebGL lighting/shadows, material appearance, FPS and mobile device behavior INCONCLUSIVE pending browser testing.
+
 # Wayfarer v3.0.49 — correct swapped Barracks and Military Camp visuals (2026-10-31)
 
 - Corrected uploaded GLB assignments: the red-roofed barracks model is stored as `military camp level 1.glb`, while the tent-filled military camp model is stored as `barracks level 1.glb`.
