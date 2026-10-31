@@ -11,6 +11,13 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Starting buildings, placement and Sandbox v3.0.47 (2026-10-31)
+- Start with Town Hall 50 × 30 m, Barracks 40 × 30 m and Military Camp 60 × 40 m, with the latter two near the Town Hall.
+- Underlay each building with repeated BuildingsTerrain GLB tiles clipped to the building's rectangular plot. Use the existing 250 × 250 placement grid; invalid overlaps must turn the grid red and disable confirmation.
+- Barracks and Military Camp can be sold for 1,000 gold, 150 wood, 100 stone each and rebuilt for 1,250 gold, 200 wood, 150 stone each. Town Hall is not sellable.
+- Sandbox uses an in-memory snapshot of the live game resources and building state; sandbox selling, buying, moving and rotating must never modify live storage. Exiting Sandbox discards test changes. Live data remains locally account-scoped; this release does not add cloud persistence.
+- Preserve existing Town Hall placement by migrating the previous local save on first building-state write; retain account isolation and original camera behavior.
+
 ## Buildings directory v3.0.46 (2026-10-31)
 - Rename `models/buildings level 1/` to `models/buildings/` while retaining `level one/` and all existing GLB bytes. Update the Town Hall model loader accordingly; placement, scaling, saved positions and rotation remain unchanged.
 
