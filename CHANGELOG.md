@@ -1,3 +1,11 @@
+# Wayfarer v3.0.49 — correct swapped Barracks and Military Camp visuals (2026-10-31)
+
+- Corrected uploaded GLB assignments: the red-roofed barracks model is stored as `military camp level 1.glb`, while the tent-filled military camp model is stored as `barracks level 1.glb`.
+- Swapped model loader paths without changing gameplay IDs, saved positions, building prices, plot dimensions, or account/Sandbox isolation.
+- Removed the mistaken 90° model rotation and nonuniform X/Z stretching. Both models now retain their original proportions and fit within their designated 40 × 30 and 60 × 40 m plots.
+- Town Hall loading, sizing and terrain unchanged.
+- Validation: GitHub changes PASS; live rendering, exact visual-to-ground border fit and mobile interaction INCONCLUSIVE pending user test.
+
 # Wayfarer v3.0.48 — terrain footprint, floating tile and Military Camp scale corrections (2026-10-31)
 
 - Sized building visuals to their 50 × 30 m, 40 × 30 m and 60 × 40 m plots to eliminate excessive rectangular dirt borders; geometry is unchanged but X/Z presentation scale is adjusted.
