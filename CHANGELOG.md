@@ -1,3 +1,10 @@
+# Wayfarer v3.0.69 — road stone edges and authored ground shading (2026-10-31)
+
+- Added stone edging along both sides of generated road texture, following the road's spline UVs around curves.
+- Corrected shadow configuration so building ground Plane/BuildingGround meshes receive shadows but do not cast them; building meshes continue casting shadows.
+- Added UV edge-feathering for ground planes with mapped textures to soften the transition into surrounding terrain.
+- No building model, save, collision or placement changes. Updated cache and module versions. Browser validation pending.
+
 # Wayfarer v3.0.68 — fix missing legacy building terrain asset (2026-10-31)
 
 - Removed the startup fetch for deleted TerrainTiles/BuildingsTerrain.glb, which caused a 404 and prevented the map from loading.
