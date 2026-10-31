@@ -151,16 +151,18 @@ export async function startTerrain(host, placement={}) {
   resizeCamera();updateCamera();
 
   // Town Hall Level 1: placement is scoped to the playable square, not the decorative mountains.
-  const hall=await loadGameModel("./models/townhall/Level1/human-townhall.fbx");
+  const hall=await loadGameModel("./models/townhall/level one/townhall%2520level%25201%2520compressed.glb");
   const playBox=new THREE.Box3().setFromObject(playable||model);
   if(!playable||playBox.isEmpty())throw new Error("Playable_Area missing: Town Hall placement needs the authored playable square.");
   const playSize=playBox.getSize(new THREE.Vector3()),playCenter=playBox.getCenter(new THREE.Vector3());
   const divisions=250; // 4 gameplay metres per placement cell on the 1,000 m map.
   const cell=Math.min(playSize.x,playSize.z)/divisions;
   const hallBox=new THREE.Box3().setFromObject(hall);
-  if(hallBox.isEmpty())throw new Error("Town Hall FBX contains no visible geometry.");
+  if(hallBox.isEmpty())throw new Error("Town Hall GLB contains no visible geometry.");
   const hallSize=hallBox.getSize(new THREE.Vector3());
-  const hallScale=Math.min(playSize.x*.03/Math.max(hallSize.x,.0001),playSize.z*.03/Math.max(hallSize.z,.0001));
+  // 50 × 30 gameplay metres: preserve model proportions and fit inside the footprint.
+  const hallFootprintX=playSize.x*.05,hallFootprintZ=playSize.z*.03;
+  const hallScale=Math.min(hallFootprintX/Math.max(hallSize.x,.0001),hallFootprintZ/Math.max(hallSize.z,.0001));
   hall.scale.multiplyScalar(hallScale);
   hall.updateMatrixWorld(true);
   const scaledBox=new THREE.Box3().setFromObject(hall);
@@ -169,7 +171,8 @@ export async function startTerrain(host, placement={}) {
   hall.position.sub(new THREE.Vector3((scaledBox.min.x+scaledBox.max.x)/2,scaledBox.min.y,(scaledBox.min.z+scaledBox.max.z)/2));
   hallRoot.add(hall);hallRoot.rotation.y=Math.PI;scene.add(hallRoot);
   hallRoot.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
-  const halfX=(scaledBox.max.x-scaledBox.min.x)/2,halfZ=(scaledBox.max.z-scaledBox.min.z)/2;
+  // Reserve the full 50 × 30 m rectangular plot even when the visible mesh is narrower.
+  const halfX=hallFootprintX/2,halfZ=hallFootprintZ/2;
   // Fit the shadow camera to the actual scaled building (including its tall towers).
   // Recenter whenever the Town Hall is moved, so distant placements keep crisp shadows.
   const hallHeight=scaledBox.max.y-scaledBox.min.y;
@@ -195,9 +198,9 @@ export async function startTerrain(host, placement={}) {
     THREE.MathUtils.clamp(playCenter.z+Math.round((z-playCenter.z)/cell)*cell,playCenter.z-limit.z,playCenter.z+limit.z)
   );};
   const saved=placement.read?.();
-  const initial=saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)?snap(saved.x,saved.z):snap(playCenter.x,playCenter.z);
   if(saved?.rotation===1)hallRoot.rotation.y=Math.PI*.5;
-  hallRoot.position.copy(snap(initial.x,initial.z));
+  const initial=saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)?snap(saved.x,saved.z):snap(playCenter.x,playCenter.z);
+  hallRoot.position.copy(initial);
   const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),divisions,0x7eff68,0xb4ff94);
   grid.position.set(playCenter.x,playBox.max.y+.07,playCenter.z);
   grid.material.transparent=true;grid.material.opacity=.98;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
