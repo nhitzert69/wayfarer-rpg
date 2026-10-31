@@ -236,9 +236,9 @@ export async function startTerrain(host, placement={}) {
     // collision plot. Tailor dirt bounds in grid-cell increments per building.
     // Offsets are in unrotated local plot coordinates and rotate with the root.
     const dirtAdjust={
-      townhall:{left:-1,right:-1.5,front:0,back:1},
-      camp:{left:0,right:0.5,front:0,back:-0.2},
-      barracks:{left:1,right:-0.25,front:0,back:-0.5}
+      townhall:{left:0.5,right:-2.5,front:1,back:-1},
+      camp:{left:-1,right:1.5,front:-1,back:1},
+      barracks:{left:-0.5,right:1,front:-1,back:1}
     }[def.id];
     const dirtStep=cell;
     const dirtLeft=-def.w*unit/2+dirtAdjust.left*dirtStep;
