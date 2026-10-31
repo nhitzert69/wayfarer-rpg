@@ -287,7 +287,7 @@ export async function startTerrain(host, placement={}) {
     const chosen=sides[0];
     const bounds=new THREE.Box3().setFromObject(marker);
     const width=bounds.isEmpty()?3*unit:THREE.MathUtils.clamp(Math.max(bounds.max.x-bounds.min.x,bounds.max.z-bounds.min.z),2*unit,5*unit);
-    return {point:new THREE.Vector3(chosen.x,groundLevel+.019,chosen.z),width};
+    return {point:new THREE.Vector3(chosen.x,groundLevel+.019,chosen.z),door:new THREE.Vector3(center.x,groundLevel+.019,center.z),width};
   };
   const clearRoads=()=>{
     for(const child of [...roadLayer.children]){roadLayer.remove(child);child.geometry?.dispose();}
@@ -340,13 +340,16 @@ export async function startTerrain(host, placement={}) {
         Math.abs((points[i+1].x-p.x)*(p.z-points[i-1].z)-(points[i+1].z-p.z)*(p.x-points[i-1].x))>1e-8);
     };
     const drawSegment=(a,b,width)=>{
-      const distance=a.distanceTo(b);if(distance<.0001)return;
+      const dx=b.x-a.x,dz=b.z-a.z,distance=Math.hypot(dx,dz);
+      if(distance<.00001)return;
+      // PlaneGeometry lies in local XY; rotate into XZ, then rotate ABOUT WORLD Y.
+      // Previous Euler Y rotation after X tilt caused diagonal and upright strips.
       const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,distance),roadMaterials[0]);
+      mesh.rotation.order="YXZ";
       mesh.rotation.x=-Math.PI/2;
-      mesh.rotation.z=0;
-      mesh.rotation.y=-Math.atan2(b.z-a.z,b.x-a.x)+Math.PI/2;
-      mesh.position.copy(a).add(b).multiplyScalar(.5);
-      mesh.position.y=groundLevel+.021;
+      mesh.rotation.y=Math.atan2(-dx,dz);
+      mesh.position.set((a.x+b.x)/2,groundLevel+.022,(a.z+b.z)/2);
+      mesh.material.side=THREE.DoubleSide;
       mesh.receiveShadow=true;mesh.castShadow=false;roadLayer.add(mesh);
     };
     for(const item of buildings){
@@ -355,7 +358,11 @@ export async function startTerrain(host, placement={}) {
       const path=route(start.point,end.point);
       if(!path.length)continue;
       const width=Math.min(start.width,end.width,3.5*unit);
+      // Connect the authored doorway to the outside road path at both ends.
+      drawSegment(start.door,start.point,width);
       for(let i=1;i<path.length;i++)drawSegment(path[i-1],path[i],width);
+      drawSegment(path[path.length-1],end.point,width);
+      drawSegment(end.point,end.door,width);
     }
   };
   updateRoads();
