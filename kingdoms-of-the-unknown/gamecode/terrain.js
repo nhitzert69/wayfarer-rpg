@@ -258,6 +258,25 @@ export async function startTerrain(host, placement={}) {
     root.visible=item.present;
     buildings.push(item);
   }
+  const templates=new Map(buildings.map(item=>[item.id,item]));
+  let nextInstance=1;
+  const cloneBuilding=(base,id,stored=null)=>{
+    const root=base.root.clone(true),entrances=[];
+    root.traverse(node=>{if(/^entr(?:ance|ence)/i.test(node.name))entrances.push(node);});
+    const item={...base,id,templateId:base.id,root,floor:root.children[1],entrances,
+      present:stored?.present!==false,rotation:stored?.rotation===1?1:0,finishAt:Number(stored?.finishAt)||0};
+    root.rotation.y=item.rotation?Math.PI*.5:Math.PI;
+    root.position.set(Number.isFinite(stored?.x)?stored.x:base.root.position.x+nextInstance*cell*2,
+      groundLevel+.015,Number.isFinite(stored?.z)?stored.z:base.root.position.z+nextInstance*cell*2);
+    root.visible=item.present;scene.add(root);buildings.push(item);
+    return item;
+  };
+  for(const [id,stored] of Object.entries(positions)){
+    const match=/^(barracks|camp)-copy-(\\d+)$/.exec(id);
+    if(!match||!templates.has(match[1]))continue;
+    nextInstance=Math.max(nextInstance,Number(match[2])+1);
+    cloneBuilding(templates.get(match[1]),id,stored);
+  }
   const dims=item=>item.rotation?{x:item.d*unit,z:item.w*unit}:{x:item.w*unit,z:item.d*unit};
   const snap=(item,x,z)=>{
     const dim=dims(item);
