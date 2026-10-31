@@ -1,12 +1,12 @@
 // Kingdoms of the Unknown — standalone Three.js terrain viewer.
 // Uses browser ES modules; does not depend on Wayfarer state.
 const THREE_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-const LOADER_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/FBXLoader.js";
+const LOADER_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
 // CDN addons import "three" as a bare specifier, resolved by the game's import map.
 export async function startTerrain(host) {
   const THREE=await import("three");
-  const {FBXLoader}=await import(LOADER_URL);
-  const terrainFile="./models/terrain/Playmap/terrain_kingdoms.fbx";
+  const {GLTFLoader}=await import(LOADER_URL);
+  const terrainFile="./models/terrain/Playmap/terrain_kingdoms.glb";
   const scene=new THREE.Scene();
   // Procedural starfield behind the terrain, with no external asset dependency.
   const skyCanvas=document.createElement("canvas");
@@ -32,25 +32,26 @@ export async function startTerrain(host) {
   
   scene.add(new THREE.HemisphereLight(0xe9f1ff,0x515049,2));
   const sun=new THREE.DirectionalLight(0xffe7c7,2.2);sun.position.set(200,450,260);scene.add(sun);
-  const loader=new FBXLoader();
-  const model=await loader.loadAsync(terrainFile);
-  // The new single map uses materials embedded in its FBX.
-  // The replacement arena FBX includes its own rectangular ground surface.
+  const loader=new GLTFLoader();
+  const gltf=await loader.loadAsync(terrainFile);
+  const model=gltf.scene;
+  // GLB preserves supported Blender PBR materials and packed textures.
+  // The single arena includes its own rectangular ground surface.
   // Keep the exported orientation and avoid loading obsolete separate floors.
   scene.add(model);
   model.updateMatrixWorld(true);
   const cameras=[];
   model.traverse(node=>{if(node.isCamera)cameras.push(node);});
-  if(!cameras.length)throw new Error("No Blender camera in terrain FBX. Export the Camera together with the terrain and upload the FBX again.");
+  if(!cameras.length)throw new Error("No Blender camera in terrain GLB. In Blender export glTF Binary (.glb) with Cameras enabled, then upload terrain_kingdoms.glb.");
   const source=cameras.find(c=>c.name.toLowerCase()==="camera")||cameras[0];
   source.updateWorldMatrix(true,false);
   const camera=source.clone();
   source.matrixWorld.decompose(camera.position,camera.quaternion,camera.scale);
   camera.scale.set(1,1,1);
-  // FBX camera forward axes can differ from Three.js. Aim at the playable area.
+  // GLB camera axes are defined consistently with Three.js; retain Blender orientation.
   const playable=model.getObjectByName("Playable_Area")||model.getObjectByName("Playable Area");
   const targetBounds=new THREE.Box3().setFromObject(playable||model);
-  camera.lookAt(targetBounds.getCenter(new THREE.Vector3()));
+  // Keep the authored camera rotation, including its intentional framing.
   const origin=camera.position.clone(),rotation=camera.quaternion.clone(),baseZoom=camera.zoom||1;
   const orthoHeight=camera.isOrthographicCamera?camera.top-camera.bottom:0;
   const orthoCenterX=camera.isOrthographicCamera?(camera.left+camera.right)/2:0;
