@@ -481,7 +481,12 @@ export async function startTerrain(host, placement={}) {
   };
   placement.setBuildHandler?.(id=>{
     const item=buildings.find(b=>b.id===id);
-    if(!item||item.present||moving)return false;
+    if(!placement.sandboxOptions?.()?.active||moving||!item)return false;
+    if(item.present){
+      if(!placement.sandboxOptions?.()?.unlimited)return false;
+      const copy=cloneBuilding(item,id+"-copy-"+nextInstance++);
+      copy.present=false;copy.root.visible=false;beginMove(copy,true);return true;
+    }
     beginMove(item,true);return true;
   });
   const refreshCatalog=()=>placement.refreshBuild?.(buildings.map(item=>({id:item.id,name:item.name,present:item.present})));
