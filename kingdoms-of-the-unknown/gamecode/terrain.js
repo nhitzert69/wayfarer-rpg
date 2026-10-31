@@ -65,6 +65,9 @@ export async function startTerrain(host) {
   const targetBounds=new THREE.Box3().setFromObject(playable||model);
   // Keep the authored camera rotation, including its intentional framing.
   const origin=camera.position.clone(),rotation=camera.quaternion.clone(),baseZoom=camera.zoom||1;
+  // Blender authored frame is 16:9. Wider viewports must crop, not reveal terrain outside it.
+  const authoredAspect=16/9;
+  let viewportCrop=1;
   const orthoHeight=camera.isOrthographicCamera?camera.top-camera.bottom:0;
   const orthoCenterX=camera.isOrthographicCamera?(camera.left+camera.right)/2:0;
   const orthoCenterY=camera.isOrthographicCamera?(camera.top+camera.bottom)/2:0;
@@ -73,6 +76,7 @@ export async function startTerrain(host) {
   const state={zoom:1,offset:new THREE.Vector3()},zoomMin=1,zoomMax=5.25;
   const resizeCamera=()=>{
     const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
+    viewportCrop=Math.max(1,aspect/authoredAspect);
     if(camera.isPerspectiveCamera)camera.aspect=aspect;
     if(camera.isOrthographicCamera){
       camera.left=orthoCenterX-orthoHeight*aspect/2;camera.right=orthoCenterX+orthoHeight*aspect/2;
@@ -82,7 +86,7 @@ export async function startTerrain(host) {
   };
   const footprint=(position,zoom)=>{
     const probe=camera.clone();probe.position.copy(position);probe.quaternion.copy(rotation);
-    probe.zoom=baseZoom*zoom;probe.updateProjectionMatrix();probe.updateMatrixWorld(true);
+    probe.zoom=baseZoom*viewportCrop*zoom;probe.updateProjectionMatrix();probe.updateMatrixWorld(true);
     const ray=new THREE.Raycaster(),hits=[];
     for(const x of [-1,1])for(const y of [-1,1]){
       ray.setFromCamera(new THREE.Vector2(x,y),probe);
@@ -97,7 +101,7 @@ export async function startTerrain(host) {
   };
   const updateCamera=()=>{
     camera.position.copy(origin).add(state.offset);camera.quaternion.copy(rotation);
-    camera.zoom=baseZoom*state.zoom;camera.updateProjectionMatrix();
+    camera.zoom=baseZoom*viewportCrop*state.zoom;camera.updateProjectionMatrix();
     const outer=footprint(origin,1),inner=footprint(camera.position,state.zoom);
     if(outer&&inner){
       const dx=Math.max(outer.minX-inner.minX,Math.min(outer.maxX-inner.maxX,0));
