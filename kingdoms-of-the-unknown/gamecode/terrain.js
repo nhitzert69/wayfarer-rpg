@@ -139,7 +139,7 @@ export async function startTerrain(host, placement={}) {
   const saved=placement.read?.();
   const initial=saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)?snap(saved.x,saved.z):snap(playCenter.x,playCenter.z);
   hallRoot.position.copy(initial);
-  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),25,0x7eff68,0xb4ff94);
+  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),50,0x7eff68,0xb4ff94);
   grid.position.set(playCenter.x,playBox.max.y+.07,playCenter.z);
   grid.material.transparent=true;grid.material.opacity=.98;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
   const gridFill=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(playSize.x,playSize.z),Math.min(playSize.x,playSize.z)),new THREE.MeshBasicMaterial({color:0x54ed5b,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide}));
