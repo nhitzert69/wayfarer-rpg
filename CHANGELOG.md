@@ -1,3 +1,11 @@
+# Wayfarer v3.0.40 — finer Town Hall placement and camera controls (2026-10-31)
+
+- Town Hall placement grid increased to 250 × 250 divisions (4 gameplay metres per cell) with matching snapping and rotated footprint bounds.
+- Added a 90° Rotate button in movement mode, toggling southeast/southwest; confirm saves position and rotation, cancel restores both. Existing position-only saves default to original orientation; account and Sandbox storage remain isolated.
+- Increased initial zoom to 5× while retaining maximum 20× and Blender-authored minimum 1×; tuned panning to gradually slow with zoom without the excessive slowdown of the earlier implementation.
+- Enlarged Town Hall touch-selection target without changing model size or geometry. Terrain texture not modified.
+- Validation: source updated in GitHub; live gameplay, mobile gestures, orientation appearance and deployed cache still require browser verification.
+
 # Wayfarer v3.0.39 — realistic Town Hall and closer camera (2026-10-31)
 
 - Reduced Level 1 Human Town Hall maximum footprint from 8.5% to 3% of the playable area width (30 × 30 game-world metres maximum), preserving its aspect ratio and saved position.
