@@ -192,7 +192,18 @@ export async function startTerrain(host, placement={}) {
       tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
       // Root sits 0.015 above ground; place the tile top just 0.001 above ground.
       tile.position.y=-floorBox.max.y*tile.scale.y-.014;
-      tile.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=false;}});
+      // Preserve the same texel density on partial edge tiles as on full tiles.
+      // Each clone gets its own geometry so the source GLB and neighboring tiles stay untouched.
+      tile.traverse(node=>{
+        if(!node.isMesh)return;
+        node.receiveShadow=true;node.castShadow=false;
+        if(!node.geometry?.attributes?.uv)return;
+        node.geometry=node.geometry.clone();
+        const uv=node.geometry.attributes.uv;
+        const repeatX=tw/tileSpan,repeatZ=td/tileSpan;
+        for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*repeatX,uv.getY(i)*repeatZ);
+        uv.needsUpdate=true;
+      });
       group.add(tile);
     }
     return group;
