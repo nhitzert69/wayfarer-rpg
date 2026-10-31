@@ -1,3 +1,10 @@
+# Wayfarer v3.0.41 — playable-area colour grading and northwest shadows (2026-10-31)
+
+- Applied subtle shader-based 7% desaturation and 3% brightness reduction exclusively to meshes within `Playable_Area`; original texture files, UVs, other terrain materials and Town Hall materials are unchanged.
+- Enabled soft shadow mapping; added southeast directional lighting on a dedicated render layer for playable ground and Town Hall, with Town Hall casting northwest-directed shadows onto the playable area. Decorative mountains and forests are excluded from the new light layer.
+- Preserved Town Hall scale, placement/rotation persistence, grid, zoom, pan and authentication behavior.
+- Validation: GitHub code update and source syntax check; live shadow appearance, performance and material-specific shader compatibility require browser verification.
+
 # Wayfarer v3.0.40 — finer Town Hall placement and camera controls (2026-10-31)
 
 - Town Hall placement grid increased to 250 × 250 divisions (4 gameplay metres per cell) with matching snapping and rotated footprint bounds.
