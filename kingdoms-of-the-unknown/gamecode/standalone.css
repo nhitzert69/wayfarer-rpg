@@ -94,3 +94,7 @@ html,body{position:fixed;inset:0;width:100%;height:100%;height:100dvh;max-width:
 .kotu-build-catalog{display:grid;gap:8px;max-height:35vh;overflow:auto}
 .kotu-build-catalog button{font:700 13px/1.3 system-ui;text-align:left}
 .kotu-build-panel{width:min(320px,80vw)}
+
+/* v3.0.72: separate cinematic loading artwork from the login title. */
+.terrain-loading{background:linear-gradient(180deg,#05050945,#05050999),url('../images/titlecreens/Lanterns%20Beneath%20the%20Ominous%20Castle.png') center center/cover no-repeat #090a0d}
+.terrain-loading-card{background:#100d0cdb;backdrop-filter:blur(5px)}

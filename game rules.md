@@ -211,3 +211,7 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.71 title artwork organization
 - Keep Kingdoms title/login artwork inside kingdoms-of-the-unknown/images/titlecreens. When moving an image, update CSS and service-worker precache references in the same commit, and bump cache version. Preserve existing login behavior; the separate Lanterns image is reserved for loading-screen integration.
+
+## v3.0.72 road placement and cinematic loading
+- Roads draw above imported ground Plane meshes with a small depth bias and below building meshes/steps; preserve depth testing, building shadows, and entrance marker positions. Taper road width at both ends toward each entrance's authored or fallback opening width. Never change gameplay collision footprints or saved placements to adjust visual road widths.
+- Display Lanterns Beneath the Ominous Castle.png only while the standalone map is loading, keeping the separate login title image intact. Update service-worker cache and versioned standalone assets together.

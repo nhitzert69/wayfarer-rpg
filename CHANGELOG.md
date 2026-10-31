@@ -1,3 +1,11 @@
+# Wayfarer v3.0.72 — road layering, entrance aprons and loading screen (2026-10-31)
+
+- Created backup branch backup-2026-10-31-v3.0.71 at starting commit 1aeabb799af1854e307ea6b5c8bf39256742e2ec before changes.
+- Rendered road surfaces above authored ground planes and below buildings using depth-tested geometry, render order and material depth bias.
+- Widened road ends near entrances and smoothly tapered them to normal lane width; reads authored entrance marker scale when available.
+- Added the existing Lanterns Beneath the Ominous Castle artwork as the map-loading overlay background, without changing the login screen.
+- Updated service-worker cache and standalone CSS/JS version identifiers to v3.0.72. Live browser validation pending.
+
 # Wayfarer v3.0.71 — organize Kingdoms title-screen images (2026-10-31)
 
 - Moved existing Kingdoms login/title artwork from shared assets/images to kingdoms-of-the-unknown/images/titlecreens without changing its binary contents.

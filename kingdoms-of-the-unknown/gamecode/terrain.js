@@ -210,6 +210,17 @@ export async function startTerrain(host, placement={}) {
       const isGround=/^Plane(?:\\.|$)/i.test(node.name)||/^BuildingGround/i.test(node.name);
       node.castShadow=!isGround;
       node.receiveShadow=true;
+      if(isGround){
+        node.renderOrder=0;
+        const setup=m=>{
+          const material=m.clone();
+          material.polygonOffset=true;
+          material.polygonOffsetFactor=2;
+          material.polygonOffsetUnits=2;
+          return material;
+        };
+        node.material=Array.isArray(node.material)?node.material.map(setup):setup(node.material);
+      }else node.renderOrder=2;
     });
     scene.add(root);
     const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
@@ -312,7 +323,11 @@ export async function startTerrain(host, placement={}) {
     ].sort((a,b)=>a.score-b.score);
     const chosen=sides[0];
     const bounds=new THREE.Box3().setFromObject(marker);
-    const width=bounds.isEmpty()?3*unit:THREE.MathUtils.clamp(Math.max(bounds.max.x-bounds.min.x,bounds.max.z-bounds.min.z),2*unit,5*unit);
+    const worldScale=marker.getWorldScale(new THREE.Vector3());
+    const boxWidth=bounds.isEmpty()?0:Math.max(bounds.max.x-bounds.min.x,bounds.max.z-bounds.min.z);
+    // Empty marker scale is an optional authored doorway width. Use a generous
+    // entrance apron even for zero-size empties.
+    const width=THREE.MathUtils.clamp(Math.max(boxWidth,Math.abs(worldScale.x),5*unit),5*unit,11*unit);
     return {point:new THREE.Vector3(chosen.x,groundLevel+.019,chosen.z),door:new THREE.Vector3(center.x,groundLevel+.019,center.z),width};
   };
   const clearRoads=()=>{
@@ -365,7 +380,7 @@ export async function startTerrain(host, placement={}) {
       return points.filter((p,i)=>i===0||i===points.length-1||
         Math.abs((points[i+1].x-p.x)*(p.z-points[i-1].z)-(points[i+1].z-p.z)*(p.x-points[i-1].x))>1e-8);
     };
-    const drawTrail=(points,width)=>{
+    const drawTrail=(points,width,startWidth,endWidth)=>{
       if(points.length<2)return;
       // Smooth a routed centreline while keeping the authored entrance positions.
       const curve=new THREE.CatmullRomCurve3(points,false,"centripetal",.3);
@@ -377,9 +392,12 @@ export async function startTerrain(host, placement={}) {
         const lateral=new THREE.Vector3(-tangent.z,0,tangent.x).normalize();
         // Subtle irregular edges, with no sharp zigzags.
         const wobble=(Math.sin(u*67+1.7)*.055+Math.sin(u*129)*.025)*width;
-        const spread=width*(.5+Math.sin(u*51)*.025);
+        const taper=Math.max(roadGridStep*3,8*unit);
+        const smooth=t=>{const x=THREE.MathUtils.clamp(t,0,1);return x*x*(3-2*x);};
+        const localWidth=Math.max(width,startWidth*(1-smooth(u*length/taper)),endWidth*(1-smooth((1-u)*length/taper)));
+        const spread=localWidth*(.5+Math.sin(u*51)*.025);
         for(const side of [-1,1]){
-          positions.push(p.x+lateral.x*(side*spread+wobble),groundLevel+.024,p.z+lateral.z*(side*spread+wobble));
+          positions.push(p.x+lateral.x*(side*spread+wobble),groundLevel+.031,p.z+lateral.z*(side*spread+wobble));
           uvs.push(side===-1?0:1,u*length/Math.max(width,.001));
         }
         if(i<count){const k=i*2;indices.push(k,k+2,k+1,k+1,k+2,k+3);}
@@ -389,7 +407,7 @@ export async function startTerrain(host, placement={}) {
       geometry.setAttribute("uv",new THREE.Float32BufferAttribute(uvs,2));
       geometry.setIndex(indices);geometry.computeVertexNormals();
       const mesh=new THREE.Mesh(geometry,roadMaterials[0]);
-      mesh.receiveShadow=true;mesh.castShadow=false;roadLayer.add(mesh);
+      mesh.receiveShadow=true;mesh.castShadow=false;mesh.renderOrder=1;roadLayer.add(mesh);
     };
     for(const item of buildings){
       if(item===hall||!item.present)continue;
@@ -399,7 +417,7 @@ export async function startTerrain(host, placement={}) {
       const width=Math.min(start.width,end.width,3.5*unit);
       const points=[start.door,start.point,...path.slice(1,-1),end.point,end.door];
       const clean=points.filter((p,i)=>i===0||p.distanceTo(points[i-1])>.00001);
-      drawTrail(clean,width);
+      drawTrail(clean,width,start.width,end.width);
     }
   };
   updateRoads();
