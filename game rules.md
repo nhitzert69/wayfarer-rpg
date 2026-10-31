@@ -11,6 +11,11 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Military Camp footprint and dirt-tile shadow fix v3.0.56 (2026-10-31)
+- Set the Military Camp placement footprint to 45 × 35 gameplay metres (previously 60 × 40), preserving uniform imported-model scaling and existing camp rotation, save keys, placement and economy.
+- Do not allow BuildingsTerrain dirt tiles to cast or receive shadows. Apply shadow casting only to the building visual, not the combined root group containing floor tiles. Preserve building-to-playable-ground shadows.
+- Previously saved building centres remain intact, subject to existing snap/clamp logic. Check collisions and shadows in a live browser.
+
 ## New Military Camp GLB v3.0.55 (2026-10-31)
 - Load the user-uploaded compressed Military Camp asset stored with literal percent signs as `military%20camp%20model%20level%201.glb`; URL-encode each percent sign as `%25` in the loader path.
 - Preserve camp gameplay ID, 60 x 40 placement bounds, visual rotation, uniform scaling, dirt tiles, collisions, economy, save state and Sandbox isolation. Live WebGL visual validation is required.
