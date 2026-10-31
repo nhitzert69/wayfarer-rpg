@@ -1,3 +1,9 @@
+# Wayfarer v3.0.31 — Kingdoms 10-metre playable-area authoring rule (2026-10-31)
+
+- Documented the new Greek map authoring reference: a 10 × 10 Blender-metre `Playable_Area` representing a logical 1 × 1 km kingdom, with explicit 1:100 model-to-gameplay metre conversion.
+- Clarified consistent future scaling for buildings, units, scenery, placement grids and camera bounds; forest and mountains remain outside the buildable area. No game logic, meshes, saved data or gameplay camera changed.
+- Validation: documentation and version/cache metadata updated in repository; live FBX dimensions, browser rendering and placement behavior not tested.
+
 # Wayfarer v3.0.30 — Rectangular replacement arenas (2026-10-30)
 
 - Renamed all 3 replacement arena FBX files and 12 associated PNG textures to concise faction-specific names without altering binary contents or reducing quality.
