@@ -1,3 +1,9 @@
+# Wayfarer v3.0.64 — road orientation and doorway connections (2026-10-31)
+
+- Corrected road plane Euler rotation order so road strips lie flat on the XZ terrain instead of forming diagonal or upright panels.
+- Extended generated road segments to actual authored entrance marker positions at both ends.
+- Updated service worker cache and standalone module version identifiers to v3.0.64. Live browser visual validation pending.
+
 # Wayfarer v3.0.63 — full building dirt plots and closer placement (2026-10-31)
 
 - Fill full reserved gameplay plots with dirt underlays for all three buildings, instead of fitting dirt to visual model bounds.
