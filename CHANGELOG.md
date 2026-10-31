@@ -1,3 +1,9 @@
+# Wayfarer v3.0.42 — correct Town Hall rotation direction (2026-10-31)
+
+- Reversed the Town Hall's 90° alternate orientation: Rotate now switches between the original southeast-facing direction and the opposite quarter-turn toward southwest, rather than the previous incorrect turn.
+- Existing saved rotation flag remains compatible; saved rotated buildings now load at the corrected orientation. Position, placement grid, camera, lighting and account isolation are unchanged.
+- Validation: GitHub source edit and JavaScript syntax check; live directional appearance remains unverified.
+
 # Wayfarer v3.0.41 — playable-area colour grading and northwest shadows (2026-10-31)
 
 - Applied subtle shader-based 7% desaturation and 3% brightness reduction exclusively to meshes within `Playable_Area`; original texture files, UVs, other terrain materials and Town Hall materials are unchanged.
