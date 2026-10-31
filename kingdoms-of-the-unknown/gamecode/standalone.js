@@ -11,7 +11,7 @@ window.addEventListener("resize",updateOrientation);
 updateOrientation();
 let client=null,mode="login",cleanup=null,activeUser=null,loadGeneration=0;
 
-let sandboxActive=false;
+let sandboxActive=false,sandboxSnapshot=null,buildHandler=null,buildItems=[];
 const allowedDebugNames=new Set(["admin","chatgpt"]);
 const authenticatedName=user=>{
   const email=String(user?.email||"").toLowerCase();
@@ -31,6 +31,7 @@ function refreshDebug(){
 }
 function setSandbox(enabled){
   if(!debugAllowed()||sandboxActive===enabled)return;
+  if(enabled){sandboxSnapshot={resources:readResources("live"),buildings:readBuildings("live")};}else{sandboxSnapshot=null;}
   sandboxActive=enabled;
   refreshDebug();renderResources();closeBuild();
   if(!$("world").hidden)enterWorld();
@@ -40,6 +41,37 @@ $("sandboxToggle").onclick=()=>setSandbox(!sandboxActive);
 
 
 const RESOURCE_NAMES=["gold","wood","stone","food"];
+const COST={gold:1250,wood:200,stone:150},REFUND={gold:1000,wood:150,stone:100};
+function readBuildings(kind){
+  try{return JSON.parse(localStorage.getItem(storageKey(kind+"-buildings-v1"))||"null");}catch{return null;}
+}
+function activeBuildings(){return sandboxActive?sandboxSnapshot?.buildings:readBuildings("live");}
+function saveBuildings(value){
+  if(sandboxActive){sandboxSnapshot.buildings=value;return;}
+  try{localStorage.setItem(storageKey("live-buildings-v1"),JSON.stringify(value));}
+  catch(error){window.alert("Could not save building positions: "+error.message);}
+}
+function currentResources(){return sandboxActive?sandboxSnapshot.resources:readResources("live");}
+function changeResources(delta){
+  const before=currentResources(),after={...before};
+  for(const [key,amount] of Object.entries(delta)){after[key]=(after[key]||0)+amount;if(after[key]<0)return false;}
+  if(sandboxActive)sandboxSnapshot.resources=after;
+  else {try{localStorage.setItem(storageKey("live-resources"),JSON.stringify(after));}catch{return false;}}
+  renderResources();renderBuild();return true;
+}
+function sellBuilding(){return changeResources(REFUND);}
+function buyBuilding(){return changeResources(Object.fromEntries(Object.entries(COST).map(([key,value])=>[key,-value])));}
+function renderBuild(){
+  const list=$("buildCatalog");if(!list)return;
+  list.replaceChildren();
+  for(const item of buildItems.filter(b=>!b.present&&b.id!=="townhall")){
+    const button=document.createElement("button");
+    button.type="button";button.textContent=item.name+" · 1,250 gold · 200 wood · 150 stone";
+    button.onclick=()=>{if(buildHandler?.(item.id))closeBuild();};
+    list.append(button);
+  }
+  if(!list.children.length){const note=document.createElement("p");note.textContent="All available buildings are already placed.";list.append(note);}
+}
 function readResources(kind){
   try{
     const raw=JSON.parse(localStorage.getItem(storageKey(kind+"-resources"))||"{}");
@@ -47,19 +79,19 @@ function readResources(kind){
   }catch{return Object.fromEntries(RESOURCE_NAMES.map(name=>[name,0]));}
 }
 function renderResources(){
-  const resources=activeUser?readResources(sandboxActive?"sandbox":"live"):Object.fromEntries(RESOURCE_NAMES.map(name=>[name,0]));
+  const resources=activeUser?currentResources():Object.fromEntries(RESOURCE_NAMES.map(name=>[name,0]));
   for(const name of RESOURCE_NAMES) $("resource"+name[0].toUpperCase()+name.slice(1)).textContent=resources[name].toLocaleString();
 }
 const buildToggle=$("buildToggle"),buildPanel=$("buildPanel");
 function closeBuild(){buildPanel.hidden=true;buildToggle.setAttribute("aria-expanded","false");}
-buildToggle.onclick=()=>{const opening=buildPanel.hidden;buildPanel.hidden=!opening;buildToggle.setAttribute("aria-expanded",String(opening));if(opening)closeGameMenu();};
+buildToggle.onclick=()=>{const opening=buildPanel.hidden;buildPanel.hidden=!opening;buildToggle.setAttribute("aria-expanded",String(opening));if(opening){closeGameMenu();renderBuild();}};
 $("buildClose").onclick=closeBuild;
 document.addEventListener("pointerdown",event=>{if(!event.target.closest(".kotu-build-ui"))closeBuild();});
 
 function message(text){status.textContent=text;}
 function showForm(create){mode=create?"create":"login";form.hidden=false;actions.hidden=true;ready.hidden=true;$("formTitle").textContent=create?"Create account":"Log in";$("pin").autocomplete=create?"new-password":"current-password";}
-function signedOut(){closeBuild();activeUser=null;sandboxActive=false;$("debugPanel").hidden=true;refreshDebug();renderResources();ready.hidden=true;form.hidden=true;actions.hidden=false;message("Log in or create an account to play.");}
-function signedIn(user){const changed=activeUser?.id!==user.id;activeUser=user;if(changed){sandboxActive=false;$("debugPanel").hidden=true;}refreshDebug();renderResources();form.hidden=true;actions.hidden=true;ready.hidden=false;$("welcome").textContent="Welcome, "+String(user.user_metadata?.wayfarer_username||user.email?.split("@")[0]||"Commander");message("Account ready.");}
+function signedOut(){sandboxSnapshot=null;closeBuild();activeUser=null;sandboxActive=false;$("debugPanel").hidden=true;refreshDebug();renderResources();ready.hidden=true;form.hidden=true;actions.hidden=false;message("Log in or create an account to play.");}
+function signedIn(user){const changed=activeUser?.id!==user.id;activeUser=user;if(changed){sandboxSnapshot=null;sandboxActive=false;$("debugPanel").hidden=true;}refreshDebug();renderResources();form.hidden=true;actions.hidden=true;ready.hidden=false;$("welcome").textContent="Welcome, "+String(user.user_metadata?.wayfarer_username||user.email?.split("@")[0]||"Commander");message("Account ready.");}
 $("showLogin").onclick=()=>showForm(false);
 $("showCreate").onclick=()=>showForm(true);
 $("cancelAuth").onclick=signedOut;
@@ -70,7 +102,7 @@ function closeGameMenu(){menuPanel.hidden=true;$("debugPanel").hidden=true;menuT
 menuToggle.onclick=()=>{const open=menuPanel.hidden;menuPanel.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));};
 document.addEventListener("pointerdown",event=>{if(!event.target.closest(".game-menu"))closeGameMenu();});
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeGameMenu();});
-$("back").onclick=()=>{closeBuild();loadGeneration++;$("terrainLoading").hidden=true;closeGameMenu();cleanup?.();cleanup=null;$("world").hidden=true;$("title").hidden=false;};
+$("back").onclick=()=>{closeBuild();loadGeneration++;$("terrainLoading").hidden=true;closeGameMenu();cleanup?.();cleanup=null;buildHandler=null;buildItems=[];$("world").hidden=true;$("title").hidden=false;};
 $("authForm").onsubmit=async e=>{
   e.preventDefault();
   if(!client)return message("Authentication service unavailable.");
@@ -92,7 +124,7 @@ async function enterWorld(){
   if(!activeUser)return;
   const generation=++loadGeneration;
   closeGameMenu();closeBuild();renderResources();
-  cleanup?.();cleanup=null;
+  cleanup?.();cleanup=null;buildHandler=null;buildItems=[];
   $("title").hidden=true;$("world").hidden=false;
   $("worldStatus").hidden=true;
   $("terrainLoading").hidden=false;
@@ -100,11 +132,18 @@ async function enterWorld(){
   try{
     const {startTerrain}=await import("./terrain.js");
     if(generation!==loadGeneration)return;
-    const placementKind=sandboxActive?"sandbox":"live";
-    const placementKey=storageKey(placementKind+"-townhall-level1");
+    const legacyKey=storageKey("live-townhall-level1");
     const dispose=await startTerrain($("world"),{
-      read:()=>{try{return JSON.parse(localStorage.getItem(placementKey)||"null");}catch{return null;}},
-      write:position=>localStorage.setItem(placementKey,JSON.stringify(position))
+      read:()=>{
+        const current=activeBuildings();
+        if(current)return current;
+        try{return JSON.parse(localStorage.getItem(legacyKey)||"null")||{};}catch{return {};}
+      },
+      write:saveBuildings,
+      sell:()=>{const ok=sellBuilding();if(ok)renderBuild();return ok;},
+      buy:()=>{const ok=buyBuilding();if(ok)renderBuild();return ok;},
+      setBuildHandler:handler=>{buildHandler=handler;},
+      refreshBuild:items=>{buildItems=items;renderBuild();}
     });
     if(generation!==loadGeneration){dispose();return;}
     cleanup=dispose;
