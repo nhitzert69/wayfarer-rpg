@@ -7,6 +7,13 @@
 - Kingdoms username/PIN sign-in may use the same Supabase Auth project as Wayfarer, but its runtime and session storage must remain separate and it must never access Wayfarer save tables or application globals.
 - Arena orientation: preserve exported model axes without arbitrary Y rotation. Three.js X is screen west/east, Z is screen north/south, and Y is elevation; camera azimuth must be axis-aligned. All three faction terrains should show the entrance toward the bottom center of the default screen. Check the orientation visually on all three maps; do not rely solely on a rotation constant. At minimum zoom, the camera must remain inside the mountain perimeter at supported viewport sizes; verify framing and pan limits in a live browser.
 
+## 0. Map authoring scale — 10 m playable square (2026-10-31)
+- The current Greek map's authoritative Blender `Playable_Area` is **10 × 10 Blender metres**. This replaces the earlier 256 × 256 m art-space assumption; do not automatically resize the authored terrain or forest.
+- The gameplay design target remains a **1,000 × 1,000 gameplay-metre** kingdom. For this map, **1 Blender metre = 100 gameplay metres** and **1 gameplay metre = 0.01 Blender metres**. This is a game-world conversion convention, not a claim that Blender geometry is physically life-sized.
+- All newly authored scenery, buildings, units, camera distances, collision footprints, navigation, and building-placement grids must use a consistent documented conversion. At a proposed 4 gameplay-metre grid interval, one cell spans **0.04 Blender metres** and the square has **250 × 250 logical cells**. This is a proposed grid, not yet implemented gameplay.
+- Preserve the `Playable_Area` object as the buildable-boundary marker; forests and mountains are decorative perimeter scenery outside it. Keep asset proportions visually readable at game camera distances rather than blindly shrinking already-authored models.
+- Do not assume the current Three.js viewer implements this scale. Before adding placement or unit movement, verify FBX export transforms and bounds, the playable mesh's actual dimensions, camera controls, and picking in the loaded game, then implement conversion explicitly.
+
 ## 1. Product direction and ownership
 - The game is named **Kingdoms of the Unknown**.
 - The game is intended to become independently deployable. Its architecture must not make Wayfarer a runtime requirement.
