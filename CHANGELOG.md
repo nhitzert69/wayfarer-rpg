@@ -1,3 +1,16 @@
+# Wayfarer v3.0.31 — Kingdoms 10-metre playable-area authoring rule (2026-10-31)
+
+- Documented the new Greek map authoring reference: a 10 × 10 Blender-metre `Playable_Area` representing a logical 1 × 1 km kingdom, with explicit 1:100 model-to-gameplay metre conversion.
+- Clarified consistent future scaling for buildings, units, scenery, placement grids and camera bounds; forest and mountains remain outside the buildable area. No game logic, meshes, saved data or gameplay camera changed.
+- Validation: documentation and version/cache metadata updated in repository; live FBX dimensions, browser rendering and placement behavior not tested.
+
+# Wayfarer v3.0.30 — Rectangular replacement arenas (2026-10-30)
+
+- Renamed all 3 replacement arena FBX files and 12 associated PNG textures to concise faction-specific names without altering binary contents or reducing quality.
+- Updated the standalone Kingdoms viewer to load the new integrated arena models; removed obsolete separate floor loading and 180° floor rotation.
+- Replaced oval camera target limits with independent rectangular X/Z clamps derived from model bounds and current zoom/viewport footprint. Preserved camera angle, zoom controls, input handling, and Wayfarer account data.
+- Validation: repository asset paths and source substitutions inspected; no live browser, mobile, or model-render verification performed. Binary model compression not performed because safe FBX recompression is unavailable through the GitHub connector.
+
 # Wayfarer v3.0.29 — Rotate stylized floors 180 degrees (2026-10-30)
 
 - Rotated all three new stylized floor models 180° about the vertical Y axis around their existing exported origins. Original mountain terrain orientation, positions, scales, textures, camera, and saves are unchanged.
