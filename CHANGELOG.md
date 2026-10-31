@@ -1,3 +1,10 @@
+# Wayfarer v3.0.65 — natural roads, asymmetric dirt-edge tuning and flexible movement (2026-10-31)
+
+- Replaced rigid flat-color straight road strips with smoothed curved ribbon paths and procedurally mottled earth texture, connected to entrance markers.
+- Added per-building local dirt boundary adjustments in grid-cell increments for Town Hall, Military Camp and Barracks, retaining tiled textures and shadow reception. Exact visual offsets require browser validation.
+- Move mode can now select another present building without closing the move controls; the previous unconfirmed placement is restored on switch.
+- Updated root service-worker cache and versioned standalone modules to v3.0.65. Browser visual and interaction testing pending.
+
 # Wayfarer v3.0.64 — road orientation and doorway connections (2026-10-31)
 
 - Corrected road plane Euler rotation order so road strips lie flat on the XZ terrain instead of forming diagonal or upright panels.
