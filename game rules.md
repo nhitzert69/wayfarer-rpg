@@ -174,3 +174,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 ## v3.0.57 Military Camp and ground alignment
 - Military Camp uses a 45 by 30 metre placement footprint.
 - Building dirt tiles are flattened and aligned close to Playable_Area; do not enable shadow casting or receiving on these tiles. Building visuals retain shadows.
+
+## v3.0.58 Dirt terrain shadows
+- Building dirt tiles must receive building shadows, but must not cast shadows. Keep tiles nearly flush with Playable_Area; building visual meshes cast shadows.
