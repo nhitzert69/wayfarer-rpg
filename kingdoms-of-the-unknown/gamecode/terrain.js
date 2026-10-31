@@ -176,21 +176,19 @@ export async function startTerrain(host, placement={}) {
   const floorModel=await loadGameModel("./models/terrain/TerrainTiles/BuildingsTerrain.glb");
   const floorBox=new THREE.Box3().setFromObject(floorModel),floorSize=floorBox.getSize(new THREE.Vector3());
   if(floorBox.isEmpty()||floorSize.x<=0||floorSize.z<=0)throw new Error("BuildingsTerrain tile has invalid dimensions.");
-  const makeFloor=(def)=>{
-    const group=new THREE.Group(),w=def.w*unit,d=def.d*unit;
-    // Repeated 10 m tiles are clipped to the plot, never extended into neighboring cells.
-    const nx=Math.ceil(def.w/10),nz=Math.ceil(def.d/10);
+  const makeFloor=(width,depth)=>{
+    // The dirt follows the actual scaled mesh bounds, not the larger gameplay collision plot.
+    // Keep 10 gameplay-metre tile repeats and trim the final row/column to the mesh footprint.
+    const group=new THREE.Group(),tileSpan=10*unit;
+    const nx=Math.max(1,Math.ceil(width/tileSpan)),nz=Math.max(1,Math.ceil(depth/tileSpan));
     for(let ix=0;ix<nx;ix++)for(let iz=0;iz<nz;iz++){
-      const tw=Math.min(10,def.w-ix*10)*unit,td=Math.min(10,def.d-iz*10)*unit;
+      const tw=Math.min(tileSpan,width-ix*tileSpan),td=Math.min(tileSpan,depth-iz*tileSpan);
       const tile=floorModel.clone(true);
-      // Keep the tile surface flat; the footprint is tiled rather than stretched past the plot.
-      const scale=Math.min(tw/floorSize.x,td/floorSize.z);
-      tile.scale.set(tw/floorSize.x,scale,td/floorSize.z);
-      tile.position.set(-w/2+(ix*10*unit)+tw/2,0,-d/2+(iz*10*unit)+td/2);
+      const sy=Math.min(tw/floorSize.x,td/floorSize.z);
+      tile.scale.set(tw/floorSize.x,sy,td/floorSize.z);
+      tile.position.set(-width/2+ix*tileSpan+tw/2,0,-depth/2+iz*tileSpan+td/2);
       tile.position.x-=((floorBox.min.x+floorBox.max.x)/2)*tile.scale.x;
       tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
-      // Align the highest visible tile surface just below the terrain plane, not its lowest vertex.
-      // This removes the raised slab effect while keeping the texture visible at the surface.
       tile.position.y=-floorBox.max.y*tile.scale.y+.0005;
       tile.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=false;}});
       group.add(tile);
@@ -212,7 +210,7 @@ export async function startTerrain(host, placement={}) {
     const scaled=new THREE.Box3().setFromObject(visual);
     visual.position.sub(new THREE.Vector3((scaled.min.x+scaled.max.x)/2,scaled.min.y,(scaled.min.z+scaled.max.z)/2));
     const root=new THREE.Group();root.add(visual);
-    const floor=makeFloor(def);root.add(floor);
+    const floor=makeFloor(scaled.max.x-scaled.min.x,scaled.max.z-scaled.min.z);root.add(floor);
     root.traverse(node=>{if(node.isMesh&&node!==floor){node.castShadow=true;node.layers.enable(1);}});
     scene.add(root);
     const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
