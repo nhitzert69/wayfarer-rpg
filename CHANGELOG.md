@@ -1,3 +1,10 @@
+# Wayfarer v3.0.35 — preserve Blender camera framing (2026-10-31)
+
+- Backup branch `backup-pre-camera-framing-2026-10-31` created from `039ddc617adfb3fb5eaa043de0b31be2f9cdf2ad` before editing.
+- Preserve authored camera position, orientation and perspective. Crop wider browser aspect ratios to the Blender 16:9 reference rather than revealing outside the mountain border; retain zoom-in and ground-footprint panning limits.
+- GLB terrain and FBX asset loader remain supported. No saved data or account changes.
+- Validation: source inspection and GitHub commit PASS; live browser/mobile framing INCONCLUSIVE pending user test.
+
 # Wayfarer v3.0.34 — GLB terrain and authored camera (2026-10-31)
 
 - Switched Kingdoms terrain loader from FBXLoader to GLTFLoader, loading the user-uploaded `models/terrain/Playmap/terrain_kingdoms.glb` with supported embedded materials/textures.
