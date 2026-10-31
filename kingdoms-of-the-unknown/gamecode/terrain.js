@@ -151,7 +151,7 @@ export async function startTerrain(host, placement={}) {
   resizeCamera();updateCamera();
 
   // Town Hall Level 1: placement is scoped to the playable square, not the decorative mountains.
-  const hall=await loadGameModel("./models/townhall/level one/townhall%2520level%25201%2520compressed.glb");
+  const hall=await loadGameModel("./models/buildings%20level%201/level%20one/townhall%2520level%25201%2520compressed.glb");
   const playBox=new THREE.Box3().setFromObject(playable||model);
   if(!playable||playBox.isEmpty())throw new Error("Playable_Area missing: Town Hall placement needs the authored playable square.");
   const playSize=playBox.getSize(new THREE.Vector3()),playCenter=playBox.getCenter(new THREE.Vector3());
