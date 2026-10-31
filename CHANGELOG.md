@@ -1,3 +1,12 @@
+# Wayfarer v3.0.47 — three starting buildings, construction and isolated Sandbox (2026-10-31)
+
+- Added Barracks (40 × 30 m) and Military Camp (60 × 40 m) beside the existing 50 × 30 m Town Hall using uploaded Level 1 GLBs.
+- Added repeating building-terrain GLB underlays fitted to each rectangular plot; building selection and medieval-style Move/Sell menus.
+- Added collision-aware 250 × 250 grid placement: overlapping footprints display red and cannot be confirmed. Rotation swaps width and depth.
+- Barracks/Camp sale rewards: 1,000 gold, 150 wood, 100 stone. Rebuild cost: 1,250 gold, 200 wood, 150 stone. Sold buildings appear in Build menu.
+- Added in-memory Sandbox snapshot for game resources and building state, discarded when Sandbox is exited, without writing to live saves. Existing Town Hall local positions are read as a legacy fallback.
+- Validation: JavaScript syntax PASS and GitHub asset-path inspection PASS. Browser/WebGL loading, model orientation, terrain tiling, actual collision interaction, save migration and mobile Sandbox isolation INCONCLUSIVE pending live testing.
+
 # Wayfarer v3.0.46 — rename building model directory (2026-10-31)
 
 - Renamed `kingdoms-of-the-unknown/models/buildings level 1/` to `kingdoms-of-the-unknown/models/buildings/`, retaining `level one/` and its Town Hall GLB unchanged.
