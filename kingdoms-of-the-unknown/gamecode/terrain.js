@@ -80,8 +80,8 @@ export async function startTerrain(host, placement={}) {
           "#include <map_fragment>",
           "#include <map_fragment>\n" +
           "float groundLuma=dot(diffuseColor.rgb,vec3(0.2126,0.7152,0.0722));\n" +
-          "diffuseColor.rgb=mix(vec3(groundLuma),diffuseColor.rgb,0.84);\n" +
           "diffuseColor.rgb=mix(vec3(groundLuma),diffuseColor.rgb,0.79);\n" +
+          "#ifdef USE_MAP\n" +
           "vec2 terrainMacro=floor(vMapUv*5.0);\n" +
           "vec2 terrainFrac=fract(vMapUv*5.0);\n" +
           "terrainFrac=terrainFrac*terrainFrac*(3.0-2.0*terrainFrac);\n" +
@@ -90,7 +90,8 @@ export async function startTerrain(host, placement={}) {
           "float macroC=fract(sin(dot(terrainMacro+vec2(0.0,1.0),vec2(127.1,311.7)))*43758.5453);\n" +
           "float macroD=fract(sin(dot(terrainMacro+vec2(1.0,1.0),vec2(127.1,311.7)))*43758.5453);\n" +
           "float macroNoise=mix(mix(macroA,macroB,terrainFrac.x),mix(macroC,macroD,terrainFrac.x),terrainFrac.y);\n" +
-          "diffuseColor.rgb*=0.99+(macroNoise-0.5)*0.15;"
+          "diffuseColor.rgb*=0.99+(macroNoise-0.5)*0.15;\n" +
+          "#endif"
         );
       };
       adjusted.customProgramCacheKey=()=>"kotu-playable-grade-v2";
