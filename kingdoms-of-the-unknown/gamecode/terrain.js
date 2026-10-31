@@ -47,12 +47,16 @@ export async function startTerrain(host) {
   const camera=source.clone();
   source.matrixWorld.decompose(camera.position,camera.quaternion,camera.scale);
   camera.scale.set(1,1,1);
+  // FBX camera forward axes can differ from Three.js. Aim at the playable area.
+  const playable=model.getObjectByName("Playable_Area")||model.getObjectByName("Playable Area");
+  const targetBounds=new THREE.Box3().setFromObject(playable||model);
+  camera.lookAt(targetBounds.getCenter(new THREE.Vector3()));
   const origin=camera.position.clone(),rotation=camera.quaternion.clone(),baseZoom=camera.zoom||1;
   const orthoHeight=camera.isOrthographicCamera?camera.top-camera.bottom:0;
   const orthoCenterX=camera.isOrthographicCamera?(camera.left+camera.right)/2:0;
   const orthoCenterY=camera.isOrthographicCamera?(camera.top+camera.bottom)/2:0;
   camera.near=0.1;camera.far=100000;scene.add(camera);
-  const bounds=new THREE.Box3().setFromObject(model),groundY=bounds.min.y;
+  const groundY=targetBounds.min.y;
   const state={zoom:1,offset:new THREE.Vector3()},zoomMin=1,zoomMax=5.25;
   const resizeCamera=()=>{
     const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
