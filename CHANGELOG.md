@@ -1,3 +1,9 @@
+# Wayfarer v3.0.51 — Military Camp orientation (2026-10-31)
+
+- Rotated only the Military Camp imported visual 90 degrees around Y before uniform scaling.
+- Preserved Town Hall, Barracks, placement footprints, terrain tiles, saved rotation, collisions, lighting, account state and Sandbox.
+- GitHub source update PASS; browser and mobile visual verification INCONCLUSIVE.
+
 # Wayfarer v3.0.50 — Stage 1 daytime lighting and shading (2026-10-31)
 
 - Created requested backup branch `backup-2026-10-31-pre-lighting-stage1` at v3.0.49 commit `b863951e45efc6439ac001a0c1a3e73e81b673e1` before changing source.
