@@ -40,7 +40,7 @@ export async function startTerrain(host, placement={}) {
   starTexture.colorSpace=THREE.SRGBColorSpace;
   starTexture.mapping=THREE.EquirectangularReflectionMapping;
   scene.background=starTexture;
-  const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance",logarithmicDepthBuffer:true});
+  const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance",logarithmicDepthBuffer:true,preserveDrawingBuffer:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -574,5 +574,22 @@ export async function startTerrain(host, placement={}) {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{placement.setBuildHandler?.(null);moveUi.remove();clearInterval(constructionTimer);clearRoads();roadMaterials.forEach(m=>m.dispose());roadTexture.dispose();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
+  // Visual QA only adjusts this browser's camera, never persistent game data.
+  const qaViews=[{id:"overview",label:"World overview",zoom:2},{id:"townhall",label:"Town Hall",building:"townhall",zoom:12},{id:"barracks",label:"Barracks",building:"barracks",zoom:12},{id:"camp",label:"Military Camp",building:"camp",zoom:12},{id:"roads",label:"Road connections",zoom:7}];
+  const qaView=id=>{
+    const view=qaViews.find(v=>v.id===id);if(!view)return false;
+    const focus=view.building?buildings.find(b=>b.id===view.building&&b.present):null;
+    if(view.building&&!focus)return false;
+    state.zoom=view.zoom;state.offset.set(0,0,0);
+    if(focus)state.offset.set(focus.root.position.x-playCenter.x,0,focus.root.position.z-playCenter.z);
+    updateCamera();return true;
+  };
+  const qaCapture=()=>{
+    renderer.render(scene,camera);
+    const a=document.createElement("a");
+    a.download="Kingdoms_QA_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";
+    a.href=renderer.domElement.toDataURL("image/png");a.click();
+  };
+  placement.setQAHandler?.({views:qaViews,view:qaView,capture:qaCapture});
+  return ()=>{placement.setQAHandler?.(null);placement.setBuildHandler?.(null);moveUi.remove();clearInterval(constructionTimer);clearRoads();roadMaterials.forEach(m=>m.dispose());roadTexture.dispose();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
 }

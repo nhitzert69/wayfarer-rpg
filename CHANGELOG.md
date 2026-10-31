@@ -1,3 +1,9 @@
+# Wayfarer v3.0.74 — Visual QA screenshot capture (2026-10-31)
+
+- Added a read-only Visual QA panel for authorized Debug users, with World overview, Town Hall, Barracks, Military Camp and Road connections camera presets.
+- Added local PNG screenshot export for external WorkGPT visual review. No changes to building placements, resources, login, saved progress or road generation.
+- Updated module/CSS versions and service-worker cache to v3.0.74. Live browser testing pending; WebGL still required.
+
 # Wayfarer v3.0.73 — fix black Kingdoms title screen (2026-10-31)
 
 - Corrected a later, higher-priority standalone CSS title-screen background override that still referenced the deleted shared image path. Both CSS declarations now reference kingdoms-of-the-unknown/images/titlecreens/kingdoms-of-the-unknown-title.png.

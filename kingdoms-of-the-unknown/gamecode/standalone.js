@@ -11,7 +11,7 @@ window.addEventListener("resize",updateOrientation);
 updateOrientation();
 let client=null,mode="login",cleanup=null,activeUser=null,loadGeneration=0;
 
-let sandboxActive=false,sandboxSnapshot=null,buildHandler=null,buildItems=[];
+let sandboxActive=false,sandboxSnapshot=null,buildHandler=null,buildItems=[],qaHandler=null;
 const sandboxBuild={free:false,unlimited:false,instant:false};
 const allowedDebugNames=new Set(["admin","chatgpt"]);
 const authenticatedName=user=>{
@@ -24,6 +24,7 @@ function refreshDebug(){
   const allowed=debugAllowed();
   if(!allowed)sandboxActive=false;
   $("debugToggle").hidden=!allowed;
+  $("qaPanel").hidden=!allowed||!qaHandler;
   if(!allowed)$("debugPanel").hidden=true;
   $("sandboxBadge").hidden=!sandboxActive;
   if($("sandboxBuildOptions"))$("sandboxBuildOptions").hidden=!sandboxActive;
@@ -41,6 +42,14 @@ function setSandbox(enabled){
 }
 $("debugToggle").onclick=()=>{if(debugAllowed())$("debugPanel").hidden=!$("debugPanel").hidden;};
 $("sandboxToggle").onclick=()=>setSandbox(!sandboxActive);
+$("qaView").onchange=()=>qaHandler?.view($("qaView").value);
+$("qaCapture").onclick=()=>qaHandler?.capture();
+function setQAHandler(handler){
+  qaHandler=handler;
+  const select=$("qaView");select.replaceChildren();
+  for(const view of handler?.views||[]){const option=document.createElement("option");option.value=view.id;option.textContent=view.label;select.append(option);}
+  refreshDebug();
+}
 const sandboxOptions=document.createElement("div");sandboxOptions.id="sandboxBuildOptions";sandboxOptions.hidden=true;
 for(const [key,label] of [["free","Free purchases"],["unlimited","Unlimited buildings"],["instant","Instant construction"]]){
   const row=document.createElement("label");
@@ -116,7 +125,7 @@ function closeGameMenu(){menuPanel.hidden=true;$("debugPanel").hidden=true;menuT
 menuToggle.onclick=()=>{const open=menuPanel.hidden;menuPanel.hidden=!open;menuToggle.setAttribute("aria-expanded",String(open));};
 document.addEventListener("pointerdown",event=>{if(!event.target.closest(".game-menu"))closeGameMenu();});
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeGameMenu();});
-$("back").onclick=()=>{closeBuild();loadGeneration++;$("terrainLoading").hidden=true;closeGameMenu();cleanup?.();cleanup=null;buildHandler=null;buildItems=[];$("world").hidden=true;$("title").hidden=false;};
+$("back").onclick=()=>{closeBuild();loadGeneration++;$("terrainLoading").hidden=true;closeGameMenu();cleanup?.();cleanup=null;buildHandler=null;buildItems=[];setQAHandler(null);$("world").hidden=true;$("title").hidden=false;};
 $("authForm").onsubmit=async e=>{
   e.preventDefault();
   if(!client)return message("Authentication service unavailable.");
@@ -138,13 +147,13 @@ async function enterWorld(){
   if(!activeUser)return;
   const generation=++loadGeneration;
   closeGameMenu();closeBuild();renderResources();
-  cleanup?.();cleanup=null;buildHandler=null;buildItems=[];
+  cleanup?.();cleanup=null;buildHandler=null;buildItems=[];setQAHandler(null);
   $("title").hidden=true;$("world").hidden=false;
   $("worldStatus").hidden=true;
   $("terrainLoading").hidden=false;
   $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
-    const {startTerrain}=await import("./terrain.js?v=3.0.72");
+    const {startTerrain}=await import("./terrain.js?v=3.0.74");
     if(generation!==loadGeneration)return;
     const legacyKey=storageKey("live-townhall-level1");
     const dispose=await startTerrain($("world"),{
@@ -157,6 +166,7 @@ async function enterWorld(){
       sell:()=>{const ok=sellBuilding();if(ok)renderBuild();return ok;},
       buy:()=>{const ok=buyBuilding();if(ok)renderBuild();return ok;},
       sandboxOptions:()=>({active:sandboxActive,free:sandboxActive&&sandboxBuild.free,unlimited:sandboxActive&&sandboxBuild.unlimited,instant:sandboxActive&&sandboxBuild.instant}),
+      setQAHandler,
       setBuildHandler:handler=>{buildHandler=handler;},
       refreshBuild:items=>{buildItems=items;renderBuild();}
     });

@@ -218,3 +218,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.73 CSS image relocation check
 - When relocating a title-screen image, search the entire CSS file for repeated later background-image overrides and update every reference, not just the first shorthand declaration. Keep the login and loading images separate.
+
+## v3.0.74 read-only Visual QA
+- Authorized Debug users can select local camera presets and download PNG screenshots from WebGL-enabled browsers. Do not mutate saved placements, resources, authentication or Sandbox state. Do not claim this enables WebGL in cloud browsers. Clean up QA callbacks on world exit.
