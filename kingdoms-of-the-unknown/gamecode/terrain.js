@@ -172,7 +172,6 @@ export async function startTerrain(host, placement={}) {
   const floorModel=await loadGameModel("./models/terrain/TerrainTiles/BuildingsTerrain.glb");
   const floorBox=new THREE.Box3().setFromObject(floorModel),floorSize=floorBox.getSize(new THREE.Vector3());
   if(floorBox.isEmpty()||floorSize.x<=0||floorSize.z<=0)throw new Error("BuildingsTerrain tile has invalid dimensions.");
-  const tileMesh=[];
   const makeFloor=(def)=>{
     const group=new THREE.Group(),w=def.w*unit,d=def.d*unit;
     // Repeated 10 m tiles are clipped to the plot, never extended into neighboring cells.
@@ -180,23 +179,35 @@ export async function startTerrain(host, placement={}) {
     for(let ix=0;ix<nx;ix++)for(let iz=0;iz<nz;iz++){
       const tw=Math.min(10,def.w-ix*10)*unit,td=Math.min(10,def.d-iz*10)*unit;
       const tile=floorModel.clone(true);
+      // Keep the tile surface flat; the footprint is tiled rather than stretched past the plot.
       const scale=Math.min(tw/floorSize.x,td/floorSize.z);
       tile.scale.set(tw/floorSize.x,scale,td/floorSize.z);
       tile.position.set(-w/2+(ix*10*unit)+tw/2,0,-d/2+(iz*10*unit)+td/2);
       tile.position.x-=((floorBox.min.x+floorBox.max.x)/2)*tile.scale.x;
       tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
-      tile.position.y=-floorBox.min.y*tile.scale.y+.005;
+      // Align the highest visible tile surface just below the terrain plane, not its lowest vertex.
+      // This removes the raised slab effect while keeping the texture visible at the surface.
+      tile.position.y=-floorBox.max.y*tile.scale.y-.001;
       tile.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=false;}});
       group.add(tile);
     }
     return group;
   };
   for(const def of definitions){
-    const visual=await loadGameModel(def.path),box=new THREE.Box3().setFromObject(visual);
+    const visual=await loadGameModel(def.path);
+    // The camp asset was exported with its long side along Z; align it to the 60 m X footprint.
+    if(def.id==="camp")visual.rotation.y=Math.PI/2;
+    visual.updateMatrixWorld(true);
+    const box=new THREE.Box3().setFromObject(visual);
     if(box.isEmpty())throw new Error(def.name+" GLB has no visible geometry.");
     const size=box.getSize(new THREE.Vector3());
-    const scale=Math.min(def.w*unit/Math.max(size.x,.00001),def.d*unit/Math.max(size.z,.00001));
-    visual.scale.multiplyScalar(scale);visual.updateMatrixWorld(true);
+    // Fit the actual visible model to its authored rectangular footprint, so the dirt stops
+    // at the building perimeter. Independent horizontal factors also fix the camp appearing
+    // smaller than the 50 m Town Hall despite its 60 m specified width.
+    const sx=def.w*unit/Math.max(size.x,.00001),sz=def.d*unit/Math.max(size.z,.00001);
+    visual.scale.x*=sx;visual.scale.z*=sz;
+    visual.scale.y*=Math.min(sx,sz);
+    visual.updateMatrixWorld(true);
     const scaled=new THREE.Box3().setFromObject(visual);
     visual.position.sub(new THREE.Vector3((scaled.min.x+scaled.max.x)/2,scaled.min.y,(scaled.min.z+scaled.max.z)/2));
     const root=new THREE.Group();root.add(visual);
