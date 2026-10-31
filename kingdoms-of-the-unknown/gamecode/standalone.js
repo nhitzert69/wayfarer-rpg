@@ -13,15 +13,12 @@ let client=null,mode="login",cleanup=null,activeUser=null,loadGeneration=0;
 
 let sandboxActive=false;
 const allowedDebugNames=new Set(["admin","chatgpt"]);
-const safeMap=name=>["human","greek","undead"].includes(name)?name:"human";
 const authenticatedName=user=>{
   const email=String(user?.email||"").toLowerCase();
   return email.endsWith("@wayfarer.example")?email.slice(0,-"@wayfarer.example".length):"";
 };
 const debugAllowed=()=>!!activeUser&&allowedDebugNames.has(authenticatedName(activeUser));
 const storageKey=kind=>"kotu-v1:"+activeUser.id+":"+kind;
-function readMap(kind){try{return safeMap(localStorage.getItem(storageKey(kind)));}catch{return "human";}}
-function saveMap(){if(!activeUser)return;try{localStorage.setItem(storageKey(sandboxActive?"sandbox-map":"live-map"),safeMap($("faction").value));}catch(error){console.warn("Map preference storage unavailable",error);}}
 function refreshDebug(){
   const allowed=debugAllowed();
   if(!allowed)sandboxActive=false;
@@ -30,12 +27,11 @@ function refreshDebug(){
   $("sandboxBadge").hidden=!sandboxActive;
   $("sandboxToggle").textContent=sandboxActive?"Exit Sandbox":"Enter Sandbox";
   $("sandboxToggle").setAttribute("aria-pressed",String(sandboxActive));
-  $("debugModeStatus").textContent=sandboxActive?"Sandbox active · isolated test preferences":"Live mode · normal preferences";
+  $("debugModeStatus").textContent=sandboxActive?"Sandbox active · isolated test resources":"Live mode · normal resources";
 }
 function setSandbox(enabled){
   if(!debugAllowed()||sandboxActive===enabled)return;
   sandboxActive=enabled;
-  $("faction").value=readMap(enabled?"sandbox-map":"live-map");
   refreshDebug();renderResources();closeBuild();
   if(!$("world").hidden)enterWorld();
 }
@@ -63,7 +59,7 @@ document.addEventListener("pointerdown",event=>{if(!event.target.closest(".kotu-
 function message(text){status.textContent=text;}
 function showForm(create){mode=create?"create":"login";form.hidden=false;actions.hidden=true;ready.hidden=true;$("formTitle").textContent=create?"Create account":"Log in";$("pin").autocomplete=create?"new-password":"current-password";}
 function signedOut(){closeBuild();activeUser=null;sandboxActive=false;$("debugPanel").hidden=true;refreshDebug();renderResources();ready.hidden=true;form.hidden=true;actions.hidden=false;message("Log in or create an account to play.");}
-function signedIn(user){const changed=activeUser?.id!==user.id;activeUser=user;if(changed){sandboxActive=false;$("debugPanel").hidden=true;$("faction").value=readMap("live-map");}refreshDebug();renderResources();form.hidden=true;actions.hidden=true;ready.hidden=false;$("welcome").textContent="Welcome, "+String(user.user_metadata?.wayfarer_username||user.email?.split("@")[0]||"Commander");message("Account ready.");}
+function signedIn(user){const changed=activeUser?.id!==user.id;activeUser=user;if(changed){sandboxActive=false;$("debugPanel").hidden=true;}refreshDebug();renderResources();form.hidden=true;actions.hidden=true;ready.hidden=false;$("welcome").textContent="Welcome, "+String(user.user_metadata?.wayfarer_username||user.email?.split("@")[0]||"Commander");message("Account ready.");}
 $("showLogin").onclick=()=>showForm(false);
 $("showCreate").onclick=()=>showForm(true);
 $("cancelAuth").onclick=signedOut;
@@ -104,7 +100,7 @@ async function enterWorld(){
   try{
     const {startTerrain}=await import("./terrain.js");
     if(generation!==loadGeneration)return;
-    const dispose=await startTerrain($("world"),$("faction").value);
+    const dispose=await startTerrain($("world"));
     if(generation!==loadGeneration){dispose();return;}
     cleanup=dispose;
     $("terrainLoading").hidden=true;
@@ -116,7 +112,6 @@ async function enterWorld(){
   }
 }
 $("play").onclick=enterWorld;
-$("faction").onchange=()=>{saveMap();if(!$("world").hidden)enterWorld();};
 (async()=>{
   try{
     if(!window.supabase?.createClient)throw new Error("Authentication library unavailable.");

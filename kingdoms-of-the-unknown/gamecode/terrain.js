@@ -3,15 +3,10 @@
 const THREE_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 const LOADER_URL="https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/FBXLoader.js";
 // CDN addons import "three" as a bare specifier, resolved by the game's import map.
-export async function startTerrain(host, mapName="human") {
+export async function startTerrain(host) {
   const THREE=await import("three");
   const {FBXLoader}=await import(LOADER_URL);
-  const files={
-    human:"./models/terrain/human-terrain/dark-swamp-arena.fbx",
-    greek:"./models/terrain/greek-terrain/grassy-meadow-arena.fbx",
-    undead:"./models/terrain/undead-terrain/volcanic-slate-arena.fbx"
-  };
-  if(!files[mapName])throw new Error("Unknown map.");
+  const terrainFile="./models/terrain/Playmap/terrain_kingdoms.fbx";
   const scene=new THREE.Scene();
   // Procedural starfield behind the terrain, with no external asset dependency.
   const skyCanvas=document.createElement("canvas");
@@ -35,98 +30,70 @@ export async function startTerrain(host, mapName="human") {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   
-  const camera=new THREE.OrthographicCamera(-1,1,1,-1,0.1,100000);
   scene.add(new THREE.HemisphereLight(0xe9f1ff,0x515049,2));
   const sun=new THREE.DirectionalLight(0xffe7c7,2.2);sun.position.set(200,450,260);scene.add(sun);
   const loader=new FBXLoader();
-  const model=await loader.loadAsync(files[mapName]);
-  // Use the matching texture set exported alongside each replacement FBX.
-  const textureBases={
-    human:"./models/terrain/human-terrain/dark-swamp-arena",
-    greek:"./models/terrain/greek-terrain/grassy-meadow-arena",
-    undead:"./models/terrain/undead-terrain/volcanic-slate-arena"
-  };
-  const textureBase=textureBases[mapName];
-  const textureLoader=new THREE.TextureLoader();
-  const configureTexture=texture=>{
-    texture.minFilter=THREE.LinearMipmapLinearFilter;
-    texture.magFilter=THREE.LinearFilter;
-    texture.generateMipmaps=true;
-    texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-    return texture;
-  };
-  try {
-    const baseColor=configureTexture(await textureLoader.loadAsync(textureBase+".png"));
-    baseColor.colorSpace=THREE.SRGBColorSpace;
-    const [normal,roughness]=await Promise.all([
-      textureLoader.loadAsync(textureBase+"_normal.png").then(configureTexture).catch(()=>null),
-      textureLoader.loadAsync(textureBase+"_roughness.png").then(configureTexture).catch(()=>null)
-    ]);
-    model.traverse(node=>{
-      if(!node.isMesh)return;
-      const convert=material=>new THREE.MeshStandardMaterial({
-        map:baseColor,normalMap:normal,roughnessMap:roughness,
-        roughness:1,metalness:0,side:material?.side??THREE.FrontSide
-      });
-      node.material=Array.isArray(node.material)?node.material.map(convert):convert(node.material);
-    });
-  } catch(error) {
-    console.warn("Terrain textures unavailable; using imported materials.",error);
-  }
+  const model=await loader.loadAsync(terrainFile);
+  // The new single map uses materials embedded in its FBX.
   // The replacement arena FBX includes its own rectangular ground surface.
   // Keep the exported orientation and avoid loading obsolete separate floors.
   scene.add(model);
-  // FBX files may contain several meshes and nested material groups.
-  const bounds=new THREE.Box3().setFromObject(model);
-  if(bounds.isEmpty())throw new Error("The terrain model has no geometry.");
-  const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
-  // FBXLoader converts FBX axis metadata to Three.js Y-up coordinates.
-  // Frame the buildable basin, not the surrounding cliff tips or the model's midpoint in height.
-  const width=Math.max(size.x,1),depth=Math.max(size.z,1);
-  const baseY=bounds.min.y+size.y*0.16;
-  const target=new THREE.Vector3(center.x,baseY,center.z);
-  const direction=new THREE.Vector3(0,0.85,1).normalize();
-  const cameraDistance=Math.max(width,depth)*1.5;
-  // Orthographic strategy camera: no perspective-driven disappearance when zooming.
-  const viewHeight=Math.min(width,depth)*0.42;
-  const zoomMin=1.1,zoomMax=10.5;
-  const state={target,zoom:2.0};
-  const clampTarget=()=>{
-    // Camera-visible footprint, not a fixed fraction of the map: zooming in
-    // allows the camera center to approach the perimeter in all directions.
-    const visibleHalfX=(camera.right-camera.left)/(2*state.zoom);
-    const visibleHalfVertical=(camera.top-camera.bottom)/(2*state.zoom);
-    // The camera looks down along +Z: screen-vertical movement spans a
-    // larger ground distance because of its elevated viewing angle.
-    const groundVerticalScale=Math.max(0.2,direction.y);
-    const visibleHalfZ=visibleHalfVertical/groundVerticalScale;
-    // Rectangular arena: clamp each axis independently, accounting for the
-    // visible camera footprint so zoom and viewport changes remain bounded.
-    const halfX=Math.max(0,width*0.5-visibleHalfX);
-    const halfZ=Math.max(0,depth*0.5-visibleHalfZ);
-    state.target.x=THREE.MathUtils.clamp(state.target.x,center.x-halfX,center.x+halfX);
-    state.target.z=THREE.MathUtils.clamp(state.target.z,center.z-halfZ,center.z+halfZ);
-    state.target.y=baseY;
+  model.updateMatrixWorld(true);
+  const cameras=[];
+  model.traverse(node=>{if(node.isCamera)cameras.push(node);});
+  if(!cameras.length)throw new Error("No Blender camera in terrain FBX. Export the Camera together with the terrain and upload the FBX again.");
+  const source=cameras.find(c=>c.name.toLowerCase()==="camera")||cameras[0];
+  source.updateWorldMatrix(true,false);
+  const camera=source.clone();
+  source.matrixWorld.decompose(camera.position,camera.quaternion,camera.scale);
+  camera.scale.set(1,1,1);
+  // FBX camera forward axes can differ from Three.js. Aim at the playable area.
+  const playable=model.getObjectByName("Playable_Area")||model.getObjectByName("Playable Area");
+  const targetBounds=new THREE.Box3().setFromObject(playable||model);
+  camera.lookAt(targetBounds.getCenter(new THREE.Vector3()));
+  const origin=camera.position.clone(),rotation=camera.quaternion.clone(),baseZoom=camera.zoom||1;
+  const orthoHeight=camera.isOrthographicCamera?camera.top-camera.bottom:0;
+  const orthoCenterX=camera.isOrthographicCamera?(camera.left+camera.right)/2:0;
+  const orthoCenterY=camera.isOrthographicCamera?(camera.top+camera.bottom)/2:0;
+  camera.near=0.1;camera.far=100000;scene.add(camera);
+  const groundY=targetBounds.min.y;
+  const state={zoom:1,offset:new THREE.Vector3()},zoomMin=1,zoomMax=5.25;
+  const resizeCamera=()=>{
+    const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
+    if(camera.isPerspectiveCamera)camera.aspect=aspect;
+    if(camera.isOrthographicCamera){
+      camera.left=orthoCenterX-orthoHeight*aspect/2;camera.right=orthoCenterX+orthoHeight*aspect/2;
+      camera.top=orthoCenterY+orthoHeight/2;camera.bottom=orthoCenterY-orthoHeight/2;
+    }
+    camera.updateProjectionMatrix();
+  };
+  const footprint=(position,zoom)=>{
+    const probe=camera.clone();probe.position.copy(position);probe.quaternion.copy(rotation);
+    probe.zoom=baseZoom*zoom;probe.updateProjectionMatrix();probe.updateMatrixWorld(true);
+    const ray=new THREE.Raycaster(),hits=[];
+    for(const x of [-1,1])for(const y of [-1,1]){
+      ray.setFromCamera(new THREE.Vector2(x,y),probe);
+      const d=ray.ray.direction.y;
+      if(Math.abs(d)<1e-6)return null;
+      const distance=(groundY-ray.ray.origin.y)/d;
+      if(distance<=0)return null;
+      hits.push(ray.ray.at(distance,new THREE.Vector3()));
+    }
+    return {minX:Math.min(...hits.map(p=>p.x)),maxX:Math.max(...hits.map(p=>p.x)),
+      minZ:Math.min(...hits.map(p=>p.z)),maxZ:Math.max(...hits.map(p=>p.z))};
   };
   const updateCamera=()=>{
-    clampTarget();
-    camera.position.copy(state.target).addScaledVector(direction,cameraDistance);
-    camera.up.set(0,1,0);
-    camera.lookAt(state.target);
-    camera.zoom=state.zoom;
-    camera.updateProjectionMatrix();
+    camera.position.copy(origin).add(state.offset);camera.quaternion.copy(rotation);
+    camera.zoom=baseZoom*state.zoom;camera.updateProjectionMatrix();
+    const outer=footprint(origin,1),inner=footprint(camera.position,state.zoom);
+    if(outer&&inner){
+      const dx=Math.max(outer.minX-inner.minX,Math.min(outer.maxX-inner.maxX,0));
+      const dz=Math.max(outer.minZ-inner.minZ,Math.min(outer.maxZ-inner.maxZ,0));
+      state.offset.x+=dx;state.offset.z+=dz;camera.position.copy(origin).add(state.offset);
+    }else{state.offset.set(0,0,0);camera.position.copy(origin);}
+    camera.updateMatrixWorld(true);
   };
-  // Keep a fixed isometric orientation and clamp the view to rectangular arena bounds.
-  const resizeCamera=()=>{
-    const aspect=Math.max(0.2,host.clientWidth/Math.max(1,host.clientHeight));
-    const height=viewHeight;
-    camera.left=-height*aspect/2;camera.right=height*aspect/2;
-    camera.top=height/2;camera.bottom=-height/2;
-    camera.near=Math.max(1,cameraDistance*0.15);camera.far=cameraDistance*2.8;
-    camera.updateProjectionMatrix();
-    updateCamera();
-  };
-  resizeCamera();
+  resizeCamera();updateCamera();
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   const pick=(e)=>{
     const rect=renderer.domElement.getBoundingClientRect();
@@ -162,9 +129,12 @@ export async function startTerrain(host, mapName="human") {
     const dx=e.clientX-down.lastX,dy=e.clientY-down.lastY;
     if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down.moved=true;
     if(down.moved){
-      const factor=viewHeight/(Math.max(150,host.clientHeight)*state.zoom);
-      state.target.x-=dx*factor;
-      state.target.z-=dy*factor/Math.max(0.2,direction.y);
+      const area=footprint(camera.position,state.zoom);
+      const factor=area?(area.maxX-area.minX)/Math.max(150,host.clientWidth):0;
+      const right=new THREE.Vector3(1,0,0).applyQuaternion(rotation);
+      const up=new THREE.Vector3(0,1,0).applyQuaternion(rotation);
+      state.offset.addScaledVector(right,-dx*factor).addScaledVector(up,dy*factor);
+      state.offset.y=0;
       updateCamera();
     }
     down.lastX=e.clientX;down.lastY=e.clientY;
@@ -173,7 +143,7 @@ export async function startTerrain(host, mapName="human") {
     const wasPinching=touches.size>=2;
     touches.delete(e.pointerId);
     pinchDistance=null;
-    if(!wasPinching&&down&&!down.moved){const p=pick(e);if(p){state.target.x=p.x;state.target.z=p.z;updateCamera();}}
+    // Keep Blender camera framing; tapping terrain does not recenter.
     down=null;
   };
   const onWheel=e=>{e.preventDefault();state.zoom=THREE.MathUtils.clamp(state.zoom*Math.exp(-e.deltaY*0.001),zoomMin,zoomMax);updateCamera();};
@@ -184,8 +154,9 @@ export async function startTerrain(host, mapName="human") {
   canvas.addEventListener("pointerup",onUp);
   canvas.addEventListener("pointercancel",onUp);
   canvas.addEventListener("wheel",onWheel,{passive:false});
-  const observer=new ResizeObserver(()=>{const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);resizeCamera();});
+  const observer=new ResizeObserver(()=>{const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);resizeCamera();updateCamera();});
   observer.observe(host);
+  renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
