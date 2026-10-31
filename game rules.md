@@ -11,6 +11,9 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Town Hall scale and camera tuning (2026-10-31)
+- Level 1 Town Hall has a maximum 30 × 30 gameplay-metre footprint (3% of the 1,000 m square per axis), preserving original proportions. Initial camera zoom is 2.5×, maximum zoom-in 20×, maximum zoom-out 1×; compensate pan sensitivity for zoom.
+
 ## Town Hall placement (2026-10-31)
 - The Level 1 Human Town Hall is loaded from `models/townhall/Level1/human-townhall.fbx`. Selecting it offers Move; moving reveals a 50×50 grid over `Playable_Area`. Confirm commits the snapped position; cancel returns to the exact pre-move position.
 - Keep placement inside the playable square and isolate saved building positions by user and live/Sandbox mode. Do not modify Wayfarer account data or saved progress.
