@@ -195,3 +195,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.64 road geometry
 - Flat road planes must rotate around world vertical Y after being laid in the XZ ground plane; avoid Euler order causing raised/diagonal panels. Connect each road path to the actual exported doorway marker at both ends. Validate in browser before declaring visually verified.
+
+## v3.0.67 dirt fitting
+- Building dirt extents can be independently adjusted in terrain.js using grid-cell margins. Keep Town Hall dirt tighter and enlarge Barracks and Military Camp coverage; do not change building models, saved placements, collision, or road geometry for cosmetic dirt corrections.
