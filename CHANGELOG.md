@@ -1,3 +1,10 @@
+# Wayfarer v3.0.66 — Sandbox building controls (2026-10-31)
+
+- Sandbox free purchases, unlimited Barracks/Camp instances, instant construction.
+- Live Level 1 purchases locked; normal construction takes 60 seconds.
+- Cache v3.0.66, terrain module version v3.0.66. HTML entry version remains v3.0.64 because edit was blocked.
+- Browser QA not performed.
+
 # Wayfarer v3.0.65 — natural roads, asymmetric dirt-edge tuning and flexible movement (2026-10-31)
 
 - Replaced rigid flat-color straight road strips with smoothed curved ribbon paths and procedurally mottled earth texture, connected to entrance markers.
