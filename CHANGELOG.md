@@ -1,3 +1,10 @@
+# Wayfarer v3.0.54 — correct Barracks GLB filename (2026-10-31)
+
+- Renamed the red-roofed Barracks GLB from `military camp level 1.glb` to `barracks level 1.glb` by reusing the existing 6.8 MB Git blob, without modifying model bytes.
+- Updated the Barracks loader path. The tent-filled Military Camp remains at `military camp model level 1.glb`; Town Hall unchanged.
+- Preserved model proportions, terrain, placement and collision, economy, login, saved progress and Sandbox isolation.
+- GitHub rename and loader update PASS; live WebGL loading and mobile rendering INCONCLUSIVE pending test.
+
 # Wayfarer v3.0.53 — rename mislabeled Military Camp model (2026-10-31)
 
 - Renamed the tent-filled Military Camp GLB from `barracks level 1.glb` to `military camp model level 1.glb` by reusing the original Git blob, without re-encoding the 6.2 MB model.
