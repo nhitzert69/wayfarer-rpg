@@ -1,3 +1,11 @@
+# Wayfarer v3.0.62 — entrance-based automatic roads and mandatory cache versioning (2026-10-31)
+
+- Added automatically generated dirt roads linking exported entrance nodes on the Town Hall, Barracks and Military Camp, routed around building plots with grid pathfinding.
+- Roads regenerate on confirmed move/rotation, construction and sale; remain cosmetic and do not change saved state.
+- Hidden entrance mesh markers do not render or intercept building selection.
+- Updated root service-worker cache identifier to v3.0.62 and versioned standalone module URLs.
+- Added mandatory cache refresh requirements to update rules and game rules. Live browser/entrance geometry verification pending.
+
 # Wayfarer v3.0.61 — game code cache-busting (2026-10-31)
 
 - Added versioned module URLs for the standalone game entry and terrain module so browsers request new scripts after deployment.
