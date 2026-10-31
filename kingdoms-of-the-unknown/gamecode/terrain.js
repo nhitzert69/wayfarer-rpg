@@ -181,7 +181,6 @@ export async function startTerrain(host, placement={}) {
     if(moving&&hallHit(e)){draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);return;}
     if(!moving&&hallHit(e)){selected=true;showPanels();return;}
     if(!moving&&selected){selected=false;showPanels();}
-    if(moving){const point=terrainPoint(e);if(point){hallRoot.position.copy(snap(point.x,point.z));draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);}return;}
     if(e.pointerType==="mouse"&&e.button!==0)return;
     if(e.pointerType!=="mouse"){
       touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -191,7 +190,7 @@ export async function startTerrain(host, placement={}) {
     renderer.domElement.setPointerCapture(e.pointerId);
   };
   const onMove=e=>{
-    if(moving){if(draggingHall){const point=terrainPoint(e);if(point)hallRoot.position.copy(snap(point.x,point.z));}return;}
+    if(draggingHall){const point=terrainPoint(e);if(point)hallRoot.position.copy(snap(point.x,point.z));return;}
     if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(touches.size>=2){
       const [a,b]=Array.from(touches.values());
@@ -218,7 +217,7 @@ export async function startTerrain(host, placement={}) {
     down.lastX=e.clientX;down.lastY=e.clientY;
   };
   const onUp=e=>{
-    if(moving){draggingHall=false;return;}
+    if(draggingHall){draggingHall=false;return;}
     const wasPinching=touches.size>=2;
     touches.delete(e.pointerId);
     pinchDistance=null;
