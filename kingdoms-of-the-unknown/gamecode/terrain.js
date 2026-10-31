@@ -464,6 +464,10 @@ export async function startTerrain(host, placement={}) {
     if(commit&&!valid())return;
     if(!commit){active.root.position.copy(original.position);active.rotation=original.rotation;active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;active.present=original.present;active.root.visible=active.present;}
     else if(pendingBuild&&!placement.buy?.(active.id)){return;}
+    if(commit&&pendingBuild){
+      active.finishAt=placement.sandboxOptions?.()?.instant?0:Date.now()+60000;
+      refreshConstruction();
+    }
     if(commit)persist();
     updateRoads();
     refreshCatalog();
@@ -574,5 +578,5 @@ export async function startTerrain(host, placement={}) {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{placement.setBuildHandler?.(null);moveUi.remove();clearRoads();roadMaterials.forEach(m=>m.dispose());roadTexture.dispose();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
+  return ()=>{placement.setBuildHandler?.(null);moveUi.remove();clearInterval(constructionTimer);clearRoads();roadMaterials.forEach(m=>m.dispose());roadTexture.dispose();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
 }
