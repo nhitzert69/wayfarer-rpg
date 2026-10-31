@@ -43,11 +43,14 @@ export async function startTerrain(host, placement={}) {
   const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance",logarithmicDepthBuffer:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.12;
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   
-  scene.add(new THREE.HemisphereLight(0xe9f1ff,0x515049,1.35));
-  const sun=new THREE.DirectionalLight(0xffe7c7,1.5);sun.position.set(200,450,260);scene.add(sun);
+  // Stage 1: soft sky bounce and warm directional key light, without a second competing sun.
+  scene.add(new THREE.HemisphereLight(0xe3efff,0x74664f,1.05));
+  const sun=new THREE.DirectionalLight(0xffe3bd,2.0);sun.position.set(200,450,260);scene.add(sun);
   const model=await loadGameModel(terrainFile);
   // GLB preserves supported Blender PBR materials and packed textures.
   // The single arena includes its own rectangular ground surface.
@@ -90,14 +93,15 @@ export async function startTerrain(host, placement={}) {
   });
   // A local shadow frustum follows the Town Hall instead of wasting resolution on the whole map.
   // The light is on layer 1, shared only by Playable_Area and the Town Hall.
-  const gameSun=new THREE.DirectionalLight(0xffe9cf,1.7);
+  // Shadow-only local light: global sunlight handles direct illumination of every model.
+  const gameSun=new THREE.DirectionalLight(0xffffff,0);
   gameSun.layers.set(1);
   gameSun.castShadow=true;
   gameSun.shadow.mapSize.set(2048,2048);
   gameSun.shadow.camera.near=.01;
   gameSun.shadow.bias=-.00008;
-  gameSun.shadow.normalBias=.004;
-  gameSun.shadow.radius=2;
+  gameSun.shadow.normalBias=.002;
+  gameSun.shadow.radius=3;
   scene.add(gameSun,gameSun.target);
   camera.layers.enable(1);
 
