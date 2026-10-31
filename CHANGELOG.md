@@ -1,3 +1,9 @@
+# Wayfarer v3.0.58 — building shadows on dirt terrain (2026-10-31)
+
+- Dirt terrain tiles now receive shadows from building meshes but do not cast shadows themselves.
+- Preserve flattened tile geometry, placement, saved buildings, 45 by 30 metre Military Camp, and Playable_Area shadows.
+- Code committed to GitHub; live WebGL visual testing pending.
+
 # Wayfarer v3.0.57 — Military Camp dimensions and ground alignment (2026-10-31)
 
 - Set Military Camp footprint to 45 by 30 gameplay metres.
