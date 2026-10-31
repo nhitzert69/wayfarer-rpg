@@ -272,7 +272,7 @@ export async function startTerrain(host, placement={}) {
     return item;
   };
   for(const [id,stored] of Object.entries(positions)){
-    const match=/^(barracks|camp)-copy-(\\d+)$/.exec(id);
+    const match=/^(barracks|camp)-copy-([0-9]+)$/.exec(id);
     if(!match||!templates.has(match[1]))continue;
     nextInstance=Math.max(nextInstance,Number(match[2])+1);
     cloneBuilding(templates.get(match[1]),id,stored);
