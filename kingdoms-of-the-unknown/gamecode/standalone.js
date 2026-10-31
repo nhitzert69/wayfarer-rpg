@@ -72,7 +72,7 @@ function changeResources(delta){
   renderResources();renderBuild();return true;
 }
 function sellBuilding(){return changeResources(REFUND);}
-function buyBuilding(){return changeResources(Object.fromEntries(Object.entries(COST).map(([key,value])=>[key,-value])));}
+function buyBuilding(){if(sandboxActive&&sandboxBuild.free)return true;return changeResources(Object.fromEntries(Object.entries(COST).map(([key,value])=>[key,-value])));}
 function renderBuild(){
   const list=$("buildCatalog");if(!list)return;
   list.replaceChildren();
@@ -154,6 +154,7 @@ async function enterWorld(){
       write:saveBuildings,
       sell:()=>{const ok=sellBuilding();if(ok)renderBuild();return ok;},
       buy:()=>{const ok=buyBuilding();if(ok)renderBuild();return ok;},
+      sandboxOptions:()=>({active:sandboxActive,free:sandboxActive&&sandboxBuild.free,unlimited:sandboxActive&&sandboxBuild.unlimited,instant:sandboxActive&&sandboxBuild.instant}),
       setBuildHandler:handler=>{buildHandler=handler;},
       refreshBuild:items=>{buildItems=items;renderBuild();}
     });
