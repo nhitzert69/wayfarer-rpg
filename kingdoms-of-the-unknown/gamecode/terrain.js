@@ -150,91 +150,145 @@ export async function startTerrain(host, placement={}) {
   };
   resizeCamera();updateCamera();
 
-  // Town Hall Level 1: placement is scoped to the playable square, not the decorative mountains.
-  const hall=await loadGameModel("./models/buildings/level%20one/townhall%2520level%25201%2520compressed.glb");
+
+  // v3.0.47: independently placeable starting buildings with a shared rectangular collision system.
   const playBox=new THREE.Box3().setFromObject(playable||model);
-  if(!playable||playBox.isEmpty())throw new Error("Playable_Area missing: Town Hall placement needs the authored playable square.");
+  if(!playable||playBox.isEmpty())throw new Error("Playable_Area is required for building placement.");
   const playSize=playBox.getSize(new THREE.Vector3()),playCenter=playBox.getCenter(new THREE.Vector3());
-  const divisions=250; // 4 gameplay metres per placement cell on the 1,000 m map.
-  const cell=Math.min(playSize.x,playSize.z)/divisions;
-  const hallBox=new THREE.Box3().setFromObject(hall);
-  if(hallBox.isEmpty())throw new Error("Town Hall GLB contains no visible geometry.");
-  const hallSize=hallBox.getSize(new THREE.Vector3());
-  // 50 × 30 gameplay metres: preserve model proportions and fit inside the footprint.
-  const hallFootprintX=playSize.x*.05,hallFootprintZ=playSize.z*.03;
-  const hallScale=Math.min(hallFootprintX/Math.max(hallSize.x,.0001),hallFootprintZ/Math.max(hallSize.z,.0001));
-  hall.scale.multiplyScalar(hallScale);
-  hall.updateMatrixWorld(true);
-  const scaledBox=new THREE.Box3().setFromObject(hall);
-  // Wrap the imported mesh so its visual base rests on the playable surface.
-  const hallRoot=new THREE.Group();
-  hall.position.sub(new THREE.Vector3((scaledBox.min.x+scaledBox.max.x)/2,scaledBox.min.y,(scaledBox.min.z+scaledBox.max.z)/2));
-  hallRoot.add(hall);hallRoot.rotation.y=Math.PI;scene.add(hallRoot);
-  hallRoot.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
-  // Reserve the full 50 × 30 m rectangular plot even when the visible mesh is narrower.
-  const halfX=hallFootprintX/2,halfZ=hallFootprintZ/2;
-  // Fit the shadow camera to the actual scaled building (including its tall towers).
-  // Recenter whenever the Town Hall is moved, so distant placements keep crisp shadows.
-  const hallHeight=scaledBox.max.y-scaledBox.min.y;
-  const shadowReach=Math.max(halfX,halfZ,hallHeight)*3.5;
-  gameSun.shadow.camera.left=-shadowReach;
-  gameSun.shadow.camera.right=shadowReach;
-  gameSun.shadow.camera.top=shadowReach;
-  gameSun.shadow.camera.bottom=-shadowReach;
-  gameSun.shadow.camera.far=shadowReach*9;
-  gameSun.shadow.camera.updateProjectionMatrix();
-  const updateHallLight=()=>{
-    gameSun.target.position.copy(hallRoot.position);
-    gameSun.position.copy(hallRoot.position).add(new THREE.Vector3(shadowReach*1.1,shadowReach*2.4,shadowReach*1.1));
-    gameSun.target.updateMatrixWorld();
-    gameSun.updateMatrixWorld();
-  };
-  updateHallLight();
-  const rotationAngle=()=>hallRoot.rotation.y;
-  const limits=()=>{const quarter=Math.abs(Math.sin(rotationAngle()))>.5;return {x:Math.max(0,playSize.x/2-(quarter?halfZ:halfX)),z:Math.max(0,playSize.z/2-(quarter?halfX:halfZ))};};
-  const snap=(x,z)=>{const limit=limits();return new THREE.Vector3(
-    THREE.MathUtils.clamp(playCenter.x+Math.round((x-playCenter.x)/cell)*cell,playCenter.x-limit.x,playCenter.x+limit.x),
-    playBox.max.y+.015,
-    THREE.MathUtils.clamp(playCenter.z+Math.round((z-playCenter.z)/cell)*cell,playCenter.z-limit.z,playCenter.z+limit.z)
-  );};
-  const saved=placement.read?.();
-  if(saved?.rotation===1)hallRoot.rotation.y=Math.PI*.5;
-  const initial=saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.z)?snap(saved.x,saved.z):snap(playCenter.x,playCenter.z);
-  hallRoot.position.copy(initial);
-  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),divisions,0x7eff68,0xb4ff94);
-  grid.position.set(playCenter.x,playBox.max.y+.07,playCenter.z);
-  grid.material.transparent=true;grid.material.opacity=.98;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
+  const cell=Math.min(playSize.x,playSize.z)/250,unit=playSize.x/1000,groundLevel=playBox.max.y;
+  const definitions=[
+    {id:"townhall",name:"Town Hall",w:50,d:30,path:"./models/buildings/level%20one/townhall%2520level%25201%2520compressed.glb"},
+    {id:"barracks",name:"Barracks",w:40,d:30,path:"./models/buildings/level%20one/barracks%20level%201.glb"},
+    {id:"camp",name:"Military Camp",w:60,d:40,path:"./models/buildings/level%20one/military%20camp%20level%201.glb"}
+  ];
+  const saved=placement.read?.()||{};
+  const positions=saved.buildings||{};
+  const buildings=[];
+  const grid=new THREE.GridHelper(Math.min(playSize.x,playSize.z),250,0x7eff68,0xb4ff94);
+  grid.position.set(playCenter.x,groundLevel+.07,playCenter.z);
+  grid.material.transparent=true;grid.material.opacity=.85;grid.material.depthWrite=false;grid.visible=false;scene.add(grid);
   const gridFill=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(playSize.x,playSize.z),Math.min(playSize.x,playSize.z)),new THREE.MeshBasicMaterial({color:0x54ed5b,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide}));
-  gridFill.rotation.x=-Math.PI/2;gridFill.position.set(playCenter.x,playBox.max.y+.055,playCenter.z);gridFill.visible=false;scene.add(gridFill);
-  const moveUi=document.createElement("div");
-  moveUi.className="kotu-townhall-actions";
-  moveUi.innerHTML='<div class="kotu-townhall-select" hidden><strong>Town Hall · Level 1</strong><button type="button" data-action="move">Move</button></div><div class="kotu-townhall-move" hidden><strong>Move Town Hall · drag to reposition</strong><button type="button" data-action="rotate" aria-label="Rotate Town Hall 90 degrees">↻ Rotate</button><button type="button" data-action="confirm" aria-label="Confirm position">✓</button><button type="button" data-action="cancel" aria-label="Cancel movement">✕</button></div>';
+  gridFill.rotation.x=-Math.PI/2;gridFill.position.set(playCenter.x,groundLevel+.055,playCenter.z);gridFill.visible=false;scene.add(gridFill);
+  const floorModel=await loadGameModel("./models/terrain/TerrainTiles/BuildingsTerrain.glb");
+  const floorBox=new THREE.Box3().setFromObject(floorModel),floorSize=floorBox.getSize(new THREE.Vector3());
+  if(floorBox.isEmpty()||floorSize.x<=0||floorSize.z<=0)throw new Error("BuildingsTerrain tile has invalid dimensions.");
+  const tileMesh=[];
+  const makeFloor=(def)=>{
+    const group=new THREE.Group(),w=def.w*unit,d=def.d*unit;
+    // Repeated 10 m tiles are clipped to the plot, never extended into neighboring cells.
+    const nx=Math.ceil(def.w/10),nz=Math.ceil(def.d/10);
+    for(let ix=0;ix<nx;ix++)for(let iz=0;iz<nz;iz++){
+      const tw=Math.min(10,def.w-ix*10)*unit,td=Math.min(10,def.d-iz*10)*unit;
+      const tile=floorModel.clone(true);
+      const scale=Math.min(tw/floorSize.x,td/floorSize.z);
+      tile.scale.set(tw/floorSize.x,scale,td/floorSize.z);
+      tile.position.set(-w/2+(ix*10*unit)+tw/2,0,-d/2+(iz*10*unit)+td/2);
+      tile.position.x-=((floorBox.min.x+floorBox.max.x)/2)*tile.scale.x;
+      tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
+      tile.position.y=-floorBox.min.y*tile.scale.y+.005;
+      tile.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=false;}});
+      group.add(tile);
+    }
+    return group;
+  };
+  for(const def of definitions){
+    const visual=await loadGameModel(def.path),box=new THREE.Box3().setFromObject(visual);
+    if(box.isEmpty())throw new Error(def.name+" GLB has no visible geometry.");
+    const size=box.getSize(new THREE.Vector3());
+    const scale=Math.min(def.w*unit/Math.max(size.x,.00001),def.d*unit/Math.max(size.z,.00001));
+    visual.scale.multiplyScalar(scale);visual.updateMatrixWorld(true);
+    const scaled=new THREE.Box3().setFromObject(visual);
+    visual.position.sub(new THREE.Vector3((scaled.min.x+scaled.max.x)/2,scaled.min.y,(scaled.min.z+scaled.max.z)/2));
+    const root=new THREE.Group();root.add(visual);
+    const floor=makeFloor(def);root.add(floor);
+    root.traverse(node=>{if(node.isMesh&&node!==floor){node.castShadow=true;node.layers.enable(1);}});
+    scene.add(root);
+    const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
+    const stored=positions[def.id]||old;
+    const defaultX=playCenter.x+(def.id==="barracks"?-65:def.id==="camp"?75:0)*unit;
+    const defaultZ=playCenter.z+(def.id==="barracks"?-40:def.id==="camp"?-35:0)*unit;
+    const item={...def,root,floor,present:stored?.present!==false,rotation:stored?.rotation===1?1:0};
+    root.rotation.y=item.rotation?Math.PI*.5:Math.PI;
+    root.position.set(Number.isFinite(stored?.x)?stored.x:defaultX,groundLevel+.015,Number.isFinite(stored?.z)?stored.z:defaultZ);
+    root.visible=item.present;
+    buildings.push(item);
+  }
+  const dims=item=>item.rotation?{x:item.d*unit,z:item.w*unit}:{x:item.w*unit,z:item.d*unit};
+  const snap=(item,x,z)=>{
+    const dim=dims(item);
+    return new THREE.Vector3(
+      THREE.MathUtils.clamp(playCenter.x+Math.round((x-playCenter.x)/cell)*cell,playBox.min.x+dim.x/2,playBox.max.x-dim.x/2),
+      groundLevel+.015,
+      THREE.MathUtils.clamp(playCenter.z+Math.round((z-playCenter.z)/cell)*cell,playBox.min.z+dim.z/2,playBox.max.z-dim.z/2)
+    );
+  };
+  for(const item of buildings)item.root.position.copy(snap(item,item.root.position.x,item.root.position.z));
+  const overlaps=item=>buildings.some(other=>{
+    if(other===item||!other.present)return false;
+    const a=dims(item),b=dims(other);
+    return Math.abs(item.root.position.x-other.root.position.x)<(a.x+b.x)/2-1e-7 &&
+      Math.abs(item.root.position.z-other.root.position.z)<(a.z+b.z)/2-1e-7;
+  });
+  const valid=()=>!!active&&!overlaps(active);
+  let active=null,moving=false,draggingHall=false,original=null,pendingBuild=false;
+  const moveUi=document.createElement("div");moveUi.className="kotu-townhall-actions";
+  moveUi.innerHTML='<div class="kotu-townhall-select" hidden><strong data-building-name></strong><button type="button" data-action="move">⚒ Move</button><button type="button" data-action="sell">🪙 Sell</button></div><div class="kotu-townhall-move" hidden><strong data-placement-status>Move building</strong><button type="button" data-action="rotate">↻ Rotate</button><button type="button" data-action="confirm">✓</button><button type="button" data-action="cancel">✕</button></div>';
   host.appendChild(moveUi);
   const selectPanel=moveUi.querySelector(".kotu-townhall-select"),movePanel=moveUi.querySelector(".kotu-townhall-move");
-  let moving=false,selected=false,draggingHall=false,originalPosition=null,originalRotation=null;
-  const showPanels=()=>{selectPanel.hidden=!selected||moving;movePanel.hidden=!moving;grid.visible=moving;gridFill.visible=moving;};
-  const beginMove=()=>{originalPosition=hallRoot.position.clone();originalRotation=hallRoot.rotation.y;moving=true;selected=false;showPanels();};
-  const finishMove=confirm=>{if(!confirm&&originalPosition){hallRoot.position.copy(originalPosition);hallRoot.rotation.y=originalRotation;}updateHallLight();if(confirm)placement.write?.({x:hallRoot.position.x,z:hallRoot.position.z,rotation:Math.abs(hallRoot.rotation.y-Math.PI*.5)<.01?1:0});moving=false;selected=false;draggingHall=false;originalPosition=null;originalRotation=null;showPanels();};
-  moveUi.querySelector('[data-action="move"]').onclick=beginMove;
-  moveUi.querySelector('[data-action="rotate"]').onclick=()=>{hallRoot.rotation.y=Math.abs(hallRoot.rotation.y-Math.PI*.5)<.01?Math.PI:Math.PI*.5;hallRoot.position.copy(snap(hallRoot.position.x,hallRoot.position.z));updateHallLight();};
+  const showPanels=()=>{
+    selectPanel.hidden=!active||moving;movePanel.hidden=!moving;grid.visible=moving;gridFill.visible=moving;
+    if(active)moveUi.querySelector("[data-building-name]").textContent=active.name+" · Level 1";
+    if(moving){
+      const ok=valid();grid.material.color.setHex(ok?0xffffff:0xff3333);
+      gridFill.material.color.setHex(ok?0x54ed5b:0xff2424);
+      moveUi.querySelector("[data-placement-status]").textContent=ok?"Move "+active.name:"Overlap — cannot place here";
+      moveUi.querySelector('[data-action="confirm"]').disabled=!ok;
+    }
+  };
+  const persist=()=>placement.write?.({version:1,buildings:Object.fromEntries(buildings.map(item=>[item.id,{x:item.root.position.x,z:item.root.position.z,rotation:item.rotation,present:item.present}]))});
+  const updateHallLight=()=>{const hall=buildings[0];gameSun.target.position.copy(hall.root.position);gameSun.position.copy(hall.root.position).add(new THREE.Vector3(.6,1.4,.6));gameSun.target.updateMatrixWorld();gameSun.updateMatrixWorld();};
+  const reach=Math.max(playSize.x,playSize.z)*.15;
+  Object.assign(gameSun.shadow.camera,{left:-reach,right:reach,top:reach,bottom:-reach,far:reach*12});
+  gameSun.shadow.camera.updateProjectionMatrix();updateHallLight();
+  const beginMove=(item,isNew=false)=>{
+    active=item;original={position:item.root.position.clone(),rotation:item.rotation,present:item.present};
+    pendingBuild=isNew;moving=true;item.present=true;item.root.visible=true;showPanels();
+  };
+  const finishMove=commit=>{
+    if(!active)return;
+    if(commit&&!valid())return;
+    if(!commit){active.root.position.copy(original.position);active.rotation=original.rotation;active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;active.present=original.present;active.root.visible=active.present;}
+    else if(pendingBuild&&!placement.buy?.(active.id)){return;}
+    if(commit)persist();
+    moving=false;draggingHall=false;active=null;original=null;pendingBuild=false;updateHallLight();showPanels();
+  };
+  moveUi.querySelector('[data-action="move"]').onclick=()=>{if(active)beginMove(active);};
+  moveUi.querySelector('[data-action="rotate"]').onclick=()=>{if(!active)return;active.rotation=1-active.rotation;active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;active.root.position.copy(snap(active,active.root.position.x,active.root.position.z));showPanels();};
   moveUi.querySelector('[data-action="confirm"]').onclick=()=>finishMove(true);
   moveUi.querySelector('[data-action="cancel"]').onclick=()=>finishMove(false);
-  const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-playBox.max.y);
-  const terrainPoint=e=>{
-    const rect=renderer.domElement.getBoundingClientRect();
-    const ndc=new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
-    const ray=new THREE.Raycaster();ray.setFromCamera(ndc,camera);
-    return ray.ray.intersectPlane(placementPlane,new THREE.Vector3());
+  moveUi.querySelector('[data-action="sell"]').onclick=()=>{
+    if(!active||active.id==="townhall")return;
+    if(!window.confirm("Sell "+active.name+" for 1,000 gold, 150 wood and 100 stone?"))return;
+    if(!placement.sell?.(active.id))return;
+    active.present=false;active.root.visible=false;persist();active=null;showPanels();
   };
-  const hallHit=e=>{
+  placement.setBuildHandler?.(id=>{
+    const item=buildings.find(b=>b.id===id);
+    if(!item||item.present||moving)return false;
+    beginMove(item,true);return true;
+  });
+  placement.refreshBuild?.(buildings.map(item=>({id:item.id,name:item.name,present:item.present})));
+  const placementPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-groundLevel);
+  const terrainPoint=e=>{
     const rect=renderer.domElement.getBoundingClientRect();
     const ray=new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);
-    if(ray.intersectObject(hallRoot,true).length>0)return true;
-    // Small models remain selectable on touch screens without changing their visual size.
-    const center=hallRoot.position.clone().add(new THREE.Vector3(0,(scaledBox.max.y-scaledBox.min.y)*.35,0)).project(camera);
-    const px=(center.x+1)*rect.width/2+rect.left,py=(1-center.y)*rect.height/2+rect.top;
-    return Math.hypot(e.clientX-px,e.clientY-py)<(e.pointerType==="mouse"?14:28);
+    return ray.ray.intersectPlane(placementPlane,new THREE.Vector3());
+  };
+  const hallHit=e=>{
+    const rect=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);
+    return buildings.find(item=>item.present&&ray.intersectObject(item.root,true).length>0)||null;
   };
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   const pick=(e)=>{
@@ -247,9 +301,9 @@ export async function startTerrain(host, placement={}) {
   const touches=new Map();
   let pinchDistance=null;
   const onDown=e=>{
-    if(moving&&hallHit(e)){draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);return;}
-    if(!moving&&hallHit(e)){selected=true;showPanels();return;}
-    if(!moving&&selected){selected=false;showPanels();}
+    if(moving&&active&&hallHit(e)===active){draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);return;}
+    if(!moving&&hallHit(e)){active=hallHit(e);showPanels();return;}
+    if(!moving&&active){active=null;showPanels();}
     if(e.pointerType==="mouse"&&e.button!==0)return;
     if(e.pointerType!=="mouse"){
       touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -259,7 +313,7 @@ export async function startTerrain(host, placement={}) {
     renderer.domElement.setPointerCapture(e.pointerId);
   };
   const onMove=e=>{
-    if(draggingHall){const point=terrainPoint(e);if(point){hallRoot.position.copy(snap(point.x,point.z));updateHallLight();}return;}
+    if(draggingHall){const point=terrainPoint(e);if(point){active.root.position.copy(snap(active,point.x,point.z));updateHallLight();showPanels();}return;}
     if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(touches.size>=2){
       const [a,b]=Array.from(touches.values());
@@ -307,5 +361,5 @@ export async function startTerrain(host, placement={}) {
   let frame=0,disposed=false;
   function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
   draw();
-  return ()=>{moveUi.remove();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
+  return ()=>{placement.setBuildHandler?.(null);moveUi.remove();grid.geometry.dispose();grid.material.dispose();gridFill.geometry.dispose();gridFill.material.dispose();disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
 }
