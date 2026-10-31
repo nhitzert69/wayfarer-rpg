@@ -187,7 +187,7 @@ export async function startTerrain(host, placement={}) {
       tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
       // Align the highest visible tile surface just below the terrain plane, not its lowest vertex.
       // This removes the raised slab effect while keeping the texture visible at the surface.
-      tile.position.y=-floorBox.max.y*tile.scale.y-.001;
+      tile.position.y=-floorBox.max.y*tile.scale.y+.0005;
       tile.traverse(node=>{if(node.isMesh){node.receiveShadow=true;node.castShadow=false;}});
       group.add(tile);
     }
@@ -205,7 +205,8 @@ export async function startTerrain(host, placement={}) {
     // at the building perimeter. Independent horizontal factors also fix the camp appearing
     // smaller than the 50 m Town Hall despite its 60 m specified width.
     const sx=def.w*unit/Math.max(size.x,.00001),sz=def.d*unit/Math.max(size.z,.00001);
-    visual.scale.x*=sx;visual.scale.z*=sz;
+    if(def.id==="camp"){visual.scale.x*=sz;visual.scale.z*=sx;}
+    else{visual.scale.x*=sx;visual.scale.z*=sz;}
     visual.scale.y*=Math.min(sx,sz);
     visual.updateMatrixWorld(true);
     const scaled=new THREE.Box3().setFromObject(visual);
