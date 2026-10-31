@@ -177,3 +177,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.58 Dirt terrain shadows
 - Building dirt tiles must receive building shadows, but must not cast shadows. Keep tiles nearly flush with Playable_Area; building visual meshes cast shadows.
+
+## v3.0.59 Dirt tile texture continuity
+- Adjust UVs of partial BuildingsTerrain edge tiles in separate cloned geometry to preserve texture density; never mutate the shared imported GLB geometry. Preserve flush positioning and shadow reception without tile shadow casting.
