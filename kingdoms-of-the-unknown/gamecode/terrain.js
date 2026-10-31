@@ -252,7 +252,7 @@ export async function startTerrain(host, placement={}) {
     const stored=positions[def.id]||old;
     const defaultX=playCenter.x+(def.id==="barracks"?-65:def.id==="camp"?75:0)*unit;
     const defaultZ=playCenter.z+(def.id==="barracks"?-40:def.id==="camp"?-35:0)*unit;
-    const item={...def,root,floor,entrances,visualWidth:scaled.max.x-scaled.min.x,visualDepth:scaled.max.z-scaled.min.z,present:stored?.present!==false,rotation:stored?.rotation===1?1:0};
+    const item={...def,root,floor,entrances,finishAt:Number(stored?.finishAt)||0,visualWidth:scaled.max.x-scaled.min.x,visualDepth:scaled.max.z-scaled.min.z,present:stored?.present!==false,rotation:stored?.rotation===1?1:0};
     root.rotation.y=item.rotation?Math.PI*.5:Math.PI;
     root.position.set(Number.isFinite(stored?.x)?stored.x:defaultX,groundLevel+.015,Number.isFinite(stored?.z)?stored.z:defaultZ);
     root.visible=item.present;
@@ -419,7 +419,7 @@ export async function startTerrain(host, placement={}) {
       moveUi.querySelector('[data-action="confirm"]').disabled=!ok;
     }
   };
-  const persist=()=>placement.write?.({version:1,buildings:Object.fromEntries(buildings.map(item=>[item.id,{x:item.root.position.x,z:item.root.position.z,rotation:item.rotation,present:item.present}]))});
+  const persist=()=>placement.write?.({version:1,buildings:Object.fromEntries(buildings.map(item=>[item.id,{x:item.root.position.x,z:item.root.position.z,rotation:item.rotation,present:item.present,finishAt:item.finishAt||0}]))});
   const updateHallLight=()=>{const hall=buildings[0];gameSun.target.position.copy(hall.root.position);gameSun.position.copy(hall.root.position).add(new THREE.Vector3(.6,1.4,.6));gameSun.target.updateMatrixWorld();gameSun.updateMatrixWorld();};
   const reach=Math.max(playSize.x,playSize.z)*.15;
   Object.assign(gameSun.shadow.camera,{left:-reach,right:reach,top:reach,bottom:-reach,far:reach*12});
