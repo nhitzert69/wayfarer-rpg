@@ -203,11 +203,36 @@ export async function startTerrain(host, placement={}) {
     floor.name="AuthoredBuildingGround";
     // Blender Plane meshes are already part of visual and move with the building.
     visual.traverse(node=>{
-      if(!node.isMesh||!/^Plane(?:\\.|$)/i.test(node.name))return;
+      if(!node.isMesh)return;
+      node.layers.enable(1);
+      const isGround=/^Plane(?:\\.|$)/i.test(node.name)||/^BuildingGround/i.test(node.name);
+      node.castShadow=!isGround;
       node.receiveShadow=true;
-      node.castShadow=false;
+      if(!isGround)return;
+      // Fade only the authored ground's outside UV perimeter into the playfield.
+      // Preserve its original image and keep the middle fully opaque.
+      const soften=material=>{
+        const m=material.clone();
+        m.transparent=true;
+        m.depthWrite=false;
+        m.side=THREE.DoubleSide;
+        m.onBeforeCompile=shader=>{
+          shader.fragmentShader=shader.fragmentShader.replace(
+            "#include <map_fragment>",
+            "#include <map_fragment>\n"+
+            "vec2 groundEdge=min(fract(vMapUv),1.0-fract(vMapUv));\n"+
+            "float groundFade=smoothstep(0.0,0.075,min(groundEdge.x,groundEdge.y));\n"+
+            "diffuseColor.a*=groundFade;"
+          );
+        };
+        m.customProgramCacheKey=()=>"kotu-ground-edge-v1";
+        return m;
+      };
+      // Only UV-mapped ground materials can be feathered.
+      if(node.geometry?.attributes?.uv&&node.material){
+        node.material=Array.isArray(node.material)?node.material.map(m=>m.map?soften(m):m):node.material.map?soften(node.material):node.material;
+      }
     });
-    visual.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
     scene.add(root);
     const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
     const stored=positions[def.id]||old;
@@ -270,6 +295,20 @@ export async function startTerrain(host, placement={}) {
     const x=roadRandom()*128,y=roadRandom()*256,r=.3+roadRandom()*3.2;
     roadCtx.fillStyle=roadRandom()<.55?"rgba(70,48,27,.10)":"rgba(211,179,120,.12)";
     roadCtx.beginPath();roadCtx.ellipse(x,y,r,r*.7,roadRandom()*Math.PI,0,Math.PI*2);roadCtx.fill();
+  }
+  // Road runs vertically in UV space. Paint narrow irregular stone kerbs at
+  // both horizontal texture edges; UVs follow the spline around every bend.
+  for(const side of [0,1]){
+    for(let y=0;y<256;y+=7){
+      const size=6+Math.floor(roadRandom()*7);
+      const x=side===0?roadRandom()*3:128-13+roadRandom()*3;
+      roadCtx.fillStyle="#39352e";
+      roadCtx.fillRect(x-1,y-1,size+2,8);
+      roadCtx.fillStyle=["#726b5b","#888071","#5b574e","#a09883"][Math.floor(roadRandom()*4)];
+      roadCtx.fillRect(x,y,size,6);
+      roadCtx.fillStyle="rgba(204,191,163,.24)";
+      roadCtx.fillRect(x+1,y+1,Math.max(1,size-3),1);
+    }
   }
   const roadTexture=new THREE.CanvasTexture(roadCanvas);
   roadTexture.colorSpace=THREE.SRGBColorSpace;
