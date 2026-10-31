@@ -1,3 +1,9 @@
+# Wayfarer v3.0.38 — full placement snap grid (2026-10-31)
+
+- Display all 50 grid divisions in Move mode, matching the existing 50-division snapping interval rather than showing every other line.
+- Keep green overlay, Town Hall drag-only movement, camera controls, rotation, scale, confirm/cancel and saved positions unchanged.
+- Validation: GitHub source edit complete; live browser visual check pending.
+
 # Wayfarer v3.0.37 — Town Hall placement controls (2026-10-31)
 
 - Rotated the Human Level 1 Town Hall 180 degrees and halved its previous footprint scale (17% to 8.5% of the playable square).
