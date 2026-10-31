@@ -1,3 +1,9 @@
+# Wayfarer v3.0.61 — game code cache-busting (2026-10-31)
+
+- Added versioned module URLs for the standalone game entry and terrain module so browsers request new scripts after deployment.
+- Investigated stale site reports after v3.0.60 model changes; the service worker still has an older cache label, and its update was blocked by tooling.
+- Existing models, gameplay, save data and account isolation unchanged. Live deployment not verified.
+
 # Wayfarer v3.0.60 — load revised building GLBs (2026-10-31)
 
 - Switched Town Hall, Barracks and Military Camp model references to Townhalllvl1.glb, Militarybarrackslvl1.glb and Militarycamplvl1.glb respectively.
