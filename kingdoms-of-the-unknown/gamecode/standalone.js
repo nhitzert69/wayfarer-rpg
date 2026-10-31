@@ -100,7 +100,12 @@ async function enterWorld(){
   try{
     const {startTerrain}=await import("./terrain.js");
     if(generation!==loadGeneration)return;
-    const dispose=await startTerrain($("world"));
+    const placementKind=sandboxActive?"sandbox":"live";
+    const placementKey=storageKey(placementKind+"-townhall-level1");
+    const dispose=await startTerrain($("world"),{
+      read:()=>{try{return JSON.parse(localStorage.getItem(placementKey)||"null");}catch{return null;}},
+      write:position=>localStorage.setItem(placementKey,JSON.stringify(position))
+    });
     if(generation!==loadGeneration){dispose();return;}
     cleanup=dispose;
     $("terrainLoading").hidden=true;
