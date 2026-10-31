@@ -1,3 +1,11 @@
+# Wayfarer v3.0.37 — Town Hall placement controls (2026-10-31)
+
+- Rotated the Human Level 1 Town Hall 180 degrees and halved its previous footprint scale (17% to 8.5% of the playable square).
+- Increased camera zoom-in limit from 5.25× to 10× without changing maximum zoom-out.
+- Made the placement grid more visible with a bright 25-division grid and translucent green playable-area overlay; placement continues snapping to 50 divisions.
+- Removed tap-to-teleport placement. Only dragging the Town Hall moves it; ground drag, wheel zoom and pinch zoom are available in movement mode. Confirm/cancel and per-account Sandbox isolation retained.
+- Validation: GitHub source edits only; live browser and touch-device behavior INCONCLUSIVE pending user test.
+
 # Wayfarer v3.0.36 — Level 1 Town Hall placement (2026-10-31)
 
 - Load `human-townhall.fbx` at the centre of `Playable_Area`, size it relative to the authored 10 m square, and expose selection → Move → drag/tap grid → green confirm / red cancel.
