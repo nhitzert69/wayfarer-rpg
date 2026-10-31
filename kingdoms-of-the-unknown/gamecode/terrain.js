@@ -73,7 +73,7 @@ export async function startTerrain(host, placement={}) {
   const orthoCenterY=camera.isOrthographicCamera?(camera.top+camera.bottom)/2:0;
   camera.near=0.1;camera.far=100000;scene.add(camera);
   const groundY=targetBounds.min.y;
-  const state={zoom:1,offset:new THREE.Vector3()},zoomMin=1,zoomMax=10;
+  const state={zoom:2.5,offset:new THREE.Vector3()},zoomMin=1,zoomMax=20;
   const resizeCamera=()=>{
     const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
     viewportCrop=Math.max(1,aspect/authoredAspect);
@@ -121,7 +121,7 @@ export async function startTerrain(host, placement={}) {
   const hallBox=new THREE.Box3().setFromObject(hall);
   if(hallBox.isEmpty())throw new Error("Town Hall FBX contains no visible geometry.");
   const hallSize=hallBox.getSize(new THREE.Vector3());
-  const hallScale=Math.min(playSize.x*.085/Math.max(hallSize.x,.0001),playSize.z*.085/Math.max(hallSize.z,.0001));
+  const hallScale=Math.min(playSize.x*.03/Math.max(hallSize.x,.0001),playSize.z*.03/Math.max(hallSize.z,.0001));
   hall.scale.multiplyScalar(hallScale);
   hall.updateMatrixWorld(true);
   const scaledBox=new THREE.Box3().setFromObject(hall);
@@ -209,7 +209,7 @@ export async function startTerrain(host, placement={}) {
     if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down.moved=true;
     if(down.moved){
       const area=footprint(camera.position,state.zoom);
-      const factor=area?(area.maxX-area.minX)/Math.max(150,host.clientWidth):0;
+      const factor=area?(area.maxX-area.minX)*state.zoom/Math.max(150,host.clientWidth):0;
       const right=new THREE.Vector3(1,0,0).applyQuaternion(rotation);
       const up=new THREE.Vector3(0,1,0).applyQuaternion(rotation);
       state.offset.addScaledVector(right,-dx*factor).addScaledVector(up,dy*factor);
