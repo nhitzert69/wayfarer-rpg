@@ -1,3 +1,9 @@
+# Wayfarer v3.0.46 — rename building model directory (2026-10-31)
+
+- Renamed `kingdoms-of-the-unknown/models/buildings level 1/` to `kingdoms-of-the-unknown/models/buildings/`, retaining `level one/` and its Town Hall GLB unchanged.
+- Updated the Town Hall GLB loader URL, mandatory game rules and service-worker cache version; no changes to game mechanics or saved data.
+- Validation: GitHub tree move and source-level checks PASS; live browser and mobile loading INCONCLUSIVE pending deployment testing.
+
 # Wayfarer v3.0.45 — organize Level 1 building models (2026-10-31)
 
 - Renamed `kingdoms-of-the-unknown/models/townhall/` to `kingdoms-of-the-unknown/models/buildings level 1/`, preserving the existing `level one` subfolder and binary GLB byte-for-byte.
