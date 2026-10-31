@@ -277,6 +277,9 @@ export async function startTerrain(host, placement={}) {
     nextInstance=Math.max(nextInstance,Number(match[2])+1);
     cloneBuilding(templates.get(match[1]),id,stored);
   }
+  const refreshConstruction=()=>{for(const item of buildings){if(item.finishAt&&item.finishAt<=Date.now())item.finishAt=0;if(item.root.children[0])item.root.children[0].visible=!item.finishAt;}};
+  refreshConstruction();
+  const constructionTimer=setInterval(refreshConstruction,1000);
   const dims=item=>item.rotation?{x:item.d*unit,z:item.w*unit}:{x:item.w*unit,z:item.d*unit};
   const snap=(item,x,z)=>{
     const dim=dims(item);
