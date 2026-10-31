@@ -1,3 +1,10 @@
+# Wayfarer v3.0.63 — full building dirt plots and closer placement (2026-10-31)
+
+- Fill full reserved gameplay plots with dirt underlays for all three buildings, instead of fitting dirt to visual model bounds.
+- Calculate building-to-building collisions from scaled visible model dimensions, allowing closer positioning without visible building overlap; preserve reserved footprint for grid/map boundary checks.
+- Use the tighter visual collision dimensions for road path obstruction and entrance-side routing.
+- Updated service worker cache and standalone module URLs to v3.0.63. Browser testing pending.
+
 # Wayfarer v3.0.62 — entrance-based automatic roads and mandatory cache versioning (2026-10-31)
 
 - Added automatically generated dirt roads linking exported entrance nodes on the Town Hall, Barracks and Military Camp, routed around building plots with grid pathfinding.
