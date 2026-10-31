@@ -11,6 +11,11 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Correct Barracks/Camp GLB assignments v3.0.49 (2026-10-31)
+- The two uploaded files had been assigned the opposite names: load the red-roofed barracks visual from `military camp level 1.glb` for the Barracks gameplay ID, and the tent-filled camp visual from `barracks level 1.glb` for the Military Camp gameplay ID. Do not rename gameplay IDs or move existing saves.
+- Remove the mistaken imported-model 90° rotation and independent X/Z stretching. Preserve source geometry proportions with uniform scaling inside the 40 × 30 and 60 × 40 m gameplay footprints. Existing plot dimensions, ground tiles, prices, placement, saves and Sandbox isolation remain unchanged.
+- This corrects the visual/model mapping and supersedes the v3.0.48 camp-specific rotation/stretching instruction.
+
 ## Building ground alignment and Military Camp orientation v3.0.48 (2026-10-31)
 - Keep Town Hall, Barracks and Camp placement footprints at 50 × 30, 40 × 30 and 60 × 40 gameplay metres respectively. Fit each visible model to its designated footprint so terrain does not extend beyond the model's rectangular ground perimeter.
 - Rotate the Military Camp's imported visual 90° to put its long axis along the 60 m footprint; retain the existing player-controlled 90° rotation and collision bounds.
