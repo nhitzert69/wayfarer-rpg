@@ -199,6 +199,7 @@ export async function startTerrain(host, placement={}) {
   };
   for(const def of definitions){
     const visual=await loadGameModel(def.path);
+    if(def.id==='camp')visual.rotation.y+=Math.PI/2;
     visual.updateMatrixWorld(true);
     const box=new THREE.Box3().setFromObject(visual);
     if(box.isEmpty())throw new Error(def.name+" GLB has no visible geometry.");
