@@ -1,3 +1,10 @@
+# Wayfarer v3.0.60 — load revised building GLBs (2026-10-31)
+
+- Switched Town Hall, Barracks and Military Camp model references to Townhalllvl1.glb, Militarybarrackslvl1.glb and Militarycamplvl1.glb respectively.
+- New models supplied with entrance markers intended for future automatic road connections. Road generation is not implemented in this update.
+- Preserved existing footprints, orientation, building placement, saves, economy, tile UV handling and shadows.
+- Live GLB rendering and marker inspection not yet verified.
+
 # Wayfarer v3.0.59 — consistent building dirt texture density (2026-10-31)
 
 - Adjusted UVs on cloned dirt tile geometry to account for partial edge tiles, preventing the full texture from being compressed into narrow strips.
