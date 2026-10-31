@@ -1,3 +1,10 @@
+# Wayfarer v3.0.68 — fix missing legacy building terrain asset (2026-10-31)
+
+- Removed the startup fetch for deleted TerrainTiles/BuildingsTerrain.glb, which caused a 404 and prevented the map from loading.
+- Removed procedural dirt tile generation; building ground is supplied by Plane meshes within the existing building GLBs.
+- Preserved building models, entrance markers, roads, placement, saves and collision logic. No road texture change in this hotfix.
+- Bumped service-worker cache and standalone module URLs to v3.0.68. Live browser verification pending.
+
 # Wayfarer v3.0.67 — per-building dirt fit adjustments (2026-10-31)
 
 - Tightened the Town Hall dirt surface and expanded Barracks and Military Camp dirt surfaces independently using local grid-cell offsets.
