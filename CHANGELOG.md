@@ -1,3 +1,9 @@
+# Wayfarer v3.0.71 — organize Kingdoms title-screen images (2026-10-31)
+
+- Moved existing Kingdoms login/title artwork from shared assets/images to kingdoms-of-the-unknown/images/titlecreens without changing its binary contents.
+- Updated standalone title screen CSS and service-worker precache references to the new location; left the separately uploaded Lanterns Beneath the Ominous Castle.png in place for future loading-screen use.
+- Updated service-worker cache version to v3.0.71. No account, game, or save changes. Live browser verification pending.
+
 # Wayfarer v3.0.69 — road stone edges and authored ground shading (2026-10-31)
 
 - Added stone edging along both sides of generated road texture, following the road's spline UVs around curves.

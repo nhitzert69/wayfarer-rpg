@@ -208,3 +208,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.70 UV edge-blend regression
 - Never use fract(repeating texture UVs) as a building ground silhouette/alpha mask: it creates transparent internal grid seams. Ground material textures must remain unmodified until a geometry-boundary-based edge mask is implemented and visually validated. Ground receives shadows and does not cast them.
+
+## v3.0.71 title artwork organization
+- Keep Kingdoms title/login artwork inside kingdoms-of-the-unknown/images/titlecreens. When moving an image, update CSS and service-worker precache references in the same commit, and bump cache version. Preserve existing login behavior; the separate Lanterns image is reserved for loading-screen integration.
