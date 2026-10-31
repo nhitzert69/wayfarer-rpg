@@ -11,6 +11,9 @@
 - Support both GLB/glTF and FBX models. The active terrain remains GLB; future units, buildings, and scenery may use FBX.
 - The authored Blender camera uses a 16:9 reference frame. Wider game viewports must crop rather than expand its field of view past the mountain border; narrower viewports may crop horizontally. Preserve zoom and pan restrictions.
 
+## Military Camp visual orientation v3.0.51 (2026-10-31)
+- Rotate only the tent-filled Military Camp GLB visual 90 degrees around Y before uniform scaling. Preserve its 60 x 40 metre plot, tile orientation, collision bounds, player-saved rotation and all other buildings.
+
 ## Daytime lighting stage 1 v3.0.50 (2026-10-31)
 - Preserve imported terrain/building meshes, textures, gameplay scale, authored camera, positions and Sandbox data. Render with sRGB output, ACES filmic tone mapping and modest 1.12 exposure.
 - Use one warm directional sun for illumination and local shadow casting, with a cooler sky/warm-ground hemisphere fill. Avoid double-counting a second key light. Maintain the existing 2048 shadow map, Town Hall-following shadow frustum and mobile-friendly PCFSoftShadowMap; modestly soften shadow radius and reduce normal bias.
