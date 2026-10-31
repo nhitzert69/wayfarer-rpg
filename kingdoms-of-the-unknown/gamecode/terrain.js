@@ -177,7 +177,7 @@ export async function startTerrain(host, placement={}) {
   const floorModel=await loadGameModel("./models/terrain/TerrainTiles/BuildingsTerrain.glb");
   const floorBox=new THREE.Box3().setFromObject(floorModel),floorSize=floorBox.getSize(new THREE.Vector3());
   if(floorBox.isEmpty()||floorSize.x<=0||floorSize.z<=0)throw new Error("BuildingsTerrain tile has invalid dimensions.");
-  const makeFloor=(width,depth)=>{
+  const makeFloor=(width,depth,offsetX=0,offsetZ=0)=>{
     // The dirt follows the actual scaled mesh bounds, not the larger gameplay collision plot.
     // Keep 10 gameplay-metre tile repeats and trim the final row/column to the mesh footprint.
     const group=new THREE.Group(),tileSpan=10*unit;
@@ -188,7 +188,7 @@ export async function startTerrain(host, placement={}) {
       // Flatten the imported terrain tile so its vertical sides cannot form a raised platform.
       const sy=Math.min(tw/floorSize.x,td/floorSize.z)*.002;
       tile.scale.set(tw/floorSize.x,sy,td/floorSize.z);
-      tile.position.set(-width/2+ix*tileSpan+tw/2,0,-depth/2+iz*tileSpan+td/2);
+      tile.position.set(offsetX-width/2+ix*tileSpan+tw/2,0,offsetZ-depth/2+iz*tileSpan+td/2);
       tile.position.x-=((floorBox.min.x+floorBox.max.x)/2)*tile.scale.x;
       tile.position.z-=((floorBox.min.z+floorBox.max.z)/2)*tile.scale.z;
       // Root sits 0.015 above ground; place the tile top just 0.001 above ground.
@@ -232,7 +232,20 @@ export async function startTerrain(host, placement={}) {
       node.traverse(part=>{if(part.isMesh){part.visible=false;part.raycast=()=>{};}});
     });
     const root=new THREE.Group();root.add(visual);
-    const floor=makeFloor(def.w*unit,def.d*unit);root.add(floor);
+    // The authored entrance/visual alignment is not necessarily centred on the
+    // collision plot. Tailor dirt bounds in grid-cell increments per building.
+    // Offsets are in unrotated local plot coordinates and rotate with the root.
+    const dirtAdjust={
+      townhall:{left:-1,right:-1.5,front:0,back:1},
+      camp:{left:0,right:0.5,front:0,back:-0.2},
+      barracks:{left:1,right:-0.25,front:0,back:-0.5}
+    }[def.id];
+    const dirtStep=cell;
+    const dirtLeft=-def.w*unit/2+dirtAdjust.left*dirtStep;
+    const dirtRight=def.w*unit/2+dirtAdjust.right*dirtStep;
+    const dirtFront=-def.d*unit/2+dirtAdjust.front*dirtStep;
+    const dirtBack=def.d*unit/2+dirtAdjust.back*dirtStep;
+    const floor=makeFloor(dirtRight-dirtLeft,dirtBack-dirtFront,(dirtLeft+dirtRight)/2,(dirtFront+dirtBack)/2);root.add(floor);
     visual.traverse(node=>{if(node.isMesh){node.castShadow=true;node.layers.enable(1);}});
     scene.add(root);
     const old=def.id==="townhall"&&!positions[def.id]&&Number.isFinite(saved.x)?saved:null;
@@ -339,17 +352,30 @@ export async function startTerrain(host, placement={}) {
       return points.filter((p,i)=>i===0||i===points.length-1||
         Math.abs((points[i+1].x-p.x)*(p.z-points[i-1].z)-(points[i+1].z-p.z)*(p.x-points[i-1].x))>1e-8);
     };
-    const drawSegment=(a,b,width)=>{
-      const dx=b.x-a.x,dz=b.z-a.z,distance=Math.hypot(dx,dz);
-      if(distance<.00001)return;
-      // PlaneGeometry lies in local XY; rotate into XZ, then rotate ABOUT WORLD Y.
-      // Previous Euler Y rotation after X tilt caused diagonal and upright strips.
-      const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,distance),roadMaterials[0]);
-      mesh.rotation.order="YXZ";
-      mesh.rotation.x=-Math.PI/2;
-      mesh.rotation.y=Math.atan2(-dx,dz);
-      mesh.position.set((a.x+b.x)/2,groundLevel+.022,(a.z+b.z)/2);
-      mesh.material.side=THREE.DoubleSide;
+    const drawTrail=(points,width)=>{
+      if(points.length<2)return;
+      // Smooth a routed centreline while keeping the authored entrance positions.
+      const curve=new THREE.CatmullRomCurve3(points,false,"centripetal",.3);
+      const length=points.reduce((sum,p,i)=>i?sum+p.distanceTo(points[i-1]):0,0);
+      const count=Math.max(8,Math.min(320,Math.ceil(length/(roadGridStep*.65))));
+      const positions=[],uvs=[],indices=[];
+      for(let i=0;i<=count;i++){
+        const u=i/count,p=curve.getPoint(u),tangent=curve.getTangent(u);
+        const lateral=new THREE.Vector3(-tangent.z,0,tangent.x).normalize();
+        // Subtle irregular edges, with no sharp zigzags.
+        const wobble=(Math.sin(u*67+1.7)*.055+Math.sin(u*129)*.025)*width;
+        const spread=width*(.5+Math.sin(u*51)*.025);
+        for(const side of [-1,1]){
+          positions.push(p.x+lateral.x*(side*spread+wobble),groundLevel+.024,p.z+lateral.z*(side*spread+wobble));
+          uvs.push(side===-1?0:1,u*length/Math.max(width,.001));
+        }
+        if(i<count){const k=i*2;indices.push(k,k+2,k+1,k+1,k+2,k+3);}
+      }
+      const geometry=new THREE.BufferGeometry();
+      geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
+      geometry.setAttribute("uv",new THREE.Float32BufferAttribute(uvs,2));
+      geometry.setIndex(indices);geometry.computeVertexNormals();
+      const mesh=new THREE.Mesh(geometry,roadMaterials[0]);
       mesh.receiveShadow=true;mesh.castShadow=false;roadLayer.add(mesh);
     };
     for(const item of buildings){
@@ -358,11 +384,9 @@ export async function startTerrain(host, placement={}) {
       const path=route(start.point,end.point);
       if(!path.length)continue;
       const width=Math.min(start.width,end.width,3.5*unit);
-      // Connect the authored doorway to the outside road path at both ends.
-      drawSegment(start.door,start.point,width);
-      for(let i=1;i<path.length;i++)drawSegment(path[i-1],path[i],width);
-      drawSegment(path[path.length-1],end.point,width);
-      drawSegment(end.point,end.door,width);
+      const points=[start.door,start.point,...path.slice(1,-1),end.point,end.door];
+      const clean=points.filter((p,i)=>i===0||p.distanceTo(points[i-1])>.00001);
+      drawTrail(clean,width);
     }
   };
   updateRoads();
@@ -388,6 +412,15 @@ export async function startTerrain(host, placement={}) {
   Object.assign(gameSun.shadow.camera,{left:-reach,right:reach,top:reach,bottom:-reach,far:reach*12});
   gameSun.shadow.camera.updateProjectionMatrix();updateHallLight();
   const beginMove=(item,isNew=false)=>{
+    // While placement is open, selecting a different building switches the
+    // moving target without committing the first building's draft location.
+    if(moving&&active&&active!==item){
+      active.root.position.copy(original.position);
+      active.rotation=original.rotation;
+      active.root.rotation.y=active.rotation?Math.PI*.5:Math.PI;
+      active.present=original.present;active.root.visible=active.present;
+      pendingBuild=false;
+    }
     active=item;original={position:item.root.position.clone(),rotation:item.rotation,present:item.present};
     pendingBuild=isNew;moving=true;item.present=true;item.root.visible=true;showPanels();
   };
@@ -441,7 +474,7 @@ export async function startTerrain(host, placement={}) {
   const touches=new Map();
   let pinchDistance=null;
   const onDown=e=>{
-    if(moving&&active&&hallHit(e)===active){draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);return;}
+    if(moving){const hit=hallHit(e);if(hit){if(hit!==active)beginMove(hit);draggingHall=true;renderer.domElement.setPointerCapture(e.pointerId);return;}}
     if(!moving&&hallHit(e)){active=hallHit(e);showPanels();return;}
     if(!moving&&active){active=null;showPanels();}
     if(e.pointerType==="mouse"&&e.button!==0)return;
