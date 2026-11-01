@@ -52,7 +52,7 @@ export async function startTerrain(host, placement={}) {
   // Neutral rendering: do not impose the old strategy-view exposure on Blender-authored materials.
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure=1;
-  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.enabled=!mobileGraphics;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   
   // No generated lights. GLTFLoader preserves KHR_lights_punctual exported from Blender.
@@ -120,14 +120,14 @@ export async function startTerrain(host, placement={}) {
   sun.position.copy(lightCenter).add(new THREE.Vector3(lightExtent*.6,lightExtent*1.4,lightExtent*.85));
   sun.target.position.copy(lightCenter);
   scene.add(sun,sun.target);
-  sun.castShadow=true;
+  sun.castShadow=!mobileGraphics;
   sun.shadow.mapSize.set(mobileGraphics?1024:2048,mobileGraphics?1024:2048);
   sun.shadow.camera.left=-lightExtent*.8;sun.shadow.camera.right=lightExtent*.8;
   sun.shadow.camera.top=lightExtent*.8;sun.shadow.camera.bottom=-lightExtent*.8;
   sun.shadow.camera.near=Math.max(.01,lightExtent*.01);sun.shadow.camera.far=lightExtent*4;
   sun.shadow.bias=-0.00015;sun.shadow.normalBias=0.02;
   sun.shadow.camera.updateProjectionMatrix();
-  model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
+  if(!mobileGraphics)model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
   console.info("Kingdoms hub: using game-owned lighting.",{disabledImportedLights:importedLights.length,mobileGraphics,devicePixelRatio:renderer.getPixelRatio(),shadowSize:sun.shadow.mapSize.x});
   camera.layers.enable(1);
 
