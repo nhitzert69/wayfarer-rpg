@@ -1,3 +1,8 @@
+## v3.0.85 — Game-owned Kingdom Hub lighting (supersedes earlier Blender-light rules)
+- The Kingdom Hub must ignore/remove punctual lights exported inside terrain_kingdoms.glb at runtime. Use game-controlled hemisphere fill and directional sunlight with terrain-bounded shadows instead; do not modify the source GLB or its material textures.
+- Calibrate game light intensities from live screenshots; do not claim this fixes white materials until WebGL is visually checked. If whitening persists with imported lights disabled, inspect emissive/material settings and custom playable-area shader.
+- Preserve the Blender camera's exported position, terrain-centered look target, bounded pan and limited zoom. Battle-mode lighting may be defined separately when that mode is implemented.
+
 ## v3.0.84 — Hub and battle separation, lighting test
 - The Kingdom hub loads terrain_kingdoms.glb without any player character. Use the exported Blender camera position and projection, aim it at the playable terrain, and allow bounded WASD/drag/joystick panning and small wheel/pinch zoom. Building clicks identify authored meshes; interfaces can be added separately.
 - The playable character is reserved for a future separate battle mode; do not import Player.fbx into the hub.
