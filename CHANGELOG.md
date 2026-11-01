@@ -1,3 +1,9 @@
+# Wayfarer v3.0.83 — player scale and overexposure correction (2026-11-01)
+
+- Reduced separately loaded Player.fbx scale from 0.03 to 0.003. The terrain GLB and Blender-authored lights are unchanged.
+- Switched from NoToneMapping to ACESFilmicToneMapping at exposure 1 to compress clipped highlights; no new light sources or texture edits. Exact Blender appearance is not guaranteed.
+- Preserved camera, movement controls, Gold/Food HUD, login, Sandbox and saved state. Updated cache versions. Browser rendering verification pending.
+
 # Wayfarer v3.0.82 — separate player camera and Gold/Food (2026-11-01)
 
 - Set separately loaded Player.fbx to explicit gameplay scale 0.03; terrain GLB, lighting and saved state remain untouched.
