@@ -1,3 +1,9 @@
+# Kingdoms standalone cleanup (2026-11-01)
+
+- Removed Return to Wayfarer button and iframe parent messaging from the game.
+- Removed the Wayfarer return link from the rotate-phone screen.
+- Preserved independent Kingdoms authentication, models, rendering, game menu, saves and Sandbox. Browser verification pending.
+
 # Kingdoms standalone branch split (2026-11-01)
 
 - Created `kingdoms-standalone` from main at `c9609b60be412332b935aa7c54342a92c3519f08`.
