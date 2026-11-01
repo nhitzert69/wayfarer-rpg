@@ -22,17 +22,23 @@ export async function startTerrain(host, placement={}) {
   const THREE=await import("three");
   const terrainFile="./models/terrain/Playmap/terrain_kingdoms.glb";
   const scene=new THREE.Scene();
+  // iOS WebKit can terminate the page under high WebGL memory pressure.
+  // Limit only mobile rendering buffers; keep the original GLB untouched.
+  const mobileGraphics=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||
+    (navigator.maxTouchPoints>1&&/Macintosh/i.test(navigator.userAgent));
+  const skyWidth=mobileGraphics?1024:2048;
+  const skyHeight=mobileGraphics?512:1024;
   // Procedural starfield behind the terrain, with no external asset dependency.
   const skyCanvas=document.createElement("canvas");
-  skyCanvas.width=2048;skyCanvas.height=1024;
+  skyCanvas.width=skyWidth;skyCanvas.height=skyHeight;
   const sky=skyCanvas.getContext("2d");
-  const gradient=sky.createLinearGradient(0,0,0,1024);
+  const gradient=sky.createLinearGradient(0,0,0,skyHeight);
   gradient.addColorStop(0,"#030713");gradient.addColorStop(0.5,"#10152b");gradient.addColorStop(1,"#080b19");
-  sky.fillStyle=gradient;sky.fillRect(0,0,2048,1024);
+  sky.fillStyle=gradient;sky.fillRect(0,0,skyWidth,skyHeight);
   let seed=93217;
   const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
-  for(let i=0;i<2200;i++){
-    const x=random()*2048,y=random()*1024,r=0.25+random()*1.15;
+  for(let i=0;i<(mobileGraphics?1100:2200);i++){
+    const x=random()*skyWidth,y=random()*skyHeight,r=0.25+random()*1.15;
     sky.beginPath();sky.arc(x,y,r,0,Math.PI*2);
     sky.fillStyle="rgba(225,235,255,"+(0.2+random()*0.75)+")";sky.fill();
   }
@@ -40,8 +46,8 @@ export async function startTerrain(host, placement={}) {
   starTexture.colorSpace=THREE.SRGBColorSpace;
   starTexture.mapping=THREE.EquirectangularReflectionMapping;
   scene.background=starTexture;
-  const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance",logarithmicDepthBuffer:true,preserveDrawingBuffer:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:!mobileGraphics,powerPreference:mobileGraphics?"default":"high-performance",logarithmicDepthBuffer:true,preserveDrawingBuffer:!mobileGraphics});
+  renderer.setPixelRatio(mobileGraphics?1:Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   // Neutral rendering: do not impose the old strategy-view exposure on Blender-authored materials.
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -115,14 +121,14 @@ export async function startTerrain(host, placement={}) {
   sun.target.position.copy(lightCenter);
   scene.add(sun,sun.target);
   sun.castShadow=true;
-  sun.shadow.mapSize.set(2048,2048);
+  sun.shadow.mapSize.set(mobileGraphics?1024:2048,mobileGraphics?1024:2048);
   sun.shadow.camera.left=-lightExtent*.8;sun.shadow.camera.right=lightExtent*.8;
   sun.shadow.camera.top=lightExtent*.8;sun.shadow.camera.bottom=-lightExtent*.8;
   sun.shadow.camera.near=Math.max(.01,lightExtent*.01);sun.shadow.camera.far=lightExtent*4;
   sun.shadow.bias=-0.00015;sun.shadow.normalBias=0.02;
   sun.shadow.camera.updateProjectionMatrix();
   model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
-  console.info("Kingdoms hub: using game-owned lighting.",{disabledImportedLights:importedLights.length});
+  console.info("Kingdoms hub: using game-owned lighting.",{disabledImportedLights:importedLights.length,mobileGraphics,devicePixelRatio:renderer.getPixelRatio(),shadowSize:sun.shadow.mapSize.x});
   camera.layers.enable(1);
 
   // Fixed-center orbit camera. The exported Blender camera defines the
