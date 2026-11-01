@@ -1,3 +1,10 @@
+# Wayfarer v3.0.86 — Blender-only hub lighting retest (2026-11-01)
+
+- Removed runtime-created hemisphere and directional lights from the Kingdom Hub; retain only lights exported in terrain_kingdoms.glb, at native glTF intensity.
+- Added a console diagnostic listing imported light names, types and intensities. No source GLB, textures, terrain scale, camera or hub controls modified.
+- This supersedes v3.0.85's game-owned lighting as an experimental configuration. If overexposure recurs, compare with v3.0.85 and inspect current GLB export rather than changing unrelated assets.
+- Updated asset and service-worker cache versions. JavaScript syntax checked; live visual verification pending.
+
 # Wayfarer v3.0.85 — game-controlled Kingdom Hub lighting (2026-11-01)
 
 - Disabled all Blender-exported punctual lights at runtime in the Kingdom Hub, without modifying terrain_kingdoms.glb.
