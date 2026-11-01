@@ -90,7 +90,6 @@ function signedIn(user){const changed=activeUser?.id!==user.id;activeUser=user;i
 $("showLogin").onclick=()=>showForm(false);
 $("showCreate").onclick=()=>showForm(true);
 $("cancelAuth").onclick=signedOut;
-$("return").onclick=()=>{if(window.parent!==window){window.parent.postMessage({type:"kotu-return"},"*");}else{window.location.href="../index.html";}};
 $("logout").onclick=async()=>{if(client)await client.auth.signOut();signedOut();};
 const menuToggle=$("menuToggle"),menuPanel=$("menuPanel");
 function closeGameMenu(){menuPanel.hidden=true;$("debugPanel").hidden=true;menuToggle.setAttribute("aria-expanded","false");}
