@@ -1,3 +1,10 @@
+# Wayfarer v3.0.88 — Kingdom Hub interaction filtering and camp footprint (2026-11-01)
+
+- Created explicit pre-update GitHub backup branch `backup-2026-11-01-v3.0.87` at commit `dfbb569b08dec5564a214fd149f8c1fe327faf8b`.
+- Replaced permissive raycast hit handling with a named-building allowlist so mountains, trees, terrain, walls and other environment geometry are not interpreted as interactive buildings.
+- Added an invisible mathematical ground footprint computed from Military Camp mesh world bounds so tapping empty interior space selects the camp. Existing mesh hits and other buildings remain prioritized.
+- Kept hub camera, game lighting, resources, login, Sandbox and saved progress unchanged. Updated asset/cache versions; JavaScript syntax validated. Live GLB hierarchy/visual interaction verification pending.
+
 # Wayfarer v3.0.87 — restore game lighting and fixed-center orbit camera (2026-11-01)
 
 - Restored game-controlled HemisphereLight (0.85) and DirectionalLight (1.55) with terrain-bounded shadows, disabling imported Blender lights at runtime; preserves source GLB, materials and terrain geometry.
