@@ -1,3 +1,10 @@
+# Wayfarer v3.0.84 — Kingdom hub camera and GLB lighting diagnostic (2026-11-01)
+
+- Switched Kingdoms terrain view to hub-only mode: do not load Player.fbx in hub. Preserve exported Blender camera position and projection, aim at Playable_Area center, and pan with WASD, mouse/touch drag or mobile joystick. Allow limited ±15% wheel/pinch zoom, bounded to the playable terrain.
+- Added preliminary building raycast selection with a placeholder status message; building functions remain future work. Battle-mode playable character remains future work.
+- Diagnostic test: multiply intensities of lights exported in terrain GLB by 0.1 at runtime, leaving the source GLB, geometry and textures untouched. No extra lights added. This intentionally overrides Blender-authored intensity temporarily for diagnosis.
+- Preserve Gold/Food, login, Sandbox and saved progress. Versioned assets/cache updated. Source syntax checked; live WebGL visual verification pending.
+
 # Wayfarer v3.0.83 — player scale and overexposure correction (2026-11-01)
 
 - Reduced separately loaded Player.fbx scale from 0.03 to 0.003. The terrain GLB and Blender-authored lights are unchanged.
