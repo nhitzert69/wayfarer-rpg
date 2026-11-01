@@ -1,3 +1,21 @@
+# Wayfarer v3.0.81 — restore Blender-authored follow camera offset (2026-11-01)
+
+- Diagnosed the exported terrain camera position (~[-0.35, 4.88, 5.73] GLB units). The prior follow-camera distance of 3.5% of the terrain width was far too small and could leave the view inside scene geometry, showing only the sky.
+- Follow the player using the actual imported camera-to-spawn offset, preserving its authored height, distance and perspective field of view. Aim at the character's center on every frame. Keep zoom and free-pan disabled.
+- Preserve Blender-authored model scales and exported lighting, WASD/joystick, resources, authentication, Sandbox and existing saves. JavaScript syntax checked; live WebGL verification pending.
+
+# Wayfarer v3.0.80 — correct player-follow camera aiming (2026-11-01)
+
+- Derive the fixed follow camera's viewing side from the Blender camera's world-space position relative to the player, instead of the imported camera quaternion which could aim into the sky.
+- Explicitly enforce Y-up, aim at the commander's current position every frame, and update the camera world transform. Preserve follow distance, fixed zoom, Blender-authored model scale and lighting, movement controls, authentication, resources and Sandbox.
+- JavaScript syntax reviewed; live browser verification of camera framing and terrain visibility remains pending.
+
+# Wayfarer v3.0.79 — Blender-authored scale and lighting rule (2026-11-01)
+
+- Added mandatory Blender-authoring rule to game rules: preserve exported world and player model scales; use only lights embedded in the GLB, never additional procedural lights; report unsupported Blender render settings rather than invent substitutes.
+- Removed JavaScript FBX auto-normalization and procedural directional/hemisphere lights, and disabled the previous forced ACES exposure. Kept current follow-camera distance, movement controls, existing terrain grading, resources, login and Sandbox.
+- Detect and warn if the GLB does not actually contain exported glTF punctual lights; Blender World lighting and color management are not guaranteed to transfer through GLB. Static source review only; live rendering and character size must be checked in browser.
+
 # Wayfarer v3.0.78 — playable commander RPG movement (2026-11-01)
 
 - Replaced the Kingdoms free-pan/zoom terrain viewer with a fixed-distance, player-follow camera. Mouse-wheel, pinch zoom and free dragging no longer navigate the camera.
