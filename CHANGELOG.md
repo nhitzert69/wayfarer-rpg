@@ -1,3 +1,9 @@
+# Wayfarer standalone cleanup (2026-11-01)
+
+- Removed Kingdoms Play button, its navigation handler and missing game stylesheet reference.
+- Removed Kingdoms assets and special game caching from the Wayfarer service worker; bumped cache namespace.
+- Kept Wayfarer account, save, inventory and other application logic unchanged. Browser verification pending.
+
 # Wayfarer standalone branch split (2026-11-01)
 
 - Created `wayfarer-standalone` from main at `c9609b60be412332b935aa7c54342a92c3519f08` and excluded the entire `kingdoms-of-the-unknown/` directory.
