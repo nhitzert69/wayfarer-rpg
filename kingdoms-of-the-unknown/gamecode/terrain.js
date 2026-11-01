@@ -145,29 +145,30 @@ export async function startTerrain(host, placement={}) {
     else if(next)next.paused=false;
   };
   animateMovement(false);
-  // Determine the viewing side from the Blender camera's world-space position,
-  // not its exported quaternion (which may be rolled or pointed toward the sky).
+  // Follow with the Blender camera's ACTUAL exported offset (not a percentage
+  // of the full terrain bounds). The previous .035*worldWidth offset put the
+  // camera inside the scene geometry and produced a sky-only view.
   const worldUp=new THREE.Vector3(0,1,0);
-  const cameraBack=camera.position.clone().sub(playerRoot.position);
-  cameraBack.y=0;
-  if(cameraBack.lengthSq()<1e-8)cameraBack.set(0,0,1);
-  cameraBack.normalize();
-  const cameraForward=cameraBack.clone().negate();
+  const authoredCameraOffset=camera.position.clone().sub(playerRoot.position);
+  // Keep the original side and elevation. Never let a degenerate exported
+  // camera offset place the viewpoint inside the player.
+  if(authoredCameraOffset.lengthSq()<1e-8)authoredCameraOffset.set(0,characterHeight*2,characterHeight*5);
+  const cameraForward=authoredCameraOffset.clone().setY(0).negate().normalize();
+  if(cameraForward.lengthSq()<1e-8)cameraForward.set(0,0,-1);
   const cameraRight=new THREE.Vector3().crossVectors(cameraForward,worldUp).normalize();
-  camera.up.copy(worldUp);
-  const followDistance=worldWidth*.035,followHeight=worldWidth*.019;
+  const followDistance=authoredCameraOffset.length();
   const lookTarget=new THREE.Vector3();
   const updateCamera=()=>{
-    lookTarget.copy(playerRoot.position).add(new THREE.Vector3(0,characterHeight*1.15,0));
-    camera.position.copy(lookTarget).addScaledVector(cameraForward,-followDistance);
-    camera.position.y+=followHeight;
-    // Re-aim on every update, always toward the actual commander.
+    // Target the visible center of the model, not a speculative height above it.
+    // Bounding box is in player-local space after the import's authored transforms.
+    lookTarget.copy(playerRoot.position);
+    lookTarget.y+=characterHeight*.5;
+    camera.position.copy(playerRoot.position).add(authoredCameraOffset);
     camera.up.copy(worldUp);
     camera.lookAt(lookTarget);
     camera.updateMatrixWorld(true);
-    // Fixed zoom: no mouse-wheel, pinch or free camera pan.
+    // Fixed zoom; preserve the Blender camera's original projection and FOV.
     camera.zoom=1;
-    if(camera.isPerspectiveCamera)camera.fov=55;
     camera.updateProjectionMatrix();
   };
   const resizeCamera=()=>{

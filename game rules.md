@@ -1,3 +1,6 @@
+## v3.0.81 — Authored camera offset for player follow
+- For the player-follow camera, retain the Blender-exported camera-to-spawn positional offset and its authored perspective projection/FOV. Aim at the player model center each frame. Do not derive follow distance from an arbitrary fraction of the terrain bounds. Keep zoom and free-pan disabled and do not modify Blender-authored lights or model scales.
+
 ## v3.0.80 — Player-centered follow-camera orientation
 - In the third-person RPG camera, use the exported camera's world-space location to determine which side of the player the camera occupies; do not derive follow direction solely from the exported camera quaternion. Aim at the current player position with Y-up on every frame. Preserve the existing follow distance and fixed zoom, and do not modify Blender-authored scales or lights.
 

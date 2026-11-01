@@ -1,3 +1,9 @@
+# Wayfarer v3.0.81 — restore Blender-authored follow camera offset (2026-11-01)
+
+- Diagnosed the exported terrain camera position (~[-0.35, 4.88, 5.73] GLB units). The prior follow-camera distance of 3.5% of the terrain width was far too small and could leave the view inside scene geometry, showing only the sky.
+- Follow the player using the actual imported camera-to-spawn offset, preserving its authored height, distance and perspective field of view. Aim at the character's center on every frame. Keep zoom and free-pan disabled.
+- Preserve Blender-authored model scales and exported lighting, WASD/joystick, resources, authentication, Sandbox and existing saves. JavaScript syntax checked; live WebGL verification pending.
+
 # Wayfarer v3.0.80 — correct player-follow camera aiming (2026-11-01)
 
 - Derive the fixed follow camera's viewing side from the Blender camera's world-space position relative to the player, instead of the imported camera quaternion which could aim into the sky.
