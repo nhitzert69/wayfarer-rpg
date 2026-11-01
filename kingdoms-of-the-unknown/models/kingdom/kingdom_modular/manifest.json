@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "source": "terrain_kingdoms(2).glb",
+  "coordinateSystem": "Original glTF world coordinates, no transforms applied",
+  "groups": [
+    {
+      "file": "base_ground_camera.glb",
+      "nodes": [
+        "Camera",
+        "Playable_Area"
+      ],
+      "bytes": 4363816,
+      "meshes": 1,
+      "images": 2
+    },
+    {
+      "file": "town_hall.glb",
+      "nodes": [
+        "Townhall"
+      ],
+      "bytes": 6344604,
+      "meshes": 1,
+      "images": 2
+    },
+    {
+      "file": "barracks.glb",
+      "nodes": [
+        "Barracks"
+      ],
+      "bytes": 6836204,
+      "meshes": 1,
+      "images": 2
+    },
+    {
+      "file": "military_camp.glb",
+      "nodes": [
+        "Camp"
+      ],
+      "bytes": 4326952,
+      "meshes": 1,
+      "images": 2
+    },
+    {
+      "file": "hunters_hut.glb",
+      "nodes": [
+        "HuntersHut"
+      ],
+      "bytes": 8393132,
+      "meshes": 1,
+      "images": 2
+    },
+    {
+      "file": "keep.glb",
+      "nodes": [
+        "Keep"
+      ],
+      "bytes": 28163500,
+      "meshes": 1,
+      "images": 3
+    },
+    {
+      "file": "trading_hub.glb",
+      "nodes": [
+        "TradingHub"
+      ],
+      "bytes": 7777304,
+      "meshes": 1,
+      "images": 2
+    },
+    {
+      "file": "mountains.glb",
+      "nodes": [
+        "mountain.001",
+        "mountain.002",
+        "mountain.003",
+        "mountain.004"
+      ],
+      "bytes": 1813980,
+      "meshes": 4,
+      "images": 1
+    },
+    {
+      "file": "gates.glb",
+      "nodes": [
+        "gateframe",
+        "gateleft",
+        "gateright"
+      ],
+      "bytes": 2237208,
+      "meshes": 3,
+      "images": 1
+    },
+    {
+      "file": "archer_towers.glb",
+      "nodes": [
+        "Archertower",
+        "Archertower.001"
+      ],
+      "bytes": 6629380,
+      "meshes": 1,
+      "images": 2
+    },
+    {
+      "file": "walls.glb",
+      "nodes": [
+        "Walllvl1",
+        "Walllvl1.001",
+        "Walllvl1.002",
+        "Walllvl1.003",
+        "Walllvl1.004",
+        "Walllvl1.005",
+        "Walllvl1.006",
+        "Walllvl1.007",
+        "Walllvl1.008",
+        "Walllvl1.009",
+        "Walllvl1.010"
+      ],
+      "bytes": 3690788,
+      "meshes": 2,
+      "images": 1
+    }
+  ]
+}
