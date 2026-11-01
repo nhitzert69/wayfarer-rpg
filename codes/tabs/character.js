@@ -4,14 +4,6 @@
 window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.character = window.WayfarerTabRenderers.character || {};
 
-/* Navigate to Kingdoms' standalone entry point so browser refresh stays in the game. */
-const kingdomsPlayButton = document.getElementById("kingdomsPlayButton");
-if (kingdomsPlayButton && !kingdomsPlayButton.dataset.wayfarerGameBound) {
-  kingdomsPlayButton.dataset.wayfarerGameBound = "true";
-  kingdomsPlayButton.addEventListener("click", () => {
-    window.location.assign("./kingdoms-of-the-unknown/index.html");
-  });
-}
 /* Wayfarer character tab module. Shared state remains in the core; module initializes its view on demand. */
 window.WayfarerTabRenderers.character.renderCharacterInventory = function(){
  const items=Array.isArray(state.inventory)?state.inventory:[];
