@@ -1,3 +1,8 @@
+## Mobile-first requirement (v3.0.90)
+- Kingdoms of the Unknown is designed for phones first and PC second. Prioritize iPhone Safari/WebKit stability, touch controls, landscape layout, low peak GPU memory and recovery from context loss. Desktop quality is secondary.
+- Never assume a desktop WebGL success demonstrates mobile compatibility. Test phone Play/load and navigation before claiming a release verified.
+- Keep the authored GLB, buildings, lighting, hub camera, Gold/Food, login, Sandbox and saves intact unless explicitly authorized to change them.
+
 ## v3.0.88 — Building selection and open camp footprint
 - The Kingdom Hub may show building interaction only for explicitly recognized authored buildings, not arbitrary raycast hits on mountains, terrain, trees, palisades or decoration.
 - Military Camp must have a click/tap footprint covering its empty interior as well as its meshes, derived from the imported camp's bounds without modifying Blender GLB geometry. Prioritize other recognized buildings if hit.
