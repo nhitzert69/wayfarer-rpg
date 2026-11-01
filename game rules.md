@@ -1,3 +1,7 @@
+## v3.0.86 — Blender lighting retest (supersedes v3.0.85 game-owned lighting)
+- The Kingdom Hub now uses only punctual lights included in terrain_kingdoms.glb, without creating game-side hemisphere or directional lights or scaling imported light intensity. This is a deliberate comparison following removal of duplicate Blender lights.
+- Keep v3.0.85 as the last visually confirmed lighting baseline. If the current GLB still overexposes, inspect the exported lights and materials before choosing a permanent lighting strategy. Preserve camera, controls, resources and account data.
+
 ## v3.0.85 — Game-owned Kingdom Hub lighting (supersedes earlier Blender-light rules)
 - The Kingdom Hub must ignore/remove punctual lights exported inside terrain_kingdoms.glb at runtime. Use game-controlled hemisphere fill and directional sunlight with terrain-bounded shadows instead; do not modify the source GLB or its material textures.
 - Calibrate game light intensities from live screenshots; do not claim this fixes white materials until WebGL is visually checked. If whitening persists with imported lights disabled, inspect emissive/material settings and custom playable-area shader.
