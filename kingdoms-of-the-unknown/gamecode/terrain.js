@@ -112,7 +112,7 @@ export async function startTerrain(host, placement={}) {
   const playerRoot=new THREE.Group();playerRoot.name="CommanderRoot";scene.add(playerRoot);
   playerRoot.add(commander);
   // Explicit player-only gameplay scale; world assets are unchanged.
-  commander.scale.setScalar(0.03);
+  commander.scale.setScalar(0.003);
   // Keep the FBX authoring scale. Do not normalize the character to terrain bounds.
   const worldWidth=Math.max(targetBounds.max.x-targetBounds.min.x,targetBounds.max.z-targetBounds.min.z);
   const unit=worldWidth/1000;
