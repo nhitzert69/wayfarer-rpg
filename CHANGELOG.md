@@ -1,3 +1,9 @@
+# Wayfarer v3.0.95 — Restore archer towers (2026-11-01)
+
+- Restored `archer_towers.glb` to the modular Kingdom loader after user testing indicated towers were not the cause of the phone crash.
+- Retained concurrent loading as in v3.0.94; no GLB assets, game state, authentication, controls, or saves changed.
+- Mobile crash remains unresolved; investigate peak memory, texture allocation and WebGL context loss before claiming a fix. Live phone testing pending.
+
 # Wayfarer v3.0.94 — Concurrent kingdom loading without archer towers (2026-11-01)
 
 - Changed modular Kingdom scenery loading to request all non-base models concurrently rather than sequentially.
