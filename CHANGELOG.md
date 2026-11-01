@@ -1,3 +1,11 @@
+# Wayfarer v3.0.90 — mobile-first Kingdoms rendering (2026-11-01)
+
+- Made phone-first/iPhone Safari compatibility a permanent game development rule; PC is secondary.
+- Completed the previously blocked mobile-renderer asset version update, ensuring the optimized terrain module is requested.
+- Mobile rendering uses 1x device pixel ratio, lower-resolution procedural sky, no antialiasing, no preserved drawing buffer, and disables expensive dynamic shadow rendering while retaining the same game-owned lights. Desktop settings unchanged.
+- Updated Kingdoms asset versions and service worker cache. Authored GLB, terrain, textures, camera, building interactions, Gold/Food, login, Sandbox and saved progress unchanged.
+- JavaScript syntax checked. No iPhone browser validation available; mobile crash resolution remains unverified.
+
 # Wayfarer v3.0.88 — Kingdom Hub interaction filtering and camp footprint (2026-11-01)
 
 - Created explicit pre-update GitHub backup branch `backup-2026-11-01-v3.0.87` at commit `dfbb569b08dec5564a214fd149f8c1fe327faf8b`.
