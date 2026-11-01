@@ -318,8 +318,8 @@ export async function startTerrain(host, placement={}) {
   placement.reportStage?.("first_frame_submitted");
   let loadingCancelled=false;
   const loadRemainingGroups=async()=>{
-    // Load all scenery concurrently, except the temporarily disabled archer towers.
-    const groups=terrainManifest.groups.slice(1).filter(group=>group.file!=="archer_towers.glb");
+    // Load all modular scenery groups concurrently, including archer towers.
+    const groups=terrainManifest.groups.slice(1);
     await Promise.allSettled(groups.map(async group=>{
       if(loadingCancelled||disposed)return;
       placement.reportStage?.("loading_group_"+group.file.replace(".glb",""));
