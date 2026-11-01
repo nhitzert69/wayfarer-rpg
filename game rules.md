@@ -1,3 +1,8 @@
+## v3.0.82 — Separate character and camera controller
+- Terrain GLB does not contain the player. Load Player.fbx separately and set its gameplay scale explicitly to 0.03; do not rescale the Blender-authored terrain or add lighting.
+- Camera follows a dedicated target attached to the player controller, not bounds of animated FBX mesh or helper geometry. Keep manual zoom/pan disabled and preserve keyboard and joystick controls.
+- Kingdoms displays Gold and Food only; retain legacy resource values and per-account save isolation.
+
 ## v3.0.81 — Authored camera offset for player follow
 - For the player-follow camera, retain the Blender-exported camera-to-spawn positional offset and its authored perspective projection/FOV. Aim at the player model center each frame. Do not derive follow distance from an arbitrary fraction of the terrain bounds. Keep zoom and free-pan disabled and do not modify Blender-authored lights or model scales.
 
