@@ -1,3 +1,9 @@
+# Wayfarer v3.0.92 — Kingdom model directory (2026-11-01)
+
+- Created `kingdoms-of-the-unknown/models/kingdom/` with an empty `.gitkeep` placeholder so GitHub tracks the otherwise empty directory.
+- No model assets, loading code, gameplay, saves or authentication changed.
+- Verified the GitHub create-file operation; runtime testing not applicable.
+
 # Wayfarer v3.0.91 — iPhone loading diagnostics (2026-11-01)
 
 - Added persistent non-account loading-stage breadcrumbs to localStorage for the standalone Kingdoms Play flow. On browser restart, the title screen reports the previous stage and whether it was interrupted.
