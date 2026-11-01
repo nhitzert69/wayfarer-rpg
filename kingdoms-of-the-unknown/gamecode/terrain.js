@@ -22,7 +22,11 @@ export async function startTerrain(host, placement={}) {
   placement.reportStage?.("importing_three");
   const THREE=await import("three");
   placement.reportStage?.("three_ready");
-  const terrainFile="./models/terrain/Playmap/terrain_kingdoms.glb";
+  const terrainFolder="./models/kingdom/kingdom_modular/";
+  const response=await fetch(terrainFolder+"manifest.json?v=3.0.93",{cache:"no-cache"});
+  if(!response.ok)throw new Error("Kingdom manifest unavailable: "+response.status);
+  const terrainManifest=await response.json();
+  if(!Array.isArray(terrainManifest.groups)||terrainManifest.groups[0]?.file!=="base_ground_camera.glb")throw new Error("Invalid kingdom manifest");
   placement.reportStage?.("initializing_scene");
   const scene=new THREE.Scene();
   // iOS WebKit can terminate the page under high WebGL memory pressure.
@@ -61,9 +65,9 @@ export async function startTerrain(host, placement={}) {
   
   placement.reportStage?.("webgl_renderer_ready");
   // No generated lights. GLTFLoader preserves KHR_lights_punctual exported from Blender.
-  placement.reportStage?.("loading_and_decoding_terrain_glb");
-  const model=await loadGameModel(terrainFile);
-  placement.reportStage?.("terrain_glb_decoded");
+  placement.reportStage?.("loading_base_ground_camera");
+  const model=await loadGameModel(terrainFolder+terrainManifest.groups[0].file);
+  placement.reportStage?.("base_ground_camera_decoded");
   // GLB preserves supported Blender PBR materials and packed textures.
   // The single arena includes its own rectangular ground surface.
   // Keep the exported orientation and avoid loading obsolete separate floors.
@@ -117,8 +121,11 @@ export async function startTerrain(host, placement={}) {
   });
   // Hub lighting is owned by the game; never use lights exported by Blender.
   const importedLights=[];
-  model.traverse(node=>{if(node.isLight)importedLights.push(node);});
-  for(const light of importedLights)light.parent?.remove(light);
+  const removeAuthoredLights=root=>{
+    const lights=[];root.traverse(node=>{if(node.isLight)lights.push(node);});
+    for(const light of lights){importedLights.push(light);light.parent?.remove(light);}
+  };
+  removeAuthoredLights(model);
   const ambient=new THREE.HemisphereLight(0xdce9ff,0x655b48,0.85);
   scene.add(ambient);
   const sun=new THREE.DirectionalLight(0xfff2da,1.55);
@@ -309,12 +316,36 @@ export async function startTerrain(host, placement={}) {
   }
   draw();
   placement.reportStage?.("first_frame_submitted");
+  let loadingCancelled=false;
+  const loadRemainingGroups=async()=>{
+    for(const group of terrainManifest.groups.slice(1)){
+      if(loadingCancelled||disposed)return;
+      placement.reportStage?.("loading_group_"+group.file.replace(".glb",""));
+      try{
+        const part=await loadGameModel(terrainFolder+group.file);
+        if(loadingCancelled||disposed)return;
+        removeAuthoredLights(part);
+        if(!mobileGraphics)part.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
+        model.add(part);
+        model.updateMatrixWorld(true);
+        placement.reportStage?.("loaded_group_"+group.file.replace(".glb",""));
+      }catch(error){
+        console.error("Kingdom group failed:",group.file,error);
+        placement.reportStage?.("failed_group_"+group.file.replace(".glb",""),"error",error?.message||String(error));
+        const label=host.querySelector("#worldStatus");
+        if(label){label.textContent="Some scenery could not load: "+group.file;label.hidden=false;}
+      }
+      await new Promise(resolve=>setTimeout(resolve,150));
+    }
+    if(!loadingCancelled&&!disposed)placement.reportStage?.("all_kingdom_groups_loaded","success");
+  };
+  setTimeout(()=>{if(!loadingCancelled&&!disposed)loadRemainingGroups();},350);
   const qaViews=[{id:"hub",label:"Kingdom hub"}];
   const qaView=id=>id==="hub";
   const qaCapture=()=>{renderer.render(scene,camera);const a=document.createElement("a");a.download="Kingdoms_Hub_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";a.href=canvas.toDataURL("image/png");a.click();};
   placement.setQAHandler?.({views:qaViews,view:qaView,capture:qaCapture});
   return ()=>{
-    disposed=true;cancelAnimationFrame(frame);observer.disconnect();placement.setQAHandler?.(null);
+    loadingCancelled=true;disposed=true;cancelAnimationFrame(frame);observer.disconnect();placement.setQAHandler?.(null);
     window.removeEventListener("keydown",keyDown);window.removeEventListener("keyup",keyUp);window.removeEventListener("blur",reset);
     canvas.removeEventListener("wheel",onWheel);canvas.removeEventListener("pointerdown",pointerDown);
     canvas.removeEventListener("pointermove",pointerMove);canvas.removeEventListener("pointerup",pointerUp);canvas.removeEventListener("pointercancel",pointerUp);

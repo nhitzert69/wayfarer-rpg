@@ -16,7 +16,7 @@ let client=null,mode="login",cleanup=null,activeUser=null,loadGeneration=0;
 const DIAG_KEY="kotu-mobile-load-v3";
 const readDiag=()=>{try{return JSON.parse(localStorage.getItem(DIAG_KEY)||"null");}catch{return null;}};
 const writeDiag=(stage,state="loading",detail="")=>{
-  const record={version:"3.0.91",stage,state,detail:String(detail).slice(0,180),at:new Date().toISOString()};
+  const record={version:"3.0.93",stage,state,detail:String(detail).slice(0,180),at:new Date().toISOString()};
   try{localStorage.setItem(DIAG_KEY,JSON.stringify(record));}catch{}
   const label=$("terrainLoadingMessage");
   if(label&&!$("terrainLoading").hidden)label.textContent=stage.replaceAll("_"," ");
@@ -127,7 +127,7 @@ async function enterWorld(){
   $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
     writeDiag("importing_renderer");
-    const {startTerrain}=await import("./terrain.js?v=3.0.91");
+    const {startTerrain}=await import("./terrain.js?v=3.0.93");
     writeDiag("renderer_module_ready");
     if(generation!==loadGeneration)return;
     const dispose=await startTerrain($("world"),{setQAHandler,reportStage:writeDiag});
