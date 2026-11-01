@@ -127,10 +127,10 @@ async function enterWorld(){
   $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
     writeDiag("importing_renderer");
-    const {startTerrain}=await import("./terrain.js?v=3.0.93");
+    const {startTerrain}=await import("./terrain.js?v=3.0.96");
     writeDiag("renderer_module_ready");
     if(generation!==loadGeneration)return;
-    const dispose=await startTerrain($("world"),{setQAHandler,reportStage:writeDiag});
+    const dispose=await startTerrain($("world"),{setQAHandler,reportStage:writeDiag,reportProgress:(done,total)=>{const label=$("terrainLoadingMessage");if(label)label.textContent="Preparing kingdom: "+done+" / "+total+" scenery groups";}});
     if(generation!==loadGeneration){dispose();return;}
     cleanup=dispose;
     $("terrainLoading").hidden=true;
