@@ -1,3 +1,6 @@
+## v3.0.80 — Player-centered follow-camera orientation
+- In the third-person RPG camera, use the exported camera's world-space location to determine which side of the player the camera occupies; do not derive follow direction solely from the exported camera quaternion. Aim at the current player position with Y-up on every frame. Preserve the existing follow distance and fixed zoom, and do not modify Blender-authored scales or lights.
+
 ## v3.0.79 — Mandatory Blender-authored world rule (2026-11-01)
 - Blender is the source of truth for authored terrain, buildings, characters, scale, transforms, camera assets and lighting. Never automatically resize imported 3D models based on scene bounds or apply procedural lighting to override authored lights.
 - Render using only punctual lights actually embedded in the exported terrain GLB. Do not add hemisphere, directional, ambient or other fallback lights. If the GLB lacks exported lights, warn clearly and correct the export rather than silently creating replacement lights.

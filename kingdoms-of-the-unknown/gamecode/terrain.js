@@ -145,18 +145,26 @@ export async function startTerrain(host, placement={}) {
     else if(next)next.paused=false;
   };
   animateMovement(false);
-  const cameraForward=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
-  cameraForward.y=0;
-  if(cameraForward.lengthSq()<.00001)cameraForward.set(0,0,-1);
-  cameraForward.normalize();
-  const cameraRight=new THREE.Vector3().crossVectors(cameraForward,new THREE.Vector3(0,1,0)).normalize();
+  // Determine the viewing side from the Blender camera's world-space position,
+  // not its exported quaternion (which may be rolled or pointed toward the sky).
+  const worldUp=new THREE.Vector3(0,1,0);
+  const cameraBack=camera.position.clone().sub(playerRoot.position);
+  cameraBack.y=0;
+  if(cameraBack.lengthSq()<1e-8)cameraBack.set(0,0,1);
+  cameraBack.normalize();
+  const cameraForward=cameraBack.clone().negate();
+  const cameraRight=new THREE.Vector3().crossVectors(cameraForward,worldUp).normalize();
+  camera.up.copy(worldUp);
   const followDistance=worldWidth*.035,followHeight=worldWidth*.019;
   const lookTarget=new THREE.Vector3();
   const updateCamera=()=>{
     lookTarget.copy(playerRoot.position).add(new THREE.Vector3(0,characterHeight*1.15,0));
     camera.position.copy(lookTarget).addScaledVector(cameraForward,-followDistance);
     camera.position.y+=followHeight;
+    // Re-aim on every update, always toward the actual commander.
+    camera.up.copy(worldUp);
     camera.lookAt(lookTarget);
+    camera.updateMatrixWorld(true);
     // Fixed zoom: no mouse-wheel, pinch or free camera pan.
     camera.zoom=1;
     if(camera.isPerspectiveCamera)camera.fov=55;

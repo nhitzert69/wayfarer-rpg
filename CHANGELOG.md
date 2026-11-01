@@ -1,3 +1,9 @@
+# Wayfarer v3.0.80 — correct player-follow camera aiming (2026-11-01)
+
+- Derive the fixed follow camera's viewing side from the Blender camera's world-space position relative to the player, instead of the imported camera quaternion which could aim into the sky.
+- Explicitly enforce Y-up, aim at the commander's current position every frame, and update the camera world transform. Preserve follow distance, fixed zoom, Blender-authored model scale and lighting, movement controls, authentication, resources and Sandbox.
+- JavaScript syntax reviewed; live browser verification of camera framing and terrain visibility remains pending.
+
 # Wayfarer v3.0.79 — Blender-authored scale and lighting rule (2026-11-01)
 
 - Added mandatory Blender-authoring rule to game rules: preserve exported world and player model scales; use only lights embedded in the GLB, never additional procedural lights; report unsupported Blender render settings rather than invent substitutes.
