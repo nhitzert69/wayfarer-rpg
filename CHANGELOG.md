@@ -1,3 +1,10 @@
+# Wayfarer v3.0.91 — iPhone loading diagnostics (2026-11-01)
+
+- Added persistent non-account loading-stage breadcrumbs to localStorage for the standalone Kingdoms Play flow. On browser restart, the title screen reports the previous stage and whether it was interrupted.
+- Instrumented renderer module import, Three.js import, WebGL renderer initialization, GLB loading/decoding, scene setup, and first-frame submission; normal exceptions and unhandled errors record a short diagnostic.
+- No changes to terrain assets, textures, graphics quality, controls, lighting, login, Sandbox or saves. Updated game asset query versions and service-worker cache namespace.
+- JavaScript syntax checked. iPhone Safari reproduction and failure-stage identification pending; a browser process crash cannot be caught directly, so the previous stored stage is diagnostic rather than proof of cause.
+
 # Wayfarer v3.0.90 — mobile-first Kingdoms rendering (2026-11-01)
 
 - Made phone-first/iPhone Safari compatibility a permanent game development rule; PC is secondary.
