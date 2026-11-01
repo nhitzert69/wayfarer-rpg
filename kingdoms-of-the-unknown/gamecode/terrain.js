@@ -101,33 +101,12 @@ export async function startTerrain(host, placement={}) {
     node.receiveShadow=true;
     node.layers.enable(1);
   });
-  // Ignore all lighting imported from Blender; the source GLB remains unchanged.
+  // v3.0.86 Blender-only lighting test: retain imported glTF punctual lights at
+  // their authored intensity. No game-generated ambient or directional lights.
   const importedLights=[];
   model.traverse(node=>{if(node.isLight)importedLights.push(node);});
-  for(const light of importedLights)light.parent?.remove(light);
-  // Consistent game lighting independent of Blender export units and sun intensity.
-  const ambient=new THREE.HemisphereLight(0xdce9ff,0x655b48,0.85);
-  scene.add(ambient);
-  const sun=new THREE.DirectionalLight(0xfff2da,1.55);
-  const lightCenter=targetBounds.getCenter(new THREE.Vector3());
-  const lightSize=targetBounds.getSize(new THREE.Vector3());
-  const lightExtent=Math.max(lightSize.x,lightSize.z,1);
-  sun.position.copy(lightCenter).add(new THREE.Vector3(lightExtent*.6,lightExtent*1.4,lightExtent*.85));
-  sun.target.position.copy(lightCenter);
-  scene.add(sun,sun.target);
-  sun.castShadow=true;
-  sun.shadow.mapSize.set(2048,2048);
-  sun.shadow.camera.left=-lightExtent*.8;
-  sun.shadow.camera.right=lightExtent*.8;
-  sun.shadow.camera.top=lightExtent*.8;
-  sun.shadow.camera.bottom=-lightExtent*.8;
-  sun.shadow.camera.near=Math.max(.01,lightExtent*.01);
-  sun.shadow.camera.far=lightExtent*4;
-  sun.shadow.bias=-0.00015;
-  sun.shadow.normalBias=0.02;
-  sun.shadow.camera.updateProjectionMatrix();
   model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
-  console.info("Kingdoms hub: imported lights disabled; using game hemisphere and directional sunlight.",{removed:importedLights.length});
+  console.info("Kingdoms hub: using only exported GLB lights at native intensity.",importedLights.map(light=>({name:light.name,type:light.type,intensity:light.intensity})));
   camera.layers.enable(1);
 
   // Hub mode: the terrain is the whole scene. Player.fbx is loaded only in battle mode.
