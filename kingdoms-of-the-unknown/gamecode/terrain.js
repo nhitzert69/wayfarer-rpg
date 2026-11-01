@@ -205,6 +205,40 @@ export async function startTerrain(host, placement={}) {
     targetYaw-=dx*.006;
     targetElevation=clampElevation(targetElevation+dy*.0016);
   };
+  // Only known buildings may be selected. The surrounding mountains, trees,
+  // palisade and ground must never behave as buildings.
+  const buildingPatterns=[
+    {id:"Town Hall",test:/town[ _.-]*hall|townhall/i},
+    {id:"Citadel",test:/citadel|castle|keep/i},
+    {id:"Barracks",test:/barracks/i},
+    {id:"Trading Hub",test:/trading[ _.-]*hub|tradinghub|market|trader/i},
+    {id:"Hunter's Hut",test:/hunter[ _.-]*s?[ _.-]*hut|huntershut|hunting[ _.-]*hut/i},
+    {id:"Military Camp",test:/military[ _.-]*camp|militarycamp|army[ _.-]*camp|encampment|camp/i}
+  ];
+  const matchBuilding=node=>{
+    for(let current=node;current&&current!==model.parent;current=current.parent){
+      const name=current.name||"";
+      const match=buildingPatterns.find(item=>item.test.test(name));
+      if(match)return match.id;
+      if(current===model)break;
+    }
+    return null;
+  };
+  // Build a horizontal click region from the camp's actual world-space bounds.
+  // This includes the open courtyard between its tents and props, not just mesh.
+  const campBounds=new THREE.Box3();
+  let campFound=false;
+  model.traverse(node=>{
+    if(!node.isMesh)return;
+    if(matchBuilding(node)!=="Military Camp")return;
+    const box=new THREE.Box3().setFromObject(node);
+    if(box.isEmpty())return;
+    campBounds.union(box);campFound=true;
+  });
+  const campSize=new THREE.Vector3();
+  if(campFound)campBounds.getSize(campSize);
+  const campPlane=new THREE.Plane(new THREE.Vector3(0,1,0),campFound?-campBounds.min.y:0);
+  const campPoint=new THREE.Vector3();
   const raycaster=new THREE.Raycaster(),ndc=new THREE.Vector2();
   const status=host.querySelector("#worldStatus");
   const pointerUp=e=>{
@@ -214,10 +248,21 @@ export async function startTerrain(host, placement={}) {
       const box=canvas.getBoundingClientRect();
       ndc.set((e.clientX-box.left)/box.width*2-1,-(e.clientY-box.top)/box.height*2+1);
       raycaster.setFromCamera(ndc,camera);
-      const hit=raycaster.intersectObject(model,true).find(h=>!h.object.name.toLowerCase().includes("playable_area"));
-      if(hit&&status){
-        const label=hit.object.name||hit.object.parent?.name||"Building";
-        status.textContent=label+" — building interaction coming soon";
+      const selected=raycaster.intersectObject(model,true)
+        .map(hit=>({name:matchBuilding(hit.object),distance:hit.distance}))
+        .find(hit=>hit.name);
+      let building=selected?.name||null;
+      // A ground-level footprint fills the camp's otherwise empty interior.
+      // Do not override another building already hit by the ray.
+      if(!building&&campFound&&campSize.x>0&&campSize.z>0&&raycaster.ray.intersectPlane(campPlane,campPoint)){
+        const margin=Math.min(campSize.x,campSize.z)*.05;
+        if(campPoint.x>=campBounds.min.x-margin&&campPoint.x<=campBounds.max.x+margin
+          &&campPoint.z>=campBounds.min.z-margin&&campPoint.z<=campBounds.max.z+margin){
+          building="Military Camp";
+        }
+      }
+      if(building&&status){
+        status.textContent=building+" — building interaction coming soon";
         status.hidden=false;
         clearTimeout(status._hubTimer);
         status._hubTimer=setTimeout(()=>status.hidden=true,3500);
