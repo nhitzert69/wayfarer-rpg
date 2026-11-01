@@ -11,6 +11,30 @@ window.addEventListener("resize",updateOrientation);
 updateOrientation();
 let client=null,mode="login",cleanup=null,activeUser=null,loadGeneration=0;
 
+// Small persistent startup breadcrumb: survives a WebKit process reload without
+// storing credentials or account data. One record per stage, not per frame.
+const DIAG_KEY="kotu-mobile-load-v3";
+const readDiag=()=>{try{return JSON.parse(localStorage.getItem(DIAG_KEY)||"null");}catch{return null;}};
+const writeDiag=(stage,state="loading",detail="")=>{
+  const record={version:"3.0.91",stage,state,detail:String(detail).slice(0,180),at:new Date().toISOString()};
+  try{localStorage.setItem(DIAG_KEY,JSON.stringify(record));}catch{}
+  const label=$("terrainLoadingMessage");
+  if(label&&!$("terrainLoading").hidden)label.textContent=stage.replaceAll("_"," ");
+};
+function showPreviousDiagnostic(){
+  const record=readDiag(),panel=$("startupDiagnostic");
+  if(!panel)return;
+  if(!record){panel.hidden=true;return;}
+  panel.hidden=false;
+  const interrupted=record.state==="loading";
+  panel.textContent=(interrupted?"Previous Play was interrupted":"Last Play: "+record.state)+
+    " · stage: "+record.stage+" · "+record.at+
+    (record.detail?" · "+record.detail:"");
+}
+window.addEventListener("pageshow",showPreviousDiagnostic);
+window.addEventListener("error",event=>writeDiag("window_error","error",event.message||"Unknown error"));
+window.addEventListener("unhandledrejection",event=>writeDiag("unhandled_rejection","error",event.reason?.message||String(event.reason)));
+showPreviousDiagnostic();
 let sandboxActive=false,sandboxSnapshot=null,qaHandler=null;
 const allowedDebugNames=new Set(["admin","chatgpt"]);
 const authenticatedName=user=>{
@@ -94,6 +118,7 @@ $("authForm").onsubmit=async e=>{
 async function enterWorld(){
   if(!activeUser)return;
   const generation=++loadGeneration;
+  writeDiag("play_pressed");
   closeGameMenu();renderResources();
   cleanup?.();cleanup=null;setQAHandler(null);
   $("title").hidden=true;$("world").hidden=false;
@@ -101,14 +126,18 @@ async function enterWorld(){
   $("terrainLoading").hidden=false;
   $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
-    const {startTerrain}=await import("./terrain.js?v=3.0.90");
+    writeDiag("importing_renderer");
+    const {startTerrain}=await import("./terrain.js?v=3.0.91");
+    writeDiag("renderer_module_ready");
     if(generation!==loadGeneration)return;
-    const dispose=await startTerrain($("world"),{setQAHandler});
+    const dispose=await startTerrain($("world"),{setQAHandler,reportStage:writeDiag});
     if(generation!==loadGeneration){dispose();return;}
     cleanup=dispose;
     $("terrainLoading").hidden=true;
+    writeDiag("world_visible","success");
   }catch(error){
     if(generation!==loadGeneration)return;
+    writeDiag("loading_exception","error",error?.message||String(error));
     $("terrainLoading").hidden=true;
     $("worldStatus").hidden=false;
     $("worldStatus").textContent="Could not load map: "+String(error.message||error);
