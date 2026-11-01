@@ -1,3 +1,10 @@
+# Wayfarer v3.0.82 — separate player camera and Gold/Food (2026-11-01)
+
+- Set separately loaded Player.fbx to explicit gameplay scale 0.03; terrain GLB, lighting and saved state remain untouched.
+- Replace animated-mesh-dependent camera framing with a dedicated player-attached camera target, fixed follow distance, and no zoom/pan; preserve WASD and mobile joystick.
+- Change Kingdoms HUD to Gold and Food while retaining legacy resource data and account isolation.
+- Updated frontend cache versions. Source syntax reviewed; live browser and animation verification pending.
+
 # Wayfarer v3.0.81 — restore Blender-authored follow camera offset (2026-11-01)
 
 - Diagnosed the exported terrain camera position (~[-0.35, 4.88, 5.73] GLB units). The prior follow-camera distance of 3.5% of the terrain width was far too small and could leave the view inside scene geometry, showing only the sky.
