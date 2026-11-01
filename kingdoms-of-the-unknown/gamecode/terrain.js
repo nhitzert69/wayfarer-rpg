@@ -320,6 +320,8 @@ export async function startTerrain(host, placement={}) {
   const loadRemainingGroups=async()=>{
     // Load all modular scenery groups concurrently, including archer towers.
     const groups=terrainManifest.groups.slice(1);
+    let completed=0;
+    placement.reportProgress?.(0,groups.length);
     await Promise.allSettled(groups.map(async group=>{
       if(loadingCancelled||disposed)return;
       placement.reportStage?.("loading_group_"+group.file.replace(".glb",""));
@@ -336,11 +338,15 @@ export async function startTerrain(host, placement={}) {
         placement.reportStage?.("failed_group_"+group.file.replace(".glb",""),"error",error?.message||String(error));
         const label=host.querySelector("#worldStatus");
         if(label){label.textContent="Some scenery could not load: "+group.file;label.hidden=false;}
+      }finally{
+        completed++;
+        if(!loadingCancelled&&!disposed)placement.reportProgress?.(completed,groups.length);
       }
     }));
     if(!loadingCancelled&&!disposed)placement.reportStage?.("all_kingdom_groups_loaded","success");
   };
-  setTimeout(()=>{if(!loadingCancelled&&!disposed)loadRemainingGroups();},350);
+  // Keep the standalone loading overlay visible until every modular group settles.
+  await loadRemainingGroups();
   const qaViews=[{id:"hub",label:"Kingdom hub"}];
   const qaView=id=>id==="hub";
   const qaCapture=()=>{renderer.render(scene,camera);const a=document.createElement("a");a.download="Kingdoms_Hub_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";a.href=canvas.toDataURL("image/png");a.click();};
