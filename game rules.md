@@ -1,3 +1,9 @@
+## v3.0.79 — Mandatory Blender-authored world rule (2026-11-01)
+- Blender is the source of truth for authored terrain, buildings, characters, scale, transforms, camera assets and lighting. Never automatically resize imported 3D models based on scene bounds or apply procedural lighting to override authored lights.
+- Render using only punctual lights actually embedded in the exported terrain GLB. Do not add hemisphere, directional, ambient or other fallback lights. If the GLB lacks exported lights, warn clearly and correct the export rather than silently creating replacement lights.
+- GLB does not guarantee faithful export of Blender World illumination, compositing or color-management settings. Explain unsupported features and verify the exported result rather than claiming a perfect Blender match.
+- Preserve existing player-follow camera distance, movement, saved progress, authentication and Sandbox unless separately requested. Test actual GLB light export and FBX scale/origin in WebGL.
+
 # Kingdoms of the Unknown — Game Rules (V3.0.0)
 
 **Mandatory:** Read this file before creating, changing, testing, refactoring, packaging, or integrating any Kingdoms of the Unknown code or assets. Also follow the master `update rules`. Follow `theme creation rules.md` only when a game change also touches Wayfarer themes or theme systems.

@@ -43,14 +43,13 @@ export async function startTerrain(host, placement={}) {
   const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:true,powerPreference:"high-performance",logarithmicDepthBuffer:true,preserveDrawingBuffer:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
-  renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.12;
+  // Neutral rendering: do not impose the old strategy-view exposure on Blender-authored materials.
+  renderer.toneMapping=THREE.NoToneMapping;
+  renderer.toneMappingExposure=1;
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   
-  // Stage 1: soft sky bounce and warm directional key light, without a second competing sun.
-  scene.add(new THREE.HemisphereLight(0xe3efff,0x82775f,1.12));
-  const sun=new THREE.DirectionalLight(0xffe3bd,2.0);sun.position.set(200,450,260);scene.add(sun);
+  // No generated lights. GLTFLoader preserves KHR_lights_punctual exported from Blender.
   const model=await loadGameModel(terrainFile);
   // GLB preserves supported Blender PBR materials and packed textures.
   // The single arena includes its own rectangular ground surface.
@@ -102,18 +101,9 @@ export async function startTerrain(host, placement={}) {
     node.receiveShadow=true;
     node.layers.enable(1);
   });
-  // A local shadow frustum follows the Town Hall instead of wasting resolution on the whole map.
-  // The light is on layer 1, shared only by Playable_Area and the Town Hall.
-  // One directional sun provides both illumination and shadows (no doubled key light).
-  const gameSun=sun;
-  gameSun.layers.enable(1);
-  gameSun.castShadow=true;
-  gameSun.shadow.mapSize.set(2048,2048);
-  gameSun.shadow.camera.near=.01;
-  gameSun.shadow.bias=-.00008;
-  gameSun.shadow.normalBias=.002;
-  gameSun.shadow.radius=3;
-  scene.add(gameSun.target);
+  const authoredLights=[];
+  model.traverse(node=>{if(node.isLight){authoredLights.push(node);node.castShadow=true;}});
+  if(!authoredLights.length)console.warn("Kingdoms: terrain GLB contains no exported punctual lights. Export Blender lights using glTF with punctual lights enabled.");
   camera.layers.enable(1);
 
   // v3.0.78: fixed-distance player-follow camera; movement is controlled by the commander.
@@ -121,19 +111,14 @@ export async function startTerrain(host, placement={}) {
   const commander=await loadGameModel(playerFile);
   const playerRoot=new THREE.Group();playerRoot.name="CommanderRoot";scene.add(playerRoot);
   playerRoot.add(commander);
-  // Normalize the imported FBX's arbitrary authoring scale to a 1.8m character
-  // relative to the 1km authored terrain. Preserve its skeleton and animation clips.
+  // Keep the FBX authoring scale. Do not normalize the character to terrain bounds.
   const worldWidth=Math.max(targetBounds.max.x-targetBounds.min.x,targetBounds.max.z-targetBounds.min.z);
-  const unit=worldWidth/1000,characterHeight=1.8*unit;
+  const unit=worldWidth/1000;
   commander.updateMatrixWorld(true);
-  let characterBox=new THREE.Box3().setFromObject(commander);
-  const rawHeight=characterBox.max.y-characterBox.min.y;
-  if(!Number.isFinite(rawHeight)||rawHeight<=1e-7)throw new Error("Player.fbx has no usable character bounds.");
-  commander.scale.multiplyScalar(characterHeight/rawHeight);
-  commander.updateMatrixWorld(true);
-  characterBox=new THREE.Box3().setFromObject(commander);
-  commander.position.x-=(characterBox.min.x+characterBox.max.x)/2;
-  commander.position.z-=(characterBox.min.z+characterBox.max.z)/2;
+  const characterBox=new THREE.Box3().setFromObject(commander);
+  const characterHeight=characterBox.max.y-characterBox.min.y;
+  if(!Number.isFinite(characterHeight)||characterHeight<=1e-7)throw new Error("Player.fbx has no usable character bounds.");
+  // Keep original character size and orientation. Only align its lowest point to the walkable surface.
   commander.position.y-=characterBox.min.y;
   const spawn=targetBounds.getCenter(new THREE.Vector3());
   const terrainRay=new THREE.Raycaster();
@@ -224,11 +209,6 @@ export async function startTerrain(host, placement={}) {
   observer.observe(host);
   renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);
   resizeCamera();
-  // Local shadow frustum tracks the commander as they explore.
-  const sunOffset=new THREE.Vector3(worldWidth*.18,worldWidth*.36,worldWidth*.21);
-  const shadowRange=worldWidth*.09;
-  Object.assign(gameSun.shadow.camera,{left:-shadowRange,right:shadowRange,top:shadowRange,bottom:-shadowRange});
-  gameSun.shadow.camera.updateProjectionMatrix();
   const clock=new THREE.Clock();
   let frame=0,disposed=false;
   function draw(){
@@ -254,9 +234,6 @@ export async function startTerrain(host, placement={}) {
     animateMovement(walking);
     mixer?.update(dt);
     updateCamera();
-    gameSun.position.copy(playerRoot.position).add(sunOffset);
-    gameSun.target.position.copy(playerRoot.position);
-    gameSun.target.updateMatrixWorld();
     renderer.render(scene,camera);
   }
   draw();
@@ -274,7 +251,7 @@ export async function startTerrain(host, placement={}) {
     window.removeEventListener("keydown",keyDown);window.removeEventListener("keyup",keyUp);window.removeEventListener("blur",resetKeys);
     stick.removeEventListener("pointerdown",stickDown);stick.removeEventListener("pointermove",stickMove);
     stick.removeEventListener("pointerup",stickUp);stick.removeEventListener("pointercancel",stickUp);
-    mixer?.stopAllAction();scene.remove(playerRoot);gameSun.shadow.map?.dispose();
+    mixer?.stopAllAction();scene.remove(playerRoot);
     groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();
   };
 }

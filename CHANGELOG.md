@@ -1,3 +1,9 @@
+# Wayfarer v3.0.79 — Blender-authored scale and lighting rule (2026-11-01)
+
+- Added mandatory Blender-authoring rule to game rules: preserve exported world and player model scales; use only lights embedded in the GLB, never additional procedural lights; report unsupported Blender render settings rather than invent substitutes.
+- Removed JavaScript FBX auto-normalization and procedural directional/hemisphere lights, and disabled the previous forced ACES exposure. Kept current follow-camera distance, movement controls, existing terrain grading, resources, login and Sandbox.
+- Detect and warn if the GLB does not actually contain exported glTF punctual lights; Blender World lighting and color management are not guaranteed to transfer through GLB. Static source review only; live rendering and character size must be checked in browser.
+
 # Wayfarer v3.0.78 — playable commander RPG movement (2026-11-01)
 
 - Replaced the Kingdoms free-pan/zoom terrain viewer with a fixed-distance, player-follow camera. Mouse-wheel, pinch zoom and free dragging no longer navigate the camera.
