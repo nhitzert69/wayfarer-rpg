@@ -19,8 +19,11 @@ export async function loadGameModel(path) {
 }
 // CDN addons import "three" as a bare specifier, resolved by the game's import map.
 export async function startTerrain(host, placement={}) {
+  placement.reportStage?.("importing_three");
   const THREE=await import("three");
+  placement.reportStage?.("three_ready");
   const terrainFile="./models/terrain/Playmap/terrain_kingdoms.glb";
+  placement.reportStage?.("initializing_scene");
   const scene=new THREE.Scene();
   // iOS WebKit can terminate the page under high WebGL memory pressure.
   // Limit only mobile rendering buffers; keep the original GLB untouched.
@@ -46,6 +49,7 @@ export async function startTerrain(host, placement={}) {
   starTexture.colorSpace=THREE.SRGBColorSpace;
   starTexture.mapping=THREE.EquirectangularReflectionMapping;
   scene.background=starTexture;
+  placement.reportStage?.("creating_webgl_renderer");
   const renderer=new THREE.WebGLRenderer({canvas:host.querySelector("#viewport"),antialias:!mobileGraphics,powerPreference:mobileGraphics?"default":"high-performance",logarithmicDepthBuffer:true,preserveDrawingBuffer:!mobileGraphics});
   renderer.setPixelRatio(mobileGraphics?1:Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -55,12 +59,16 @@ export async function startTerrain(host, placement={}) {
   renderer.shadowMap.enabled=!mobileGraphics;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   
+  placement.reportStage?.("webgl_renderer_ready");
   // No generated lights. GLTFLoader preserves KHR_lights_punctual exported from Blender.
+  placement.reportStage?.("loading_and_decoding_terrain_glb");
   const model=await loadGameModel(terrainFile);
+  placement.reportStage?.("terrain_glb_decoded");
   // GLB preserves supported Blender PBR materials and packed textures.
   // The single arena includes its own rectangular ground surface.
   // Keep the exported orientation and avoid loading obsolete separate floors.
   scene.add(model);
+  placement.reportStage?.("terrain_added_to_scene");
   model.updateMatrixWorld(true);
   const cameras=[];
   model.traverse(node=>{if(node.isCamera)cameras.push(node);});
@@ -279,6 +287,7 @@ export async function startTerrain(host, placement={}) {
   canvas.style.touchAction="none";
   canvas.addEventListener("pointerdown",pointerDown);canvas.addEventListener("pointermove",pointerMove);
   canvas.addEventListener("pointerup",pointerUp);canvas.addEventListener("pointercancel",pointerUp);
+  placement.reportStage?.("preparing_first_frame");
   const observer=new ResizeObserver(()=>{renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);updateCamera();});
   observer.observe(host);
   renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);
@@ -299,6 +308,7 @@ export async function startTerrain(host, placement={}) {
     updateCamera();renderer.render(scene,camera);
   }
   draw();
+  placement.reportStage?.("first_frame_submitted");
   const qaViews=[{id:"hub",label:"Kingdom hub"}];
   const qaView=id=>id==="hub";
   const qaCapture=()=>{renderer.render(scene,camera);const a=document.createElement("a");a.download="Kingdoms_Hub_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";a.href=canvas.toDataURL("image/png");a.click();};
