@@ -1,3 +1,9 @@
+# Wayfarer standalone branch split (2026-11-01)
+
+- Created `wayfarer-standalone` from main at `c9609b60be412332b935aa7c54342a92c3519f08` and excluded the entire `kingdoms-of-the-unknown/` directory.
+- Existing Wayfarer launcher references to Kingdoms still need cleanup or external navigation before this branch is considered fully independent; no live verification performed.
+- Original main and existing backups remain unchanged.
+
 # Wayfarer v3.0.96 — Hold kingdom loading screen until scenery completes (2026-11-01)
 
 - Kept the dedicated loading overlay visible until all modular scenery groups finish loading or report errors; the game no longer reveals the kingdom after only base terrain initialization.
