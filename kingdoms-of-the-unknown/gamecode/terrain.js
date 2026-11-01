@@ -44,7 +44,7 @@ export async function startTerrain(host, placement={}) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   // Neutral rendering: do not impose the old strategy-view exposure on Blender-authored materials.
-  renderer.toneMapping=THREE.NoToneMapping;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure=1;
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
