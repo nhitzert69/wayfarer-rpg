@@ -318,7 +318,9 @@ export async function startTerrain(host, placement={}) {
   placement.reportStage?.("first_frame_submitted");
   let loadingCancelled=false;
   const loadRemainingGroups=async()=>{
-    for(const group of terrainManifest.groups.slice(1)){
+    // Load all scenery concurrently, except the temporarily disabled archer towers.
+    const groups=terrainManifest.groups.slice(1).filter(group=>group.file!=="archer_towers.glb");
+    await Promise.allSettled(groups.map(async group=>{
       if(loadingCancelled||disposed)return;
       placement.reportStage?.("loading_group_"+group.file.replace(".glb",""));
       try{
@@ -335,8 +337,7 @@ export async function startTerrain(host, placement={}) {
         const label=host.querySelector("#worldStatus");
         if(label){label.textContent="Some scenery could not load: "+group.file;label.hidden=false;}
       }
-      await new Promise(resolve=>setTimeout(resolve,150));
-    }
+    }));
     if(!loadingCancelled&&!disposed)placement.reportStage?.("all_kingdom_groups_loaded","success");
   };
   setTimeout(()=>{if(!loadingCancelled&&!disposed)loadRemainingGroups();},350);
