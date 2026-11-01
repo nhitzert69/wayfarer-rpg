@@ -101,165 +101,162 @@ export async function startTerrain(host, placement={}) {
     node.receiveShadow=true;
     node.layers.enable(1);
   });
-  const authoredLights=[];
-  model.traverse(node=>{if(node.isLight){authoredLights.push(node);node.castShadow=true;}});
-  if(!authoredLights.length)console.warn("Kingdoms: terrain GLB contains no exported punctual lights. Export Blender lights using glTF with punctual lights enabled.");
+  // Ignore all lighting imported from Blender; the source GLB remains unchanged.
+  const importedLights=[];
+  model.traverse(node=>{if(node.isLight)importedLights.push(node);});
+  for(const light of importedLights)light.parent?.remove(light);
+  // Consistent game lighting independent of Blender export units and sun intensity.
+  const ambient=new THREE.HemisphereLight(0xdce9ff,0x655b48,0.85);
+  scene.add(ambient);
+  const sun=new THREE.DirectionalLight(0xfff2da,1.55);
+  const lightCenter=targetBounds.getCenter(new THREE.Vector3());
+  const lightSize=targetBounds.getSize(new THREE.Vector3());
+  const lightExtent=Math.max(lightSize.x,lightSize.z,1);
+  sun.position.copy(lightCenter).add(new THREE.Vector3(lightExtent*.6,lightExtent*1.4,lightExtent*.85));
+  sun.target.position.copy(lightCenter);
+  scene.add(sun,sun.target);
+  sun.castShadow=true;
+  sun.shadow.mapSize.set(2048,2048);
+  sun.shadow.camera.left=-lightExtent*.8;
+  sun.shadow.camera.right=lightExtent*.8;
+  sun.shadow.camera.top=lightExtent*.8;
+  sun.shadow.camera.bottom=-lightExtent*.8;
+  sun.shadow.camera.near=Math.max(.01,lightExtent*.01);
+  sun.shadow.camera.far=lightExtent*4;
+  sun.shadow.bias=-0.00015;
+  sun.shadow.normalBias=0.02;
+  sun.shadow.camera.updateProjectionMatrix();
+  model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
+  console.info("Kingdoms hub: imported lights disabled; using game hemisphere and directional sunlight.",{removed:importedLights.length});
   camera.layers.enable(1);
 
-  // v3.0.78: fixed-distance player-follow camera; movement is controlled by the commander.
-  const playerFile="./models/Characters/Player/Player.fbx";
-  const commander=await loadGameModel(playerFile);
-  const playerRoot=new THREE.Group();playerRoot.name="CommanderRoot";scene.add(playerRoot);
-  playerRoot.add(commander);
-  // Explicit player-only gameplay scale; world assets are unchanged.
-  commander.scale.setScalar(0.003);
-  // Keep the FBX authoring scale. Do not normalize the character to terrain bounds.
-  const worldWidth=Math.max(targetBounds.max.x-targetBounds.min.x,targetBounds.max.z-targetBounds.min.z);
-  const unit=worldWidth/1000;
-  commander.updateMatrixWorld(true);
-  const characterBox=new THREE.Box3().setFromObject(commander);
-  const characterHeight=characterBox.max.y-characterBox.min.y;
-  if(!Number.isFinite(characterHeight)||characterHeight<=1e-7)throw new Error("Player.fbx has no usable character bounds.");
-  // Keep original character size and orientation. Only align its lowest point to the walkable surface.
-  commander.position.y-=characterBox.min.y;
-  const spawn=targetBounds.getCenter(new THREE.Vector3());
-  const terrainRay=new THREE.Raycaster();
-  const groundAt=(x,z)=>{
-    terrainRay.set(new THREE.Vector3(x,targetBounds.max.y+Math.max(worldWidth,1),z),new THREE.Vector3(0,-1,0));
-    const hits=terrainRay.intersectObject(playable||model,true);
-    return hits.length?hits[0].point.y:null;
-  };
-  const initialGround=groundAt(spawn.x,spawn.z);
-  if(initialGround===null)throw new Error("Cannot find a walkable surface on Playable_Area.");
-  playerRoot.position.set(spawn.x,initialGround,spawn.z);
-  // Animation names vary by exporter; use available idle/walk actions when present.
-  const clips=commander.animations||[];
-  const mixer=clips.length?new THREE.AnimationMixer(commander):null;
-  const walkClip=clips.find(c=>/walk|run|locomot|move/i.test(c.name))||clips[0]||null;
-  const idleClip=clips.find(c=>/idle|stand|breath/i.test(c.name))||null;
-  const walkAction=walkClip?mixer.clipAction(walkClip):null;
-  const idleAction=idleClip?mixer.clipAction(idleClip):null;
-  let activeAction=null;
-  const animateMovement=walking=>{
-    const next=walking?walkAction:(idleAction||walkAction);
-    if(next!==activeAction){activeAction?.fadeOut(.18);next?.reset().fadeIn(.18).play();activeAction=next;}
-    if(next===walkAction&&!walking)next.paused=true;
-    else if(next)next.paused=false;
-  };
-  animateMovement(false);
-  // Dedicated follow target, independent of animated FBX geometry.
+  // Hub mode: the terrain is the whole scene. Player.fbx is loaded only in battle mode.
+  // Keep the Blender camera's authored POSITION and projection. Aim at the
+  // actual playable terrain, never at an imported character.
+  const center=targetBounds.getCenter(new THREE.Vector3());
+  const worldSize=targetBounds.getSize(new THREE.Vector3());
+  const extent=Math.max(worldSize.x,worldSize.z,1);
   const worldUp=new THREE.Vector3(0,1,0);
-  const cameraBack=new THREE.Vector3(0,0,1);
-  const cameraForward=cameraBack.clone().negate();
-  const cameraRight=new THREE.Vector3().crossVectors(cameraForward,worldUp).normalize();
-  const followDistance=Math.max(characterHeight*5,unit*5);
-  const followHeight=Math.max(characterHeight*2,unit*2);
-  const cameraTarget=new THREE.Object3D();
-  cameraTarget.position.set(0,characterHeight*.55,0);
-  playerRoot.add(cameraTarget);
-  const focus=new THREE.Vector3();
+  const basePosition=camera.position.clone();
+  const cameraOffset=basePosition.clone().sub(center);
+  if(cameraOffset.lengthSq()<1e-8)cameraOffset.set(0,extent*.7,extent*.7);
+  const cameraRight=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion).setY(0).normalize();
+  const right=cameraRight.lengthSq()>1e-8?cameraRight:new THREE.Vector3(1,0,0);
+  const forward=new THREE.Vector3().crossVectors(worldUp,right).normalize();
+  const target=center.clone();
+  const initialDistance=cameraOffset.length();
+  const zoomRange=[.85,1.15];
+  let zoom=1,disposed=false,frame=0;
+  const keys=new Set();
+  const joystick={x:0,y:0,pointer:null};
+  const stick=host.querySelector("#movementJoystick"),knob=host.querySelector("#movementJoystickKnob");
+  const canvas=renderer.domElement;
   const updateCamera=()=>{
-    cameraTarget.getWorldPosition(focus);
-    camera.position.copy(focus).addScaledVector(cameraBack,followDistance);
-    camera.position.y+=followHeight;
+    camera.position.copy(target).addScaledVector(cameraOffset,zoom);
     camera.up.copy(worldUp);
-    camera.lookAt(focus);
-    camera.zoom=1;
-    camera.near=Math.max(.001,followDistance*.001);
-    camera.far=Math.max(1000,followDistance*200);
+    camera.lookAt(target);
+    camera.near=Math.max(.001,initialDistance*.00001);
+    camera.far=Math.max(1000,initialDistance*100,extent*100);
+    if(camera.isOrthographicCamera){
+      const h=Math.max(1,extent*.8)*zoom,aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
+      camera.left=-h*aspect/2;camera.right=h*aspect/2;camera.top=h/2;camera.bottom=-h/2;
+    }else if(camera.isPerspectiveCamera)camera.aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld(true);
   };
-  const resizeCamera=()=>{
-    const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
-    if(camera.isPerspectiveCamera)camera.aspect=aspect;
-    if(camera.isOrthographicCamera){
-      const height=followDistance*.75;
-      camera.left=-height*aspect/2;camera.right=height*aspect/2;
-      camera.top=height/2;camera.bottom=-height/2;
-    }
-    camera.updateProjectionMatrix();updateCamera();
-  };
-  const keys=new Set();
+  const setZoom=value=>{zoom=THREE.MathUtils.clamp(value,...zoomRange);updateCamera();};
+  const onWheel=e=>{e.preventDefault();setZoom(zoom*(e.deltaY>0?1.045:.955));};
+  canvas.addEventListener("wheel",onWheel,{passive:false});
   const keyDown=e=>{
     if(!host.isConnected||host.hidden||e.target.closest("input,textarea,select"))return;
-    const key=e.key.toLowerCase();
-    if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(key)){keys.add(key);e.preventDefault();}
+    const k=e.key.toLowerCase();
+    if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(k)){keys.add(k);e.preventDefault();}
   };
   const keyUp=e=>keys.delete(e.key.toLowerCase());
-  const resetKeys=()=>{keys.clear();joystick.x=0;joystick.y=0;};
-  window.addEventListener("keydown",keyDown);
-  window.addEventListener("keyup",keyUp);
-  window.addEventListener("blur",resetKeys);
-  const joystick={x:0,y:0,pointer:null};
-  const stick=host.querySelector("#movementJoystick"),knob=host.querySelector("#movementJoystickKnob");
+  const reset=()=>{keys.clear();joystick.x=0;joystick.y=0;};
+  window.addEventListener("keydown",keyDown);window.addEventListener("keyup",keyUp);window.addEventListener("blur",reset);
   const updateStick=e=>{
     const box=stick.getBoundingClientRect(),radius=Math.max(1,Math.min(box.width,box.height)*.35);
-    let x=(e.clientX-(box.left+box.width/2))/radius;
-    let y=(e.clientY-(box.top+box.height/2))/radius;
-    const length=Math.hypot(x,y);
-    if(length>1){x/=length;y/=length;}
+    let x=(e.clientX-box.left-box.width/2)/radius,y=(e.clientY-box.top-box.height/2)/radius;
+    const n=Math.hypot(x,y);if(n>1){x/=n;y/=n;}
     joystick.x=x;joystick.y=-y;
     knob.style.transform="translate("+x*radius+"px,"+y*radius+"px)";
   };
   const stickDown=e=>{e.preventDefault();joystick.pointer=e.pointerId;stick.setPointerCapture(e.pointerId);updateStick(e);};
   const stickMove=e=>{if(joystick.pointer===e.pointerId)updateStick(e);};
   const stickUp=e=>{if(joystick.pointer!==e.pointerId)return;joystick.pointer=null;joystick.x=0;joystick.y=0;knob.style.transform="translate(0,0)";};
-  stick.addEventListener("pointerdown",stickDown);
-  stick.addEventListener("pointermove",stickMove);
-  stick.addEventListener("pointerup",stickUp);
-  stick.addEventListener("pointercancel",stickUp);
-  const canvas=renderer.domElement;
-  const observer=new ResizeObserver(()=>{
-    renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);
-    resizeCamera();
-  });
+  stick.addEventListener("pointerdown",stickDown);stick.addEventListener("pointermove",stickMove);
+  stick.addEventListener("pointerup",stickUp);stick.addEventListener("pointercancel",stickUp);
+  // Drag on desktop / touch to pan. Two-finger pinch zoom is limited to ±15%.
+  const pointers=new Map();
+  let dragDistance=0,lastPinch=null;
+  const pointerDown=e=>{pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});canvas.setPointerCapture(e.pointerId);if(pointers.size===2)lastPinch=null;};
+  const pointerMove=e=>{
+    const old=pointers.get(e.pointerId);if(!old)return;
+    const dx=e.clientX-old.x,dy=e.clientY-old.y;
+    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.size===2){
+      const pts=[...pointers.values()],d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      if(lastPinch)setZoom(zoom*lastPinch/Math.max(1,d));
+      lastPinch=d;return;
+    }
+    dragDistance+=Math.hypot(dx,dy);
+    const speed=extent*.0006*zoom;
+    target.addScaledVector(right,-dx*speed).addScaledVector(forward,dy*speed);
+  };
+  const raycaster=new THREE.Raycaster(),ndc=new THREE.Vector2();
+  const status=host.querySelector("#worldStatus");
+  const pointerUp=e=>{
+    if(!pointers.has(e.pointerId))return;
+    pointers.delete(e.pointerId);lastPinch=null;
+    if(dragDistance<8&&pointers.size===0){
+      const box=canvas.getBoundingClientRect();
+      ndc.set((e.clientX-box.left)/box.width*2-1,-(e.clientY-box.top)/box.height*2+1);
+      raycaster.setFromCamera(ndc,camera);
+      const hit=raycaster.intersectObject(model,true).find(h=>!h.object.name.toLowerCase().includes("playable_area"));
+      if(hit&&status){
+        const label=hit.object.name||hit.object.parent?.name||"Building";
+        status.textContent=label+" — building interaction coming soon";
+        status.hidden=false;
+        clearTimeout(status._hubTimer);
+        status._hubTimer=setTimeout(()=>status.hidden=true,3500);
+      }
+    }
+    if(!pointers.size)dragDistance=0;
+  };
+  canvas.style.touchAction="none";
+  canvas.addEventListener("pointerdown",pointerDown);canvas.addEventListener("pointermove",pointerMove);
+  canvas.addEventListener("pointerup",pointerUp);canvas.addEventListener("pointercancel",pointerUp);
+  const clampTarget=()=>{
+    target.x=THREE.MathUtils.clamp(target.x,targetBounds.min.x,targetBounds.max.x);
+    target.z=THREE.MathUtils.clamp(target.z,targetBounds.min.z,targetBounds.max.z);
+  };
+  const observer=new ResizeObserver(()=>{renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);updateCamera();});
   observer.observe(host);
   renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);
-  resizeCamera();
+  updateCamera();
   const clock=new THREE.Clock();
-  let frame=0,disposed=false;
   function draw(){
     if(disposed)return;
     frame=requestAnimationFrame(draw);
     const dt=Math.min(clock.getDelta(),.05);
-    const forward=Number(keys.has("w")||keys.has("arrowup"))-Number(keys.has("s")||keys.has("arrowdown"))+joystick.y;
-    const sideways=Number(keys.has("d")||keys.has("arrowright"))-Number(keys.has("a")||keys.has("arrowleft"))+joystick.x;
-    const movement=new THREE.Vector3().addScaledVector(cameraForward,forward).addScaledVector(cameraRight,sideways);
-    const walking=movement.lengthSq()>.001;
-    if(walking){
-      movement.normalize();
-      const speed=unit*4.2;
-      const nextX=THREE.MathUtils.clamp(playerRoot.position.x+movement.x*speed*dt,targetBounds.min.x+unit*2,targetBounds.max.x-unit*2);
-      const nextZ=THREE.MathUtils.clamp(playerRoot.position.z+movement.z*speed*dt,targetBounds.min.z+unit*2,targetBounds.max.z-unit*2);
-      const y=groundAt(nextX,nextZ);
-      if(y!==null){
-        playerRoot.position.set(nextX,y,nextZ);
-        // Character's model forward direction is assumed to be -Z; adjust if authored differently.
-        playerRoot.rotation.y=Math.atan2(-movement.x,-movement.z);
-      }
-    }
-    animateMovement(walking);
-    mixer?.update(dt);
-    updateCamera();
-    renderer.render(scene,camera);
+    const f=Number(keys.has("w")||keys.has("arrowup"))-Number(keys.has("s")||keys.has("arrowdown"))+joystick.y;
+    const side=Number(keys.has("d")||keys.has("arrowright"))-Number(keys.has("a")||keys.has("arrowleft"))+joystick.x;
+    if(Math.abs(f)+Math.abs(side)>.001)target.addScaledVector(forward,f*extent*.18*dt).addScaledVector(right,side*extent*.18*dt);
+    clampTarget();updateCamera();renderer.render(scene,camera);
   }
   draw();
-  const qaViews=[{id:"player",label:"Follow commander"}];
-  const qaView=id=>id==="player";
-  const qaCapture=()=>{
-    renderer.render(scene,camera);
-    const a=document.createElement("a");a.download="Kingdoms_QA_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";
-    a.href=canvas.toDataURL("image/png");a.click();
-  };
+  const qaViews=[{id:"hub",label:"Kingdom hub"}];
+  const qaView=id=>id==="hub";
+  const qaCapture=()=>{renderer.render(scene,camera);const a=document.createElement("a");a.download="Kingdoms_Hub_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";a.href=canvas.toDataURL("image/png");a.click();};
   placement.setQAHandler?.({views:qaViews,view:qaView,capture:qaCapture});
   return ()=>{
-    placement.setQAHandler?.(null);
-    disposed=true;cancelAnimationFrame(frame);observer.disconnect();
-    window.removeEventListener("keydown",keyDown);window.removeEventListener("keyup",keyUp);window.removeEventListener("blur",resetKeys);
+    disposed=true;cancelAnimationFrame(frame);observer.disconnect();placement.setQAHandler?.(null);
+    window.removeEventListener("keydown",keyDown);window.removeEventListener("keyup",keyUp);window.removeEventListener("blur",reset);
+    canvas.removeEventListener("wheel",onWheel);canvas.removeEventListener("pointerdown",pointerDown);
+    canvas.removeEventListener("pointermove",pointerMove);canvas.removeEventListener("pointerup",pointerUp);canvas.removeEventListener("pointercancel",pointerUp);
     stick.removeEventListener("pointerdown",stickDown);stick.removeEventListener("pointermove",stickMove);
     stick.removeEventListener("pointerup",stickUp);stick.removeEventListener("pointercancel",stickUp);
-    mixer?.stopAllAction();scene.remove(playerRoot);
     groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();
   };
 }
