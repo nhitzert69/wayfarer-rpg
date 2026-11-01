@@ -116,126 +116,165 @@ export async function startTerrain(host, placement={}) {
   scene.add(gameSun.target);
   camera.layers.enable(1);
 
-  // Keep the authored camera rotation, including its intentional framing.
-  const origin=camera.position.clone(),rotation=camera.quaternion.clone(),baseZoom=camera.zoom||1;
-  // Blender authored frame is 16:9. Wider viewports must crop, not reveal terrain outside it.
-  const authoredAspect=16/9;
-  let viewportCrop=1;
-  const orthoHeight=camera.isOrthographicCamera?camera.top-camera.bottom:0;
-  const orthoCenterX=camera.isOrthographicCamera?(camera.left+camera.right)/2:0;
-  const orthoCenterY=camera.isOrthographicCamera?(camera.top+camera.bottom)/2:0;
-  camera.near=0.1;camera.far=100000;scene.add(camera);
-  const groundY=targetBounds.min.y;
-  const state={zoom:5,offset:new THREE.Vector3()},zoomMin=1,zoomMax=20;
-  const resizeCamera=()=>{
-    const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
-    viewportCrop=Math.max(1,aspect/authoredAspect);
-    if(camera.isPerspectiveCamera)camera.aspect=aspect;
-    if(camera.isOrthographicCamera){
-      camera.left=orthoCenterX-orthoHeight*aspect/2;camera.right=orthoCenterX+orthoHeight*aspect/2;
-      camera.top=orthoCenterY+orthoHeight/2;camera.bottom=orthoCenterY-orthoHeight/2;
-    }
+  // v3.0.78: fixed-distance player-follow camera; movement is controlled by the commander.
+  const playerFile="./models/Characters/Player/Player.fbx";
+  const commander=await loadGameModel(playerFile);
+  const playerRoot=new THREE.Group();playerRoot.name="CommanderRoot";scene.add(playerRoot);
+  playerRoot.add(commander);
+  // Normalize the imported FBX's arbitrary authoring scale to a 1.8m character
+  // relative to the 1km authored terrain. Preserve its skeleton and animation clips.
+  const worldWidth=Math.max(targetBounds.max.x-targetBounds.min.x,targetBounds.max.z-targetBounds.min.z);
+  const unit=worldWidth/1000,characterHeight=1.8*unit;
+  commander.updateMatrixWorld(true);
+  let characterBox=new THREE.Box3().setFromObject(commander);
+  const rawHeight=characterBox.max.y-characterBox.min.y;
+  if(!Number.isFinite(rawHeight)||rawHeight<=1e-7)throw new Error("Player.fbx has no usable character bounds.");
+  commander.scale.multiplyScalar(characterHeight/rawHeight);
+  commander.updateMatrixWorld(true);
+  characterBox=new THREE.Box3().setFromObject(commander);
+  commander.position.x-=(characterBox.min.x+characterBox.max.x)/2;
+  commander.position.z-=(characterBox.min.z+characterBox.max.z)/2;
+  commander.position.y-=characterBox.min.y;
+  const spawn=targetBounds.getCenter(new THREE.Vector3());
+  const terrainRay=new THREE.Raycaster();
+  const groundAt=(x,z)=>{
+    terrainRay.set(new THREE.Vector3(x,targetBounds.max.y+Math.max(worldWidth,1),z),new THREE.Vector3(0,-1,0));
+    const hits=terrainRay.intersectObject(playable||model,true);
+    return hits.length?hits[0].point.y:null;
+  };
+  const initialGround=groundAt(spawn.x,spawn.z);
+  if(initialGround===null)throw new Error("Cannot find a walkable surface on Playable_Area.");
+  playerRoot.position.set(spawn.x,initialGround,spawn.z);
+  // Animation names vary by exporter; use available idle/walk actions when present.
+  const clips=commander.animations||[];
+  const mixer=clips.length?new THREE.AnimationMixer(commander):null;
+  const walkClip=clips.find(c=>/walk|run|locomot|move/i.test(c.name))||clips[0]||null;
+  const idleClip=clips.find(c=>/idle|stand|breath/i.test(c.name))||null;
+  const walkAction=walkClip?mixer.clipAction(walkClip):null;
+  const idleAction=idleClip?mixer.clipAction(idleClip):null;
+  let activeAction=null;
+  const animateMovement=walking=>{
+    const next=walking?walkAction:(idleAction||walkAction);
+    if(next!==activeAction){activeAction?.fadeOut(.18);next?.reset().fadeIn(.18).play();activeAction=next;}
+    if(next===walkAction&&!walking)next.paused=true;
+    else if(next)next.paused=false;
+  };
+  animateMovement(false);
+  const cameraForward=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  cameraForward.y=0;
+  if(cameraForward.lengthSq()<.00001)cameraForward.set(0,0,-1);
+  cameraForward.normalize();
+  const cameraRight=new THREE.Vector3().crossVectors(cameraForward,new THREE.Vector3(0,1,0)).normalize();
+  const followDistance=worldWidth*.035,followHeight=worldWidth*.019;
+  const lookTarget=new THREE.Vector3();
+  const updateCamera=()=>{
+    lookTarget.copy(playerRoot.position).add(new THREE.Vector3(0,characterHeight*1.15,0));
+    camera.position.copy(lookTarget).addScaledVector(cameraForward,-followDistance);
+    camera.position.y+=followHeight;
+    camera.lookAt(lookTarget);
+    // Fixed zoom: no mouse-wheel, pinch or free camera pan.
+    camera.zoom=1;
+    if(camera.isPerspectiveCamera)camera.fov=55;
     camera.updateProjectionMatrix();
   };
-  const footprint=(position,zoom)=>{
-    const probe=camera.clone();probe.position.copy(position);probe.quaternion.copy(rotation);
-    probe.zoom=baseZoom*viewportCrop*zoom;probe.updateProjectionMatrix();probe.updateMatrixWorld(true);
-    const ray=new THREE.Raycaster(),hits=[];
-    for(const x of [-1,1])for(const y of [-1,1]){
-      ray.setFromCamera(new THREE.Vector2(x,y),probe);
-      const d=ray.ray.direction.y;
-      if(Math.abs(d)<1e-6)return null;
-      const distance=(groundY-ray.ray.origin.y)/d;
-      if(distance<=0)return null;
-      hits.push(ray.ray.at(distance,new THREE.Vector3()));
+  const resizeCamera=()=>{
+    const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
+    if(camera.isPerspectiveCamera)camera.aspect=aspect;
+    if(camera.isOrthographicCamera){
+      const h=followDistance*.75;
+      camera.left=-h*aspect/2;camera.right=h*aspect/2;
+      camera.top=h/2;camera.bottom=-h/2;
     }
-    return {minX:Math.min(...hits.map(p=>p.x)),maxX:Math.max(...hits.map(p=>p.x)),
-      minZ:Math.min(...hits.map(p=>p.z)),maxZ:Math.max(...hits.map(p=>p.z))};
+    camera.updateProjectionMatrix();updateCamera();
   };
-  const updateCamera=()=>{
-    camera.position.copy(origin).add(state.offset);camera.quaternion.copy(rotation);
-    camera.zoom=baseZoom*viewportCrop*state.zoom;camera.updateProjectionMatrix();
-    const outer=footprint(origin,1),inner=footprint(camera.position,state.zoom);
-    if(outer&&inner){
-      const dx=Math.max(outer.minX-inner.minX,Math.min(outer.maxX-inner.maxX,0));
-      const dz=Math.max(outer.minZ-inner.minZ,Math.min(outer.maxZ-inner.maxZ,0));
-      state.offset.x+=dx;state.offset.z+=dz;camera.position.copy(origin).add(state.offset);
-    }else{state.offset.set(0,0,0);camera.position.copy(origin);}
-    camera.updateMatrixWorld(true);
+  const keys=new Set();
+  const keyDown=e=>{
+    if(!host.isConnected||host.hidden||e.target.closest("input,textarea,select"))return;
+    const key=e.key.toLowerCase();
+    if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(key)){keys.add(key);e.preventDefault();}
   };
-  resizeCamera();updateCamera();
-
-
-  let down=null;
-  const touches=new Map();
-  let pinchDistance=null;
-  const onDown=e=>{
-    if(e.pointerType==="mouse"&&e.button!==0)return;
-    if(e.pointerType!=="mouse"){
-      touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
-      if(touches.size>=2){down=null;pinchDistance=null;}
-    }
-    if(touches.size<2)down={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:false};
-    renderer.domElement.setPointerCapture(e.pointerId);
+  const keyUp=e=>keys.delete(e.key.toLowerCase());
+  const resetKeys=()=>{keys.clear();joystick.x=0;joystick.y=0;};
+  window.addEventListener("keydown",keyDown);
+  window.addEventListener("keyup",keyUp);
+  window.addEventListener("blur",resetKeys);
+  const joystick={x:0,y:0,pointer:null};
+  const stick=host.querySelector("#movementJoystick"),knob=host.querySelector("#movementJoystickKnob");
+  const updateStick=e=>{
+    const box=stick.getBoundingClientRect(),radius=Math.max(1,Math.min(box.width,box.height)*.35);
+    let x=(e.clientX-(box.left+box.width/2))/radius;
+    let y=(e.clientY-(box.top+box.height/2))/radius;
+    const length=Math.hypot(x,y);
+    if(length>1){x/=length;y/=length;}
+    joystick.x=x;joystick.y=-y;
+    knob.style.transform="translate("+x*radius+"px,"+y*radius+"px)";
   };
-  const onMove=e=>{
-    if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(touches.size>=2){
-      const [a,b]=Array.from(touches.values());
-      const distance=Math.hypot(a.x-b.x,a.y-b.y);
-      if(pinchDistance&&distance>0){
-        state.zoom=THREE.MathUtils.clamp(state.zoom*distance/pinchDistance,zoomMin,zoomMax);
-        updateCamera();
-      }
-      pinchDistance=distance;
-      return;
-    }
-    if(!down)return;
-    const dx=e.clientX-down.lastX,dy=e.clientY-down.lastY;
-    if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)down.moved=true;
-    if(down.moved){
-      const area=footprint(camera.position,state.zoom);
-      const factor=area?(area.maxX-area.minX)*Math.pow(state.zoom,.55)/Math.max(150,host.clientWidth):0;
-      const right=new THREE.Vector3(1,0,0).applyQuaternion(rotation);
-      const up=new THREE.Vector3(0,1,0).applyQuaternion(rotation);
-      state.offset.addScaledVector(right,-dx*factor).addScaledVector(up,dy*factor);
-      state.offset.y=0;
-      updateCamera();
-    }
-    down.lastX=e.clientX;down.lastY=e.clientY;
-  };
-  const onUp=e=>{
-    touches.delete(e.pointerId);
-    pinchDistance=null;
-    // Keep Blender camera framing; tapping terrain does not recenter.
-    down=null;
-  };
-  const onWheel=e=>{e.preventDefault();state.zoom=THREE.MathUtils.clamp(state.zoom*Math.exp(-e.deltaY*0.001),zoomMin,zoomMax);updateCamera();};
+  const stickDown=e=>{e.preventDefault();joystick.pointer=e.pointerId;stick.setPointerCapture(e.pointerId);updateStick(e);};
+  const stickMove=e=>{if(joystick.pointer===e.pointerId)updateStick(e);};
+  const stickUp=e=>{if(joystick.pointer!==e.pointerId)return;joystick.pointer=null;joystick.x=0;joystick.y=0;knob.style.transform="translate(0,0)";};
+  stick.addEventListener("pointerdown",stickDown);
+  stick.addEventListener("pointermove",stickMove);
+  stick.addEventListener("pointerup",stickUp);
+  stick.addEventListener("pointercancel",stickUp);
   const canvas=renderer.domElement;
-  canvas.style.touchAction="none";
-  canvas.addEventListener("pointerdown",onDown);
-  canvas.addEventListener("pointermove",onMove);
-  canvas.addEventListener("pointerup",onUp);
-  canvas.addEventListener("pointercancel",onUp);
-  canvas.addEventListener("wheel",onWheel,{passive:false});
-  const observer=new ResizeObserver(()=>{const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);resizeCamera();updateCamera();});
+  const observer=new ResizeObserver(()=>{
+    renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);
+    resizeCamera();
+  });
   observer.observe(host);
   renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);
+  resizeCamera();
+  // Local shadow frustum tracks the commander as they explore.
+  const sunOffset=new THREE.Vector3(worldWidth*.18,worldWidth*.36,worldWidth*.21);
+  const shadowRange=worldWidth*.09;
+  Object.assign(gameSun.shadow.camera,{left:-shadowRange,right:shadowRange,top:shadowRange,bottom:-shadowRange});
+  gameSun.shadow.camera.updateProjectionMatrix();
+  const clock=new THREE.Clock();
   let frame=0,disposed=false;
-  function draw(){if(disposed)return;frame=requestAnimationFrame(draw);renderer.render(scene,camera);}
+  function draw(){
+    if(disposed)return;
+    frame=requestAnimationFrame(draw);
+    const dt=Math.min(clock.getDelta(),.05);
+    const forward=Number(keys.has("w")||keys.has("arrowup"))-Number(keys.has("s")||keys.has("arrowdown"))+joystick.y;
+    const sideways=Number(keys.has("d")||keys.has("arrowright"))-Number(keys.has("a")||keys.has("arrowleft"))+joystick.x;
+    const movement=new THREE.Vector3().addScaledVector(cameraForward,forward).addScaledVector(cameraRight,sideways);
+    const walking=movement.lengthSq()>.001;
+    if(walking){
+      movement.normalize();
+      const speed=unit*4.2;
+      const nextX=THREE.MathUtils.clamp(playerRoot.position.x+movement.x*speed*dt,targetBounds.min.x+unit*2,targetBounds.max.x-unit*2);
+      const nextZ=THREE.MathUtils.clamp(playerRoot.position.z+movement.z*speed*dt,targetBounds.min.z+unit*2,targetBounds.max.z-unit*2);
+      const y=groundAt(nextX,nextZ);
+      if(y!==null){
+        playerRoot.position.set(nextX,y,nextZ);
+        // Character's model forward direction is assumed to be -Z; adjust if authored differently.
+        playerRoot.rotation.y=Math.atan2(-movement.x,-movement.z);
+      }
+    }
+    animateMovement(walking);
+    mixer?.update(dt);
+    updateCamera();
+    gameSun.position.copy(playerRoot.position).add(sunOffset);
+    gameSun.target.position.copy(playerRoot.position);
+    gameSun.target.updateMatrixWorld();
+    renderer.render(scene,camera);
+  }
   draw();
-  // Visual QA only adjusts this browser's camera, never persistent game data.
-  const qaViews=[{id:"overview",label:"World overview",zoom:2},{id:"center",label:"Terrain center",zoom:8},{id:"close",label:"Terrain close-up",zoom:16}];
-  const qaView=id=>{
-    const view=qaViews.find(v=>v.id===id);if(!view)return false;
-    state.zoom=view.zoom;state.offset.set(0,0,0);updateCamera();return true;
-  };
+  const qaViews=[{id:"player",label:"Follow commander"}];
+  const qaView=id=>id==="player";
   const qaCapture=()=>{
     renderer.render(scene,camera);
-    const a=document.createElement("a");
-    a.download="Kingdoms_QA_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";
-    a.href=renderer.domElement.toDataURL("image/png");a.click();
+    const a=document.createElement("a");a.download="Kingdoms_QA_"+new Date().toISOString().replace(/[:.]/g,"-")+".png";
+    a.href=canvas.toDataURL("image/png");a.click();
   };
   placement.setQAHandler?.({views:qaViews,view:qaView,capture:qaCapture});
-  return ()=>{placement.setQAHandler?.(null);disposed=true;cancelAnimationFrame(frame);observer.disconnect();canvas.removeEventListener("pointerdown",onDown);canvas.removeEventListener("pointermove",onMove);canvas.removeEventListener("pointerup",onUp);canvas.removeEventListener("pointercancel",onUp);canvas.removeEventListener("wheel",onWheel);gameSun.shadow.map?.dispose();groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();};
+  return ()=>{
+    placement.setQAHandler?.(null);
+    disposed=true;cancelAnimationFrame(frame);observer.disconnect();
+    window.removeEventListener("keydown",keyDown);window.removeEventListener("keyup",keyUp);window.removeEventListener("blur",resetKeys);
+    stick.removeEventListener("pointerdown",stickDown);stick.removeEventListener("pointermove",stickMove);
+    stick.removeEventListener("pointerup",stickUp);stick.removeEventListener("pointercancel",stickUp);
+    mixer?.stopAllAction();scene.remove(playerRoot);gameSun.shadow.map?.dispose();
+    groundMaterials.forEach(material=>material.dispose());renderer.dispose();starTexture.dispose();
+  };
 }

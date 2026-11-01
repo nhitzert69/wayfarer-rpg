@@ -227,3 +227,6 @@ Static checks do not prove browser behavior. Mark any untested browser, mobile, 
 
 ## v3.0.76 RPG transition — strategy runtime retired
 - The build menu, strategy building placement/model loading and automatic road rendering are removed from the live game. Preserve GLB files and existing saved building data for possible reuse; do not delete or reset account storage. The imported Blender terrain, forest and mountains remain. Visual QA presets are terrain-only until RPG points of interest exist. Older building and road rules document historical behavior only and no longer govern the active runtime.
+
+## v3.0.78 playable RPG commander
+- Load existing Player.fbx, scale against the authored terrain, use a fixed-distance camera that follows the player, and provide keyboard/touch joystick movement. Disable manual zoom/pan. Prefer FBX walk and idle animation clips if available; no destructive changes to save state. Kingdoms HUD displays gold and wood only; keep legacy stone and food save data intact. Validate player orientation, FBX animation clips, spawn, terrain contact and mobile controls in a real WebGL browser.

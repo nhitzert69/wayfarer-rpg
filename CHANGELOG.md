@@ -1,3 +1,10 @@
+# Wayfarer v3.0.78 — playable commander RPG movement (2026-11-01)
+
+- Replaced the Kingdoms free-pan/zoom terrain viewer with a fixed-distance, player-follow camera. Mouse-wheel, pinch zoom and free dragging no longer navigate the camera.
+- Load the existing Player.fbx from models/Characters/Player, scale it relative to the 1 km terrain, spawn it on the playable surface and connect WASD/arrow keys plus a bottom-left touch joystick to walking and facing direction. Use available FBX idle/walk animation clips with AnimationMixer when present; exact animation naming and orientation require live verification.
+- Show Gold and Wood only in the Kingdoms HUD; do not delete saved Stone/Food values or alter Wayfarer resources. Preserve authentication, Sandbox, model files and screenshot capture.
+- Updated versioned frontend assets and service-worker cache. Source-level review only; mobile joystick, animation, collision and WebGL rendering require browser testing.
+
 # Wayfarer v3.0.77 — fix Kingdoms login resource regression (2026-10-31)
 
 - Restored the currentResources() accessor used by the resource HUD during sign-in, preventing the ReferenceError that was incorrectly displayed as an authentication failure after v3.0.76.
