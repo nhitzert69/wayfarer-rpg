@@ -1,3 +1,8 @@
+## v3.0.88 — Building selection and open camp footprint
+- The Kingdom Hub may show building interaction only for explicitly recognized authored buildings, not arbitrary raycast hits on mountains, terrain, trees, palisades or decoration.
+- Military Camp must have a click/tap footprint covering its empty interior as well as its meshes, derived from the imported camp's bounds without modifying Blender GLB geometry. Prioritize other recognized buildings if hit.
+- Keep other building interactions, fixed-center orbit camera, game-owned lighting, Gold/Food, login, Sandbox and saved state unchanged. Verify imported GLB object naming in browser before claiming interaction behavior fully tested.
+
 ## v3.0.87 — Fixed-center Kingdom Hub orbit camera and game lighting (supersedes v3.0.86)
 - Disable all Blender-exported lights at runtime in the Kingdom Hub. Use the game-controlled hemisphere and directional sun with terrain-bounded shadows, retaining authored geometry, materials and texture assets.
 - Hub camera is locked to the Playable_Area center, never pans freely on X/Z. The authored Blender camera position is the nearest allowed view. Left/right dragging or A/D rotates around the center. Wheel/pinch and W/S smoothly elevate the camera, ending directly above the center in a top-down view; reversing returns to the authored camera angle. Mobile joystick X rotates and Y changes elevation. Preserve building raycast clicks and no player character in hub.
