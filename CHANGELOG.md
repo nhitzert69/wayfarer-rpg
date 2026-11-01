@@ -1,3 +1,10 @@
+# Wayfarer v3.0.94 — Concurrent kingdom loading without archer towers (2026-11-01)
+
+- Changed modular Kingdom scenery loading to request all non-base models concurrently rather than sequentially.
+- Temporarily excluded `archer_towers.glb` from all loading requests; retained the asset and manifest for future investigation.
+- Kept the base ground/camera first, existing per-group failure handling, cancellation and game controls unchanged.
+- Source updated on GitHub; live phone/browser verification pending. Concurrent loading may increase peak memory usage.
+
 # Wayfarer v3.0.92 — Kingdom model directory (2026-11-01)
 
 - Created `kingdoms-of-the-unknown/models/kingdom/` with an empty `.gitkeep` placeholder so GitHub tracks the otherwise empty directory.
