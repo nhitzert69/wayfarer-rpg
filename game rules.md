@@ -1,3 +1,7 @@
+## v3.0.83 — Player scale and rendering diagnostics
+- The separately loaded Player.fbx uses explicit scale 0.003 pending visual validation; never scale the Blender-authored terrain to compensate.
+- Lighting comes exclusively from exported GLB punctual lights. Tone mapping may compress highlights but must not create lights or rewrite materials. Investigate export, material emissive values and glTF light intensity if whitening persists; Blender World and color-management settings are not faithfully exported.
+
 ## v3.0.82 — Separate character and camera controller
 - Terrain GLB does not contain the player. Load Player.fbx separately and set its gameplay scale explicitly to 0.03; do not rescale the Blender-authored terrain or add lighting.
 - Camera follows a dedicated target attached to the player controller, not bounds of animated FBX mesh or helper geometry. Keep manual zoom/pan disabled and preserve keyboard and joystick controls.
