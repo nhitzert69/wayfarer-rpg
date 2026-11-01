@@ -44,7 +44,7 @@ export async function startTerrain(host, placement={}) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   // Neutral rendering: do not impose the old strategy-view exposure on Blender-authored materials.
-  renderer.toneMapping=THREE.NoToneMapping;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure=1;
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -111,6 +111,8 @@ export async function startTerrain(host, placement={}) {
   const commander=await loadGameModel(playerFile);
   const playerRoot=new THREE.Group();playerRoot.name="CommanderRoot";scene.add(playerRoot);
   playerRoot.add(commander);
+  // Explicit player-only gameplay scale; world assets are unchanged.
+  commander.scale.setScalar(0.003);
   // Keep the FBX authoring scale. Do not normalize the character to terrain bounds.
   const worldWidth=Math.max(targetBounds.max.x-targetBounds.min.x,targetBounds.max.z-targetBounds.min.z);
   const unit=worldWidth/1000;
@@ -145,39 +147,36 @@ export async function startTerrain(host, placement={}) {
     else if(next)next.paused=false;
   };
   animateMovement(false);
-  // Follow with the Blender camera's ACTUAL exported offset (not a percentage
-  // of the full terrain bounds). The previous .035*worldWidth offset put the
-  // camera inside the scene geometry and produced a sky-only view.
+  // Dedicated follow target, independent of animated FBX geometry.
   const worldUp=new THREE.Vector3(0,1,0);
-  const authoredCameraOffset=camera.position.clone().sub(playerRoot.position);
-  // Keep the original side and elevation. Never let a degenerate exported
-  // camera offset place the viewpoint inside the player.
-  if(authoredCameraOffset.lengthSq()<1e-8)authoredCameraOffset.set(0,characterHeight*2,characterHeight*5);
-  const cameraForward=authoredCameraOffset.clone().setY(0).negate().normalize();
-  if(cameraForward.lengthSq()<1e-8)cameraForward.set(0,0,-1);
+  const cameraBack=new THREE.Vector3(0,0,1);
+  const cameraForward=cameraBack.clone().negate();
   const cameraRight=new THREE.Vector3().crossVectors(cameraForward,worldUp).normalize();
-  const followDistance=authoredCameraOffset.length();
-  const lookTarget=new THREE.Vector3();
+  const followDistance=Math.max(characterHeight*5,unit*5);
+  const followHeight=Math.max(characterHeight*2,unit*2);
+  const cameraTarget=new THREE.Object3D();
+  cameraTarget.position.set(0,characterHeight*.55,0);
+  playerRoot.add(cameraTarget);
+  const focus=new THREE.Vector3();
   const updateCamera=()=>{
-    // Target the visible center of the model, not a speculative height above it.
-    // Bounding box is in player-local space after the import's authored transforms.
-    lookTarget.copy(playerRoot.position);
-    lookTarget.y+=characterHeight*.5;
-    camera.position.copy(playerRoot.position).add(authoredCameraOffset);
+    cameraTarget.getWorldPosition(focus);
+    camera.position.copy(focus).addScaledVector(cameraBack,followDistance);
+    camera.position.y+=followHeight;
     camera.up.copy(worldUp);
-    camera.lookAt(lookTarget);
-    camera.updateMatrixWorld(true);
-    // Fixed zoom; preserve the Blender camera's original projection and FOV.
+    camera.lookAt(focus);
     camera.zoom=1;
+    camera.near=Math.max(.001,followDistance*.001);
+    camera.far=Math.max(1000,followDistance*200);
     camera.updateProjectionMatrix();
+    camera.updateMatrixWorld(true);
   };
   const resizeCamera=()=>{
     const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
     if(camera.isPerspectiveCamera)camera.aspect=aspect;
     if(camera.isOrthographicCamera){
-      const h=followDistance*.75;
-      camera.left=-h*aspect/2;camera.right=h*aspect/2;
-      camera.top=h/2;camera.bottom=-h/2;
+      const height=followDistance*.75;
+      camera.left=-height*aspect/2;camera.right=height*aspect/2;
+      camera.top=height/2;camera.bottom=-height/2;
     }
     camera.updateProjectionMatrix();updateCamera();
   };

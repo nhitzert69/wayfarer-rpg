@@ -47,7 +47,7 @@ function setQAHandler(handler){
   for(const view of handler?.views||[]){const option=document.createElement("option");option.value=view.id;option.textContent=view.label;select.append(option);}
   refreshDebug();
 }
-const RESOURCE_NAMES=["gold","wood"];
+const RESOURCE_NAMES=["gold","food"];
 function readResources(kind){
   try{
     const raw=JSON.parse(localStorage.getItem(storageKey(kind+"-resources"))||"{}");
@@ -101,7 +101,7 @@ async function enterWorld(){
   $("terrainLoading").hidden=false;
   $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
-    const {startTerrain}=await import("./terrain.js?v=3.0.81");
+    const {startTerrain}=await import("./terrain.js?v=3.0.83");
     if(generation!==loadGeneration)return;
     const dispose=await startTerrain($("world"),{setQAHandler});
     if(generation!==loadGeneration){dispose();return;}
