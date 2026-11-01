@@ -101,7 +101,7 @@ async function enterWorld(){
   $("terrainLoading").hidden=false;
   $("terrainLoadingMessage").textContent="Loading terrain and textures";
   try{
-    const {startTerrain}=await import("./terrain.js?v=3.0.87");
+    const {startTerrain}=await import("./terrain.js?v=3.0.88");
     if(generation!==loadGeneration)return;
     const dispose=await startTerrain($("world"),{setQAHandler});
     if(generation!==loadGeneration){dispose();return;}
