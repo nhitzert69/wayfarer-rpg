@@ -1,3 +1,10 @@
+# Wayfarer v3.0.96 — Hold kingdom loading screen until scenery completes (2026-11-01)
+
+- Kept the dedicated loading overlay visible until all modular scenery groups finish loading or report errors; the game no longer reveals the kingdom after only base terrain initialization.
+- Added completed/total scenery group progress text; retained all models including archer towers, existing failure isolation, camera, controls, authentication and saves.
+- Refreshed standalone module version and service-worker cache namespace.
+- Loading still runs in the same WebGL context; this is a visibility/readiness change, not a GPU memory reduction. Live iPhone verification pending.
+
 # Wayfarer v3.0.95 — Restore archer towers (2026-11-01)
 
 - Restored `archer_towers.glb` to the modular Kingdom loader after user testing indicated towers were not the cause of the phone crash.
