@@ -1,3 +1,16 @@
+# Wayfarer v3.0.87 — restore game lighting and fixed-center orbit camera (2026-11-01)
+
+- Restored game-controlled HemisphereLight (0.85) and DirectionalLight (1.55) with terrain-bounded shadows, disabling imported Blender lights at runtime; preserves source GLB, materials and terrain geometry.
+- Replaced free XY hub camera panning with a fixed-center orbit anchored to the playable terrain. Initial Blender camera position is the closest view; left/right drag, A/D and joystick X rotate around center. Scroll/pinch or W/S/joystick Y smoothly raise or lower the camera, transitioning to a straight-down overhead view at the far limit.
+- Preserved building click raycasting, Gold/Food HUD, login, Sandbox and saved progress. Updated frontend and service-worker versions. Source syntax checked; live browser visual verification pending.
+
+# Wayfarer v3.0.86 — Blender-only hub lighting retest (2026-11-01)
+
+- Removed runtime-created hemisphere and directional lights from the Kingdom Hub; retain only lights exported in terrain_kingdoms.glb, at native glTF intensity.
+- Added a console diagnostic listing imported light names, types and intensities. No source GLB, textures, terrain scale, camera or hub controls modified.
+- This supersedes v3.0.85's game-owned lighting as an experimental configuration. If overexposure recurs, compare with v3.0.85 and inspect current GLB export rather than changing unrelated assets.
+- Updated asset and service-worker cache versions. JavaScript syntax checked; live visual verification pending.
+
 # Wayfarer v3.0.85 — game-controlled Kingdom Hub lighting (2026-11-01)
 
 - Disabled all Blender-exported punctual lights at runtime in the Kingdom Hub, without modifying terrain_kingdoms.glb.

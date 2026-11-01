@@ -101,11 +101,10 @@ export async function startTerrain(host, placement={}) {
     node.receiveShadow=true;
     node.layers.enable(1);
   });
-  // Ignore all lighting imported from Blender; the source GLB remains unchanged.
+  // Hub lighting is owned by the game; never use lights exported by Blender.
   const importedLights=[];
   model.traverse(node=>{if(node.isLight)importedLights.push(node);});
   for(const light of importedLights)light.parent?.remove(light);
-  // Consistent game lighting independent of Blender export units and sun intensity.
   const ambient=new THREE.HemisphereLight(0xdce9ff,0x655b48,0.85);
   scene.add(ambient);
   const sun=new THREE.DirectionalLight(0xfff2da,1.55);
@@ -117,55 +116,58 @@ export async function startTerrain(host, placement={}) {
   scene.add(sun,sun.target);
   sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048);
-  sun.shadow.camera.left=-lightExtent*.8;
-  sun.shadow.camera.right=lightExtent*.8;
-  sun.shadow.camera.top=lightExtent*.8;
-  sun.shadow.camera.bottom=-lightExtent*.8;
-  sun.shadow.camera.near=Math.max(.01,lightExtent*.01);
-  sun.shadow.camera.far=lightExtent*4;
-  sun.shadow.bias=-0.00015;
-  sun.shadow.normalBias=0.02;
+  sun.shadow.camera.left=-lightExtent*.8;sun.shadow.camera.right=lightExtent*.8;
+  sun.shadow.camera.top=lightExtent*.8;sun.shadow.camera.bottom=-lightExtent*.8;
+  sun.shadow.camera.near=Math.max(.01,lightExtent*.01);sun.shadow.camera.far=lightExtent*4;
+  sun.shadow.bias=-0.00015;sun.shadow.normalBias=0.02;
   sun.shadow.camera.updateProjectionMatrix();
   model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
-  console.info("Kingdoms hub: imported lights disabled; using game hemisphere and directional sunlight.",{removed:importedLights.length});
+  console.info("Kingdoms hub: using game-owned lighting.",{disabledImportedLights:importedLights.length});
   camera.layers.enable(1);
 
-  // Hub mode: the terrain is the whole scene. Player.fbx is loaded only in battle mode.
-  // Keep the Blender camera's authored POSITION and projection. Aim at the
-  // actual playable terrain, never at an imported character.
+  // Fixed-center orbit camera. The exported Blender camera defines the
+  // closest orbit position; zoom-out elevates toward a true overhead view.
   const center=targetBounds.getCenter(new THREE.Vector3());
   const worldSize=targetBounds.getSize(new THREE.Vector3());
   const extent=Math.max(worldSize.x,worldSize.z,1);
   const worldUp=new THREE.Vector3(0,1,0);
-  const basePosition=camera.position.clone();
-  const cameraOffset=basePosition.clone().sub(center);
-  if(cameraOffset.lengthSq()<1e-8)cameraOffset.set(0,extent*.7,extent*.7);
-  const cameraRight=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion).setY(0).normalize();
-  const right=cameraRight.lengthSq()>1e-8?cameraRight:new THREE.Vector3(1,0,0);
-  const forward=new THREE.Vector3().crossVectors(worldUp,right).normalize();
-  const target=center.clone();
-  const initialDistance=cameraOffset.length();
-  const zoomRange=[.85,1.15];
-  let zoom=1,disposed=false,frame=0;
+  const initialOffset=camera.position.clone().sub(center);
+  const initialRadius=Math.max(.001,Math.hypot(initialOffset.x,initialOffset.z));
+  const initialHeight=Math.max(.001,initialOffset.y);
+  const initialYaw=Math.atan2(initialOffset.x,initialOffset.z);
+  const overheadHeight=Math.max(initialHeight*2.1,extent*1.3);
+  let yaw=initialYaw,targetYaw=initialYaw;
+  let elevation=0,targetElevation=0;
+  let disposed=false,frame=0;
   const keys=new Set();
   const joystick={x:0,y:0,pointer:null};
   const stick=host.querySelector("#movementJoystick"),knob=host.querySelector("#movementJoystickKnob");
   const canvas=renderer.domElement;
+  const clampElevation=v=>THREE.MathUtils.clamp(v,0,1);
   const updateCamera=()=>{
-    camera.position.copy(target).addScaledVector(cameraOffset,zoom);
-    camera.up.copy(worldUp);
-    camera.lookAt(target);
-    camera.near=Math.max(.001,initialDistance*.00001);
-    camera.far=Math.max(1000,initialDistance*100,extent*100);
+    // Horizontal orbit radius fades to zero as the camera reaches top-down.
+    const horizontal=initialRadius*Math.cos(elevation*Math.PI/2);
+    const height=THREE.MathUtils.lerp(initialHeight,overheadHeight,elevation);
+    camera.position.set(center.x+Math.sin(yaw)*horizontal,center.y+height,center.z+Math.cos(yaw)*horizontal);
+    camera.up.set(0,1,0);
+    // Looking exactly vertically requires a stable up vector to prevent
+    // flipping or a sudden roll at the overhead limit.
+    if(elevation>.9999)camera.up.set(-Math.sin(yaw),0,-Math.cos(yaw));
+    camera.lookAt(center);
+    camera.near=Math.max(.001,initialRadius*.00001);
+    camera.far=Math.max(1000,overheadHeight*100,extent*100);
     if(camera.isOrthographicCamera){
-      const h=Math.max(1,extent*.8)*zoom,aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
-      camera.left=-h*aspect/2;camera.right=h*aspect/2;camera.top=h/2;camera.bottom=-h/2;
-    }else if(camera.isPerspectiveCamera)camera.aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
+      const h=THREE.MathUtils.lerp(Math.max(1,extent*.8),Math.max(1,extent*1.45),elevation);
+      const aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
+      camera.left=-h*aspect/2;camera.right=h*aspect/2;
+      camera.top=h/2;camera.bottom=-h/2;
+    }else if(camera.isPerspectiveCamera){
+      camera.aspect=Math.max(.2,host.clientWidth/Math.max(1,host.clientHeight));
+    }
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld(true);
   };
-  const setZoom=value=>{zoom=THREE.MathUtils.clamp(value,...zoomRange);updateCamera();};
-  const onWheel=e=>{e.preventDefault();setZoom(zoom*(e.deltaY>0?1.045:.955));};
+  const onWheel=e=>{e.preventDefault();targetElevation=clampElevation(targetElevation+Math.sign(e.deltaY)*.065);};
   canvas.addEventListener("wheel",onWheel,{passive:false});
   const keyDown=e=>{
     if(!host.isConnected||host.hidden||e.target.closest("input,textarea,select"))return;
@@ -187,7 +189,6 @@ export async function startTerrain(host, placement={}) {
   const stickUp=e=>{if(joystick.pointer!==e.pointerId)return;joystick.pointer=null;joystick.x=0;joystick.y=0;knob.style.transform="translate(0,0)";};
   stick.addEventListener("pointerdown",stickDown);stick.addEventListener("pointermove",stickMove);
   stick.addEventListener("pointerup",stickUp);stick.addEventListener("pointercancel",stickUp);
-  // Drag on desktop / touch to pan. Two-finger pinch zoom is limited to ±15%.
   const pointers=new Map();
   let dragDistance=0,lastPinch=null;
   const pointerDown=e=>{pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});canvas.setPointerCapture(e.pointerId);if(pointers.size===2)lastPinch=null;};
@@ -197,12 +198,12 @@ export async function startTerrain(host, placement={}) {
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pointers.size===2){
       const pts=[...pointers.values()],d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
-      if(lastPinch)setZoom(zoom*lastPinch/Math.max(1,d));
+      if(lastPinch!==null)targetElevation=clampElevation(targetElevation+(lastPinch-d)/Math.max(100,canvas.clientHeight));
       lastPinch=d;return;
     }
     dragDistance+=Math.hypot(dx,dy);
-    const speed=extent*.0006*zoom;
-    target.addScaledVector(right,-dx*speed).addScaledVector(forward,dy*speed);
+    targetYaw-=dx*.006;
+    targetElevation=clampElevation(targetElevation+dy*.0016);
   };
   const raycaster=new THREE.Raycaster(),ndc=new THREE.Vector2();
   const status=host.querySelector("#worldStatus");
@@ -227,10 +228,6 @@ export async function startTerrain(host, placement={}) {
   canvas.style.touchAction="none";
   canvas.addEventListener("pointerdown",pointerDown);canvas.addEventListener("pointermove",pointerMove);
   canvas.addEventListener("pointerup",pointerUp);canvas.addEventListener("pointercancel",pointerUp);
-  const clampTarget=()=>{
-    target.x=THREE.MathUtils.clamp(target.x,targetBounds.min.x,targetBounds.max.x);
-    target.z=THREE.MathUtils.clamp(target.z,targetBounds.min.z,targetBounds.max.z);
-  };
   const observer=new ResizeObserver(()=>{renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);updateCamera();});
   observer.observe(host);
   renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight),false);
@@ -240,10 +237,15 @@ export async function startTerrain(host, placement={}) {
     if(disposed)return;
     frame=requestAnimationFrame(draw);
     const dt=Math.min(clock.getDelta(),.05);
-    const f=Number(keys.has("w")||keys.has("arrowup"))-Number(keys.has("s")||keys.has("arrowdown"))+joystick.y;
-    const side=Number(keys.has("d")||keys.has("arrowright"))-Number(keys.has("a")||keys.has("arrowleft"))+joystick.x;
-    if(Math.abs(f)+Math.abs(side)>.001)target.addScaledVector(forward,f*extent*.18*dt).addScaledVector(right,side*extent*.18*dt);
-    clampTarget();updateCamera();renderer.render(scene,camera);
+    const horizontal=Number(keys.has("d")||keys.has("arrowright"))-Number(keys.has("a")||keys.has("arrowleft"))+joystick.x;
+    const vertical=Number(keys.has("s")||keys.has("arrowdown"))-Number(keys.has("w")||keys.has("arrowup"))-joystick.y;
+    targetYaw+=horizontal*dt*1.2;
+    targetElevation=clampElevation(targetElevation+vertical*dt*.35);
+    const smoothing=1-Math.exp(-dt*8);
+    yaw+=THREE.MathUtils.euclideanModulo(targetYaw-yaw+Math.PI,Math.PI*2)-Math.PI ? 0 : 0;
+    yaw+=((targetYaw-yaw))*smoothing;
+    elevation=THREE.MathUtils.lerp(elevation,targetElevation,smoothing);
+    updateCamera();renderer.render(scene,camera);
   }
   draw();
   const qaViews=[{id:"hub",label:"Kingdom hub"}];

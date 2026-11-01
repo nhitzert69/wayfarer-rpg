@@ -1,3 +1,12 @@
+## v3.0.87 — Fixed-center Kingdom Hub orbit camera and game lighting (supersedes v3.0.86)
+- Disable all Blender-exported lights at runtime in the Kingdom Hub. Use the game-controlled hemisphere and directional sun with terrain-bounded shadows, retaining authored geometry, materials and texture assets.
+- Hub camera is locked to the Playable_Area center, never pans freely on X/Z. The authored Blender camera position is the nearest allowed view. Left/right dragging or A/D rotates around the center. Wheel/pinch and W/S smoothly elevate the camera, ending directly above the center in a top-down view; reversing returns to the authored camera angle. Mobile joystick X rotates and Y changes elevation. Preserve building raycast clicks and no player character in hub.
+- Do not reintroduce independent camera translation or unrestricted zoom without explicit user approval. Preserve login, Sandbox and resources.
+
+## v3.0.86 — Blender lighting retest (supersedes v3.0.85 game-owned lighting)
+- The Kingdom Hub now uses only punctual lights included in terrain_kingdoms.glb, without creating game-side hemisphere or directional lights or scaling imported light intensity. This is a deliberate comparison following removal of duplicate Blender lights.
+- Keep v3.0.85 as the last visually confirmed lighting baseline. If the current GLB still overexposes, inspect the exported lights and materials before choosing a permanent lighting strategy. Preserve camera, controls, resources and account data.
+
 ## v3.0.85 — Game-owned Kingdom Hub lighting (supersedes earlier Blender-light rules)
 - The Kingdom Hub must ignore/remove punctual lights exported inside terrain_kingdoms.glb at runtime. Use game-controlled hemisphere fill and directional sunlight with terrain-bounded shadows instead; do not modify the source GLB or its material textures.
 - Calibrate game light intensities from live screenshots; do not claim this fixes white materials until WebGL is visually checked. If whitening persists with imported lights disabled, inspect emissive/material settings and custom playable-area shader.
