@@ -1,3 +1,11 @@
+# Wayfarer v3.0.97 — Amsterdam 04:00 daily quest reset (2026-11-03)
+
+- Added automatic daily replacement of all completed and unfinished quests at 04:00 Europe/Amsterdam (CET/CEST), using current selected skills, existing quest pool and generation-time reward snapshots.
+- Preserved earned XP/gold, completion history, manual four-hour cooldown and account isolation; refresh/return from background catches up. Legacy saves preserve current quests until the next boundary.
+- Updated core scheduling, Quest Board generator, Debug metadata, rules and PWA cache namespace.
+- Static checks: source anchors and Amsterdam DST boundaries PASS. Live browser, deployed PWA and Supabase cross-device runtime checks INCONCLUSIVE.
+- Starting main commit: `7cd660ff3ab1eee7e7b61067a8dfce39f3e31b87`.
+
 # Wayfarer standalone cleanup (2026-11-01)
 
 - Removed Kingdoms Play button, its navigation handler and missing game stylesheet reference.
