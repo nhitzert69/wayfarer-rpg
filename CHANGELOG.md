@@ -1,3 +1,10 @@
+# Wayfarer v3.0.98 — Sandbox Time Machine quest regeneration (2026-11-03)
+
+- Fixed +1/+7/+30-day Sandbox Time Machine controls to regenerate daily quests using selected skills and the existing daily generator. Old completed and unfinished sandbox quests are replaced.
+- Preserved earned XP/gold, reward snapshots and live account isolation; real-time 04:00 rollover skips Sandbox state.
+- Updated Debug metadata, rules, changelog and PWA cache version. Static integration checks performed; live browser/Supabase testing pending.
+- Starting main commit: `b76ef94f38315a9ed6014bc449f2e034f59b40cd`.
+
 # Wayfarer v3.0.97 — Amsterdam 04:00 daily quest reset (2026-11-03)
 
 - Added automatic daily replacement of all completed and unfinished quests at 04:00 Europe/Amsterdam (CET/CEST), using current selected skills, existing quest pool and generation-time reward snapshots.
