@@ -1,5 +1,10 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.0.97 — Amsterdam daily quest reset
+- At 04:00 Europe/Amsterdam regenerate the whole Quest Board for selected skills; remove unfinished and completed quests without reversing earned rewards. Track cycle in each saved account, preserve existing board on initial legacy migration, keep four-hour manual generation and generation-time XP/coin reward locking.
+- After authenticated hydration and module loading, and when a tab resumes, check cycle. An open tab periodically checks; closed tabs catch up on their next open. Preserve Sandbox isolation and Supabase save semantics.
+
+
 ## v3.0.3 QA fixes and conservative cleanup
 - Campaign and standalone Short/Day Adventure quests must share generation-time skill/theme reward snapshots; Store gold display must reflect current live or Sandbox state after every render. Retest with WorkGPT before calling the release browser-verified.
 
