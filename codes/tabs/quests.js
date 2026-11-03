@@ -140,6 +140,7 @@ function questRewardSnapshot(skill,baseXp=15){
   return {baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold,generatedForLevel};
 }
 function generateAdventure(type){
+  if(typeof checkDailyQuestReset==="function")checkDailyQuestReset();
   const pool=adventurePools[type];
   if(!pool||!pool.length)return;
   const historyKey=type==="short"?"__adventureShortHistory":"__adventureDayHistory";
@@ -373,12 +374,14 @@ function updateGenerateButtonStatus(){
  else{button.textContent="✦ Generate quests";button.disabled=false;button.title="Generate a fresh set of quests for your selected skills.";}
 }
 setInterval(updateGenerateButtonStatus,1000);
-function generateQuests(opts){
+function generateQuests(opts,automatic=false){
   ensureSelectedSkills();
   const now=Date.now();
-  const cooldownActive=!debugQuestRulesOverridden()&&Number(state.questGenerationCooldownUntil||0)>now;
+  const cooldownActive=!automatic&&!debugQuestRulesOverridden()&&Number(state.questGenerationCooldownUntil||0)>now;
   const skills=cooldownActive?getNewlySelectedQuestSkills():[...state.selectedSkills];
-  if(!skills.length){openCampaignPlanner(false);if(cooldownActive)toast("Quest generation is cooling down. Existing quests are kept; newly selected skills can still receive quests.");else toast("Choose at least one skill in the Skills tab first.");updateGenerateButtonStatus();return;}
+  if(!skills.length){
+   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=amsterdamQuestCycleKey();save();return;}
+   openCampaignPlanner(false);if(cooldownActive)toast("Quest generation is cooling down. Existing quests are kept; newly selected skills can still receive quests.");else toast("Choose at least one skill in the Skills tab first.");updateGenerateButtonStatus();return;}
   const preserveExisting=cooldownActive;
   if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
   const settings=opts||{
@@ -411,7 +414,9 @@ function generateQuests(opts){
     if(settings.focus==="social"&&support.some(q=>/Adventure|Walking & Hiking|Photography|Geography/.test(q.skill)))lead.description += " If it feels practical, choose a public place or activity that gives you a natural shared topic to talk about.";
     if(settings.focus==="balanced")lead.description += " Use this as the anchor for today's session; fit the supporting quests around it where practical.";
   }
-  if(!chosen.length){openCampaignPlanner(false);toast("No eligible quests were found in the quest library for the selected skills. Existing quests were kept.");updateGenerateButtonStatus();return;}
+  if(!chosen.length){
+   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=amsterdamQuestCycleKey();save();return;}
+   openCampaignPlanner(false);toast("No eligible quests were found in the quest library for the selected skills. Existing quests were kept.");updateGenerateButtonStatus();return;}
   if(preserveExisting){
     const existingIds=new Set((state.quests||[]).map(q=>String(q.id)));
     state.quests=[...(state.quests||[]),...chosen.filter(q=>!existingIds.has(String(q.id)))];
@@ -422,12 +427,13 @@ function generateQuests(opts){
     state.questGenerationCooldownUntil=Date.now()+QUEST_GENERATION_COOLDOWN_MS;
   }
   state.activeDate=today();
+  if(automatic)state.lastDailyQuestCycle=amsterdamQuestCycleKey();
   save();
   updateGenerateButtonStatus();
   openCampaignPlanner(false);
   if(!chosen.length){toast("No eligible quests were found in the quest library for the selected skills.");return;}
   const total=chosen.reduce((sum,q)=>sum+(q.estimatedMinutes||10),0);
-  toast(preserveExisting?`Added ${chosen.length} quest${chosen.length===1?"":"s"} for newly selected skills. Existing quests and cooldown preserved.`:`Campaign ready: ${chosen.length} quests, about ${total} minutes planned. Next full refresh in 4 hours.`);
+  if(!automatic)toast(preserveExisting?`Added ${chosen.length} quest${chosen.length===1?"":"s"} for newly selected skills. Existing quests and cooldown preserved.`:`Campaign ready: ${chosen.length} quests, about ${total} minutes planned. Next full refresh in 4 hours.`);
 }
 const generateQuestsButton=document.getElementById("generateBtn");
 // The primary button opens the campaign planner; quest generation happens only
@@ -456,6 +462,7 @@ function awardQuestRewards(target,q){
  return {xp:amount,skill,coins};
 }
 function completeQuest(id,done=true){
+ if(typeof checkDailyQuestReset==="function")checkDailyQuestReset();
  const q=state.quests.find(q=>String(q.id)===String(id));
  if(!q||q.done===done)return;
  if(!done){toast("Earned XP is never removed. Your completed quest stays recorded.");return;}
@@ -484,6 +491,7 @@ window.buildQuestPool = buildQuestPool;
 window.awardQuestRewards = awardQuestRewards;
 window.completeQuest = completeQuest;
 window.generateQuests = generateQuests;
+window.WayfarerDailyQuestGenerate=()=>generateQuests({time:60,energy:"normal",focus:"balanced",place:"either"},true);
 
 
 
