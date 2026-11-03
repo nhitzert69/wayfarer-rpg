@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.0.98 — Sandbox Time Machine quest regeneration
+- Time Machine day-advance controls must regenerate the sandbox Quest Board through the shared automatic generator, using the simulated date; live 04:00 rollover must skip Sandbox state. Preserve earned rewards and live account isolation.
+
 ## v3.0.97 — Amsterdam daily quest reset
 - At 04:00 Europe/Amsterdam regenerate the whole Quest Board for selected skills; remove unfinished and completed quests without reversing earned rewards. Track cycle in each saved account, preserve existing board on initial legacy migration, keep four-hour manual generation and generation-time XP/coin reward locking.
 - After authenticated hydration and module loading, and when a tab resumes, check cycle. An open tab periodically checks; closed tabs catch up on their next open. Preserve Sandbox isolation and Supabase save semantics.
