@@ -566,7 +566,7 @@ function amsterdamQuestCycleKey(now=new Date()){
  return new Date(midnight-(Number(fields.hour)<4?86400000:0)).toISOString().slice(0,10);
 }
 function checkDailyQuestReset(){
- if(!cloudUser||cloudHydrating||typeof window.WayfarerDailyQuestGenerate!=="function")return;
+ if(!cloudUser||cloudHydrating||debugSandboxActive||typeof window.WayfarerDailyQuestGenerate!=="function")return;
  const cycle=amsterdamQuestCycleKey();
  if(state.lastDailyQuestCycle===cycle)return;
  // Legacy saves lack a reset key: keep existing quests on first update.
