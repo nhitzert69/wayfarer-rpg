@@ -374,13 +374,13 @@ function updateGenerateButtonStatus(){
  else{button.textContent="✦ Generate quests";button.disabled=false;button.title="Generate a fresh set of quests for your selected skills.";}
 }
 setInterval(updateGenerateButtonStatus,1000);
-function generateQuests(opts,automatic=false){
+function generateQuests(opts,automatic=false,cycleOverride=null){
   ensureSelectedSkills();
   const now=Date.now();
   const cooldownActive=!automatic&&!debugQuestRulesOverridden()&&Number(state.questGenerationCooldownUntil||0)>now;
   const skills=cooldownActive?getNewlySelectedQuestSkills():[...state.selectedSkills];
   if(!skills.length){
-   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=amsterdamQuestCycleKey();save();return;}
+   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=(cycleOverride||amsterdamQuestCycleKey());save();return;}
    openCampaignPlanner(false);if(cooldownActive)toast("Quest generation is cooling down. Existing quests are kept; newly selected skills can still receive quests.");else toast("Choose at least one skill in the Skills tab first.");updateGenerateButtonStatus();return;}
   const preserveExisting=cooldownActive;
   if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
@@ -415,7 +415,7 @@ function generateQuests(opts,automatic=false){
     if(settings.focus==="balanced")lead.description += " Use this as the anchor for today's session; fit the supporting quests around it where practical.";
   }
   if(!chosen.length){
-   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=amsterdamQuestCycleKey();save();return;}
+   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=(cycleOverride||amsterdamQuestCycleKey());save();return;}
    openCampaignPlanner(false);toast("No eligible quests were found in the quest library for the selected skills. Existing quests were kept.");updateGenerateButtonStatus();return;}
   if(preserveExisting){
     const existingIds=new Set((state.quests||[]).map(q=>String(q.id)));
@@ -427,7 +427,7 @@ function generateQuests(opts,automatic=false){
     state.questGenerationCooldownUntil=Date.now()+QUEST_GENERATION_COOLDOWN_MS;
   }
   state.activeDate=today();
-  if(automatic)state.lastDailyQuestCycle=amsterdamQuestCycleKey();
+  if(automatic)state.lastDailyQuestCycle=(cycleOverride||amsterdamQuestCycleKey());
   save();
   updateGenerateButtonStatus();
   openCampaignPlanner(false);
@@ -491,7 +491,7 @@ window.buildQuestPool = buildQuestPool;
 window.awardQuestRewards = awardQuestRewards;
 window.completeQuest = completeQuest;
 window.generateQuests = generateQuests;
-window.WayfarerDailyQuestGenerate=()=>generateQuests({time:60,energy:"normal",focus:"balanced",place:"either"},true);
+window.WayfarerDailyQuestGenerate=(cycleOverride=null)=>generateQuests({time:60,energy:"normal",focus:"balanced",place:"either"},true,cycleOverride);
 
 
 
