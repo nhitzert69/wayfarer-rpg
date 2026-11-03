@@ -3,6 +3,7 @@
 - Added automatic daily replacement of all completed and unfinished quests at 04:00 Europe/Amsterdam (CET/CEST), using current selected skills, existing quest pool and generation-time reward snapshots.
 - Preserved earned XP/gold, completion history, manual four-hour cooldown and account isolation; refresh/return from background catches up. Legacy saves preserve current quests until the next boundary.
 - Updated core scheduling, Quest Board generator, Debug metadata, rules and PWA cache namespace.
+- Removed a stale service-worker precache reference to deleted `game rules.md`, which otherwise prevents cache installation in the standalone repository.
 - Static checks: source anchors and Amsterdam DST boundaries PASS. Live browser, deployed PWA and Supabase cross-device runtime checks INCONCLUSIVE.
 - Starting main commit: `7cd660ff3ab1eee7e7b61067a8dfce39f3e31b87`.
 
