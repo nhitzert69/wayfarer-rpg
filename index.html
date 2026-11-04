@@ -569,14 +569,14 @@ function checkDailyQuestReset(){
  if(!cloudUser||cloudHydrating||debugSandboxActive||typeof window.WayfarerDailyQuestGenerate!=="function")return;
  const cycle=amsterdamQuestCycleKey();
  if(state.lastDailyQuestCycle===cycle)return;
- // Legacy saves lack a reset key: keep existing quests on first update.
- if(!state.lastDailyQuestCycle&&Array.isArray(state.quests)&&state.quests.length){
-  state.lastDailyQuestCycle=cycle;save(true);return;
- }
+ // Missing cycle markers indicate overdue legacy quests; regenerate rather
+ // than falsely recording the current day without replacing the board.
  window.WayfarerDailyQuestGenerate();
 }
 setInterval(checkDailyQuestReset,30000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkDailyQuestReset();});
+window.addEventListener("focus",checkDailyQuestReset);
+window.addEventListener("pageshow",checkDailyQuestReset);
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>t.style.display="none",2400)}
 let debugUnlockAllItems=false;
