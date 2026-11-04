@@ -1,3 +1,10 @@
+# Wayfarer v3.0.99 — Recover missed daily quests (2026-11-04)
+
+- Fixed the initial migration bug that silently marked an old Quest Board as current without generating new quests. Existing accounts with no cycle marker now regenerate on next authenticated use.
+- Added mobile foreground focus/pageshow checks in addition to visibility and 30-second checks. The 04:00 Amsterdam schedule, earned rewards and Sandbox isolation remain intact.
+- Updated Debug metadata, rules and PWA cache version. Static checks passed; live browser and Supabase behavior not yet verified.
+- Starting commit: `bcd2cadee4b61f0dec7832ad532f5a402d6f6189`.
+
 # Wayfarer v3.0.98 — Sandbox Time Machine quest regeneration (2026-11-03)
 
 - Fixed +1/+7/+30-day Sandbox Time Machine controls to regenerate daily quests using selected skills and the existing daily generator. Old completed and unfinished sandbox quests are replaced.
