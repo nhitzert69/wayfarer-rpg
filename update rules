@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.5 — Artifact gameplay
+- Follow `artifact rules.md` for artifact registry, Store purchases, inventory equipment and generation-time reward locking. Validate the image identity of each numbered artifact asset before claiming artwork is final. Preserve theme, pet, account and Sandbox state.
+
 ## v3.1.4 — Character portrait path regression
 - Theme character portraits must resolve from `assets/images/themes/characters/`; validate male and female paths for every registered theme after asset moves. Preserve theme appearance, saved equipment and account data.
 

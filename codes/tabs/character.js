@@ -9,15 +9,22 @@ window.WayfarerTabRenderers.character.renderCharacterInventory = function(){
  const items=Array.isArray(state.inventory)?state.inventory:[];
  const themes=items.filter(item=>isThemeInventoryItem(item));
  const pets=items.filter(item=>isPetInventoryItem(item));
- const artifacts=items.filter(item=>item&&!themes.includes(item)&&!pets.includes(item));
+ const artifacts=items.filter(item=>item&&isArtifactInventoryItem(item));
  const equippedTheme=state.equipment?.theme||null;
- const equippedPet=state.equipment?.pet||null;
+ const equippedPet=state.equipment?.pet||null;const equippedArtifact=state.equipment?.artifact||null;
  const themeRoot=document.getElementById("themeInventory"),artifactRoot=document.getElementById("artifactInventory"),petRoot=document.getElementById("petInventory");
  const countEl=document.getElementById("inventoryCount");if(countEl)countEl.textContent=items.length+" item"+(items.length===1?"":"s");
  const makeItem=(item)=>{const id=String(item.id||"");const itemType=getInventoryItemType(item);const equipped=itemType==="theme"?equippedTheme===id:(itemType==="pet"?String(equippedPet)===id:false);const registeredTheme=UNLOCKABLE_ITEMS.find(def=>def.id===id)||(id==="dungeon-theme"?DUNGEON_THEME_ITEM:null);const icon=(itemType==="theme"&&registeredTheme?registeredTheme.icon:item.icon)||"";const level=Math.max(1,Math.min(5,Math.floor(Number(item.themeLevel)||1)));const perk=id==="bloodthirst-theme"?`<small class="inventoryPerk">${equipped?"Equipped · ":""}+2 XP and +2 gold for all skill quests</small>`:itemType==="theme"&&item.id!=="dungeon-theme"?`<small class="inventoryPerk">${equipped?"Equipped · ":""}${esc(item.perkSkill||"Skill")} +${5*level} XP and +${2*(level-1)} gold per quest</small>`:"";return `<button type="button" class="inventoryItemButton${equipped?" is-equipped":""}" data-inventory-item="${esc(id)}" data-inventory-type="${esc(item.type||item.category||"artifact")}" aria-pressed="${equipped?"true":"false"}" aria-label="${esc((equipped?"Currently equipped: ":"Equip ")+(item.name||"item"))}"><img src="${esc(icon)}" alt=""><strong>${esc(item.name||"Unknown item")}</strong>${perk}</button>`;};
  if(themeRoot){themeRoot.innerHTML=themes.length?themes.map(makeItem).join(""):'<div class="inventoryEmpty">No themes available.</div>';}
- if(artifactRoot){artifactRoot.innerHTML=artifacts.length?artifacts.map(item=>`<div class="equipmentSlot"><strong>${esc(item.name||"Unknown item")}</strong><small>${esc(item.category||"Artifact")}</small></div>`).join(""):'<div class="inventoryEmpty">No artifacts yet.</div>';}
+ if(artifactRoot){artifactRoot.innerHTML=artifacts.length?artifacts.map(item=>{
+ const def=getArtifactDefinition(item.id),level=Math.max(1,Math.min(3,Math.floor(Number(item.artifactLevel)||1))),equipped=equippedArtifact===item.id;
+ return `<button type="button" class="inventoryItemButton${equipped?" is-equipped":""}" data-equip-artifact="${esc(item.id)}" aria-pressed="${equipped?"true":"false"}"><img src="${esc(def?.icon||item.icon||"")}" alt=""><strong>${esc(def?.name||item.name||"Artifact")} · Lv ${level}</strong><small>${equipped?"Equipped · ":""}+${3*2**(level-1)} XP/gold for ${esc(def?.skill||item.skill||"skill")}</small></button>`;
+ }).join(""):'<div class="inventoryEmpty">No artifacts yet.</div>';}
  if(petRoot){petRoot.innerHTML=pets.length?pets.map(makeItem).join(""):'<div class="inventoryEmpty">No pets yet.</div>';}
+ const equippedArtifactItem=artifacts.find(item=>item.id===equippedArtifact);
+ const artifactLabel=document.getElementById("characterArtifactsLabel"),artifactSlot=document.getElementById("characterArtifactsSlot");
+ if(artifactLabel)artifactLabel.textContent=equippedArtifactItem?(equippedArtifactItem.name+" · Lv "+(equippedArtifactItem.artifactLevel||1)):"No artifacts equipped";
+ if(artifactSlot){const preview=artifactSlot.querySelector(".artifactPreview");if(preview)preview.innerHTML=equippedArtifactItem?`<img src="${esc(getArtifactDefinition(equippedArtifactItem.id)?.icon||equippedArtifactItem.icon||"")}" alt="" style="width:100%;height:100%;object-fit:contain">`:"";}
  const petLabel=document.getElementById("characterPetLabel");if(petLabel){const pet= pets.find(item=>String(item.id)===String(equippedPet));petLabel.textContent=pet?(pet.name||"Pet") : "No pet equipped";}
  const petSlot=document.getElementById("characterPetsSlot");if(petSlot){const pet=pets.find(item=>String(item.id)===String(equippedPet));const petPreview=petSlot.querySelector(".petPreview");if(petPreview){if(pet){petPreview.textContent="";petPreview.innerHTML=`<img src="${esc(pet.icon||"")}" alt="" style="width:100%;height:100%;object-fit:contain">`;}else{petPreview.textContent="🐾";}}}
  const activeTheme=UNLOCKABLE_ITEMS.find(item=>item.id===equippedTheme)||DUNGEON_THEME_ITEM;
@@ -36,6 +43,19 @@ const themeInventoryRoot=document.getElementById("themeInventory");
 if(themeInventoryRoot&&!themeInventoryRoot.dataset.wayfarerEquipmentBound){
  themeInventoryRoot.dataset.wayfarerEquipmentBound="true";
  themeInventoryRoot.addEventListener("click",event=>{const button=event.target.closest("[data-inventory-item]");if(!button||!themeInventoryRoot.contains(button))return;const itemId=String(button.dataset.inventoryItem||"");if(!state.inventory.some(item=>item&&String(item.id)===itemId&&(isThemeInventoryItem(item)||item.equipable===true)))return;if(String(state.equipment?.theme||"")===itemId){if(debugSandboxActive&&debugAllowThemeUnequip){state.equipment.theme=null;debugLog("Unequipped theme in sandbox test mode.");toast("Theme unequipped (sandbox only).");}else{toast("A theme must always be equipped. Enable the sandbox exception to test unequipped state.");return;}}else{const equipResult=equipThemeItem(itemId,state);if(!equipResult.ok){toast("Could not equip this theme: "+equipResult.reason+".");debugLog("Theme equip operation failed for "+itemId+": "+equipResult.reason);return;}const themeName=getThemeDefinition(itemId)?.name||"Dungeon";debugLog(debugSandboxActive?"Equipped "+themeName+" theme in sandbox.":"Equipped "+themeName+" theme.");toast(themeName+" theme equipped.");}applyThemeMusic({userInitiated:true});save();renderDebugPanel();});
+}
+const artifactInventoryRoot=document.getElementById("artifactInventory");
+if(artifactInventoryRoot&&!artifactInventoryRoot.dataset.artifactEquipBound){
+ artifactInventoryRoot.dataset.artifactEquipBound="true";
+ artifactInventoryRoot.addEventListener("click",event=>{
+  const button=event.target.closest("[data-equip-artifact]");
+  if(!button||!artifactInventoryRoot.contains(button))return;
+  const id=String(button.dataset.equipArtifact||"");
+  if(!getArtifactDefinition(id)||!state.inventory.some(item=>item&&item.id===id&&isArtifactInventoryItem(item)))return;
+  if(!state.equipment||typeof state.equipment!=="object")state.equipment={};
+  state.equipment.artifact=state.equipment.artifact===id?null:id;
+  save();render();toast(state.equipment.artifact?"Artifact equipped.":"Artifact unequipped.");
+ });
 }
 const petInventoryRoot=document.getElementById("petInventory");
 if(petInventoryRoot&&!petInventoryRoot.dataset.wayfarerEquipmentBound){

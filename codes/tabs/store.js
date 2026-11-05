@@ -46,7 +46,12 @@ window.WayfarerTabRenderers.store.renderStoreCatalog = function(){
  const artifactRoot=document.getElementById("storeArtifactCatalog"),petRoot=document.getElementById("storePetCatalog");
  const artifacts=catalog.filter(item=>getInventoryItemType(item)==="artifact"&&!hasUnlockable(item.id));
  const pets=catalog.filter(item=>getInventoryItemType(item)==="pet"&&!hasUnlockable(item.id));
- if(artifactRoot)artifactRoot.innerHTML=artifacts.length?'<div class="storeCategoryEmpty">Artifact catalog items are not yet registered.</div>':'<div class="storeCategoryEmpty">No artifacts available yet. New artifacts will appear here.</div>';
+ if(artifactRoot)artifactRoot.innerHTML=WAYFARER_ARTIFACTS.map(def=>{
+ const owned=state.inventory.find(x=>x&&x.id===def.id),current=owned?Math.max(1,Math.min(3,Math.floor(Number(owned.artifactLevel)||1))):0,next=current+1;
+ const level=getSkillLevel(def.skill),required=artifactRequirement(next),price=artifactPrice(next),ready=level>=required;
+ const shown=Math.min(next,3),factor=2**(shown-1);
+ return `<article class="card storeThemeCard${ready?"":" locked"}"><img src="${esc(def.icon)}" alt="${esc(def.name)}"><div><h3>${esc(def.name)} · Level ${current}/3</h3><p>${esc(def.skill)} artifact · Pair with ${esc(UNLOCKABLE_ITEMS.find(t=>t.id===def.theme)?.name||def.theme)}</p><div class="themeRequirement">Level ${shown} bonus: +${3*factor} XP and gold for ${esc(def.skill)}; +${factor} XP and gold for every skill when paired with its theme.</div>${next>3?"<strong>Maximum level reached</strong>":`<p>Requires ${esc(def.skill)} level ${required} (current ${level}) · ${price} gold</p><button class="btn" type="button" data-artifact-buy="${esc(def.id)}" ${ready?"":"disabled"}>${current?"Upgrade":"Buy"} for ${price} gold</button>`}</div></article>`;
+}).join("");
  if(petRoot)petRoot.innerHTML=pets.length?'<div class="storeCategoryEmpty">Pet catalog items are not yet registered.</div>':'<div class="storeCategoryEmpty">No pets available yet. New pets will appear here.</div>';
  setStoreCategory(activeStoreCategory);
 }
@@ -84,6 +89,19 @@ if(storePurchaseRoot && !storePurchaseRoot.dataset.wayfarerPurchaseBound){
  });
 }
 
+const artifactPurchaseRoot=document.getElementById("storeArtifactCatalog");
+if(artifactPurchaseRoot&&!artifactPurchaseRoot.dataset.artifactPurchaseBound){
+ artifactPurchaseRoot.dataset.artifactPurchaseBound="true";
+ artifactPurchaseRoot.addEventListener("click",event=>{
+  const button=event.target.closest("[data-artifact-buy]");
+  if(!button||!artifactPurchaseRoot.contains(button))return;
+  const def=getArtifactDefinition(button.dataset.artifactBuy);
+  if(!def)return;
+  const result=artifactPurchase(def.id,state);
+  if(!result.ok){toast(result.reason==="locked"?"Reach "+def.skill+" level "+result.required+" first.":result.reason==="insufficient-gold"?"Not enough gold.":"Artifact unavailable.");return;}
+  save();render();toast(def.name+" level "+result.level+" purchased.");
+ });
+}
 /* Store category interaction extracted in v2.1.1. */
 // Delegate category clicks once from the stable document root so rerendering tab
 // content never duplicates listeners or leaves detached buttons with stale handlers.

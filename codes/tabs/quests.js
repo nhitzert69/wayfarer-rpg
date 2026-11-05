@@ -137,7 +137,8 @@ function questRewardSnapshot(skill,baseXp=15){
   const themeNameAtGeneration=equippedThemeAtGeneration==="bloodthirst-theme"?"Bloodthirst":equippedThemeAtGeneration==="orthodox-theme"?"Orthodox Christianity":equippedThemeAtGeneration==="academy-theme"?"Academy":equippedThemeAtGeneration==="adventure-theme"?"Adventure":equippedThemeAtGeneration==="social-interactions-theme"?"Social Interactions":equippedThemeAtGeneration==="relationships-theme"?"Relationships":equippedThemeAtGeneration==="spartan-endurance-theme"?"Spartan Endurance":equippedThemeAtGeneration==="mozart-salon-theme"?"Mozart's Salon":equippedThemeAtGeneration==="ceo-theme"?"CEO":"";
   const generatedForLevel=getSkillLevel(skill);
   const skillLevelBonusXp=calculateSkillQuestLevelBonus(generatedForLevel);
-  return {baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold,generatedForLevel};
+  const artifactBonus=artifactRewardBonus(state,skill);
+  return {baseXp,skillLevelBonusXp,xp:baseXp+skillLevelBonusXp+themeBonusXp+artifactBonus.xp,artifactBonusXp:artifactBonus.xp,artifactBonusGold:artifactBonus.gold,perkThemeId:themeBonusXp?equippedThemeAtGeneration:null,perkThemeName:themeNameAtGeneration,perkBonusXp:themeBonusXp,perkBonusGold:themeBonusGold+artifactBonus.gold,generatedForLevel};
 }
 function generateAdventure(type){
   if(typeof checkDailyQuestReset==="function")checkDailyQuestReset();

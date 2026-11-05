@@ -1,3 +1,10 @@
+# Wayfarer v3.1.5 — Artifact gameplay foundation (2026-11-05)
+
+- Added nine artifact registry entries, independent artifact slot, Store purchases/upgrades at skill levels 6/15/25 for 150/250/400 gold, and skill-specific +3/+6/+12 XP/gold bonuses.
+- Matching themes add +1/+2/+4 XP and gold for all skills. Quest rewards snapshot both artifact and theme perks at generation; previous quests are untouched.
+- Added `artifact rules.md`, updated PWA cache and Debug version. Numbered artifact images remain provisionally assigned pending visual confirmation; live browser, Supabase and Sandbox verification remain outstanding.
+- Starting main commit `d32f1a734499f554438aba8061b90f8b455a9bcb`.
+
 # Wayfarer v3.1.4 — Restore theme character portraits (2026-11-05)
 
 - Fixed theme appearance service to load male and female portraits from the reorganized `assets/images/themes/characters/` folder, rather than the removed root images directory.
