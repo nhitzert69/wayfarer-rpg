@@ -11,3 +11,7 @@
 ## Debug artifact levels — v3.1.7
 - Admin Sandbox Get All Items grants every artifact at the independently selected level 1, 2, or 3, default 3. The theme selector remains independent (1–5).
 - Changing the artifact selector while Unlock All Items is active immediately updates the temporary Sandbox inventory. Disabling the grant restores the pre-Sandbox live-owned artifacts; no live Supabase progress is modified.
+
+## v3.1.8
+- Verified artifact image numbers in registry order: 03, 04, 01, 02, 09, 08, 06, 07, 05.
+- Sandbox grants must restore selector settings across refresh and preserve paid Sandbox purchases when disabled.

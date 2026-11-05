@@ -394,6 +394,7 @@ if (window.supabase && WAYFARER_SUPABASE_URL.startsWith("https://") && WAYFARER_
   cloudClient = window.supabase.createClient(WAYFARER_SUPABASE_URL, WAYFARER_SUPABASE_ANON_KEY);
   cloudConfigured = true;
 }
+setCloudStatus(cloudConfigured?"Cloud saves are ready. Sign in or create an account.":"Cloud saves are not configured yet.");
 function setCloudStatus(message){const el=document.getElementById("cloudStatus");if(el)el.textContent=message;}
 function usernameEmail(username){return username.trim().toLowerCase()+"@wayfarer.example";}
 // The saved character profile is authoritative after account creation. Auth metadata
@@ -583,6 +584,8 @@ function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style
 let debugUnlockAllItems=false;
 let debugThemeGrantLevel=1;
 let debugArtifactGrantLevel=3;
+let debugGrantInventoryBaseline=null,debugGrantPurchasedIds=[];
+window.WayfarerRecordSandboxPurchase=id=>{if(debugSandboxActive&&debugUnlockAllItems&&!debugGrantPurchasedIds.includes(id))debugGrantPurchasedIds.push(id);};
 let debugAllowThemeUnequip=false;
 function renderCharacterInventory(){ if(window.WayfarerTabRenderers?.character?.renderCharacterInventory) return window.WayfarerTabRenderers.character.renderCharacterInventory(); }
 function renderStoreCatalog(){ if(window.WayfarerTabRenderers?.store?.renderStoreCatalog) return window.WayfarerTabRenderers.store.renderStoreCatalog(); }
@@ -662,9 +665,9 @@ function debugRequireSandbox(){if(!debugIsAdmin()){toast("Admin access required.
 function renderDebugPanel(){ if(window.WayfarerTabRenderers?.debug?.renderDebugPanel) return window.WayfarerTabRenderers.debug.renderDebugPanel(); const btn=document.getElementById("debugTabButton"); if(btn)btn.style.display=(!!cloudUser&&debugIsAdmin())?"inline-flex":"none"; const genderApply=document.getElementById("debugApplyAccountGender"); if(genderApply)genderApply.disabled=!cloudUser||!debugIsAdmin(); }
 
 const DEBUG_SANDBOX_SESSION_KEY="wayfarer-debug-sandbox-session-v1";
-function persistDebugSandboxSession(){if(!debugSandboxActive||!debugLiveStateBackup||!debugSandboxState)return;try{sessionStorage.setItem(DEBUG_SANDBOX_SESSION_KEY,JSON.stringify({username:wayfarerSignedInUsername||"",live:debugLiveStateBackup,sandbox:state,snapshot:debugSandboxCharacterSnapshot}));}catch(e){debugLog("Could not persist temporary Sandbox session: "+String(e?.message||e));}}
+function persistDebugSandboxSession(){if(!debugSandboxActive||!debugLiveStateBackup||!debugSandboxState)return;try{sessionStorage.setItem(DEBUG_SANDBOX_SESSION_KEY,JSON.stringify({username:wayfarerSignedInUsername||"",live:debugLiveStateBackup,sandbox:state,snapshot:debugSandboxCharacterSnapshot,grant:{enabled:debugUnlockAllItems,themeLevel:debugThemeGrantLevel,artifactLevel:debugArtifactGrantLevel,baseline:debugGrantInventoryBaseline,purchased:debugGrantPurchasedIds}}));}catch(e){debugLog("Could not persist temporary Sandbox session: "+String(e?.message||e));}}
 function clearDebugSandboxSession(){try{sessionStorage.removeItem(DEBUG_SANDBOX_SESSION_KEY);}catch(e){}}
-function restoreDebugSandboxSession(){if(!debugIsAdmin())return false;try{const raw=sessionStorage.getItem(DEBUG_SANDBOX_SESSION_KEY);if(!raw)return false;const saved=JSON.parse(raw);if(saved.username&&wayfarerSignedInUsername&&saved.username.toLowerCase()!==wayfarerSignedInUsername.toLowerCase())return false;if(!saved.live||!saved.sandbox)return false;debugLiveStateBackup=saved.live;debugSandboxState=saved.sandbox;debugSandboxCharacterSnapshot=saved.snapshot||null;state=debugSandboxState;debugSandboxActive=true;document.body.classList.add("sandbox-active");debugAllowThemeUnequip=false;debugOverrideQuestRules=false;debugUnlockAllItems=false;render();renderDebugPanel();debugInspect();debugLog("Restored the temporary Sandbox session after page refresh; live account data was not replaced.");return true;}catch(e){clearDebugSandboxSession();return false;}}
+function restoreDebugSandboxSession(){if(!debugIsAdmin())return false;try{const raw=sessionStorage.getItem(DEBUG_SANDBOX_SESSION_KEY);if(!raw)return false;const saved=JSON.parse(raw);if(saved.username&&wayfarerSignedInUsername&&saved.username.toLowerCase()!==wayfarerSignedInUsername.toLowerCase())return false;if(!saved.live||!saved.sandbox)return false;debugLiveStateBackup=saved.live;debugSandboxState=saved.sandbox;debugSandboxCharacterSnapshot=saved.snapshot||null;state=debugSandboxState;debugSandboxActive=true;document.body.classList.add("sandbox-active");debugAllowThemeUnequip=false;debugOverrideQuestRules=false;const grant=saved.grant||{};debugUnlockAllItems=grant.enabled===true;debugThemeGrantLevel=Math.max(1,Math.min(5,Number(grant.themeLevel)||1));debugArtifactGrantLevel=Math.max(1,Math.min(3,Number(grant.artifactLevel)||3));debugGrantInventoryBaseline=Array.isArray(grant.baseline)?grant.baseline:null;debugGrantPurchasedIds=Array.isArray(grant.purchased)?grant.purchased:[];if(debugUnlockAllItems&&!debugGrantInventoryBaseline)debugUnlockAllItems=false;render();renderDebugPanel();debugInspect();debugLog("Restored the temporary Sandbox session after page refresh; live account data was not replaced.");return true;}catch(e){clearDebugSandboxSession();return false;}}
 
 // Keep sandbox changes out of localStorage and Supabase. The regular save path is temporarily shadowed while sandbox mode is active.
 const debugOriginalSave=save;

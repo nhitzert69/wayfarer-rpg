@@ -69,9 +69,9 @@ bindDebugAction("debugRestoreCharacter","click",()=>{
  debugApplySnapshot(snap);document.getElementById("debugCharacterToolsStatus").textContent="Sandbox character snapshot restored.";debugLog("Sandbox character snapshot restored.");
 });
 document.querySelectorAll("[data-debug-days]").forEach((b,index)=>{if(b.dataset.wayfarerHandler)return;b.dataset.wayfarerHandler="1";b.addEventListener("click",()=>{if(!debugRequireSandbox())return;const d=Number(b.dataset.debugDays)||1;const date=new Date((state.activeDate||today())+"T12:00:00");date.setDate(date.getDate()+d);state.activeDate=date.toLocaleDateString("en-CA");if(typeof window.WayfarerDailyQuestGenerate==="function"){window.WayfarerDailyQuestGenerate(state.activeDate);debugLog(`Time Machine advanced +${d} days to ${state.activeDate} and regenerated sandbox quests.`);toast(`Advanced ${d} day${d===1?"":"s"}; new sandbox quests generated.`);}else{debugLog("Time Machine changed date but Quest Board is not ready.");toast("Quest Board not ready; try again.");}render();renderDebugPanel();debugInspect();});});
-bindDebugAction("debugSetOverallXp","click",()=>{if(!debugRequireSandbox())return;state.xp=Math.max(0,Number(document.getElementById("debugOverallXp").value)||0);render();renderDebugPanel();debugInspect();debugLog("Set sandbox overall XP to "+state.xp+"; all XP-dependent UI refreshed immediately.");toast("Overall XP updated.");});
-bindDebugAction("debugSetSkillXp","click",()=>{if(!debugRequireSandbox())return;const skill=document.getElementById("debugSkillSelect").value;if(!skill){toast("Choose a skill first.");return;}if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};state.skillXp[skill]=Math.max(0,Number(document.getElementById("debugSkillXp").value)||0);render();renderDebugPanel();debugInspect();debugLog("Set sandbox XP for "+skill+" to "+state.skillXp[skill]+"; skill cards and progression UI refreshed immediately.");toast(skill+" XP updated.");});
-bindDebugAction("debugAddCoins","click",()=>{if(!debugRequireSandbox())return;const input=document.getElementById("debugAddCoinsAmount");const amount=Math.floor(Number(input?.value)||0);if(amount<=0){toast("Enter a coin amount greater than zero.");return;}state.gold=Math.max(0,Number(state.gold)||0)+amount;render();renderDebugPanel();debugInspect();debugLog("Added "+amount+" coins to sandbox; new balance is "+state.gold+".");toast("Added "+amount+" coins to the sandbox.");});
+bindDebugAction("debugSetOverallXp","click",()=>{if(!debugRequireSandbox())return;state.xp=Math.max(0,Number(document.getElementById("debugOverallXp").value)||0);save(true);render();renderDebugPanel();debugInspect();debugLog("Set sandbox overall XP to "+state.xp+"; all XP-dependent UI refreshed immediately.");toast("Overall XP updated.");});
+bindDebugAction("debugSetSkillXp","click",()=>{if(!debugRequireSandbox())return;const skill=document.getElementById("debugSkillSelect").value;if(!skill){toast("Choose a skill first.");return;}if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};state.skillXp[skill]=Math.max(0,Number(document.getElementById("debugSkillXp").value)||0);save(true);render();renderDebugPanel();debugInspect();debugLog("Set sandbox XP for "+skill+" to "+state.skillXp[skill]+"; skill cards and progression UI refreshed immediately.");toast(skill+" XP updated.");});
+bindDebugAction("debugAddCoins","click",()=>{if(!debugRequireSandbox())return;const input=document.getElementById("debugAddCoinsAmount");const amount=Math.floor(Number(input?.value)||0);if(amount<=0){toast("Enter a coin amount greater than zero.");return;}state.gold=Math.max(0,Number(state.gold)||0)+amount;save(true);render();renderDebugPanel();debugInspect();debugLog("Added "+amount+" coins to sandbox; new balance is "+state.gold+".");toast("Added "+amount+" coins to the sandbox.");});
 bindDebugAction("debugAddQuest","click",()=>{if(!debugRequireSandbox())return;if(!Array.isArray(state.quests))state.quests=[];state.quests.unshift({id:"debug-"+Date.now(),title:"[TEST] Debug Workshop quest",description:"Disposable sandbox-only quest for checking quest cards and completion behavior.",category:"Skill",skill:state.selectedSkills?.[0]||"Adventure",xp:15,done:false,source:"debug-sandbox"});debugLog("Added disposable test quest to sandbox.");render();debugRenderQuests();});
 bindDebugAction("debugRefreshQuests","click",()=>{debugRenderQuests();debugLog("Quest inspection refreshed.");});
 bindDebugAction("debugRunPlanner","click",()=>{if(!debugRequireSandbox())return;const opts={time:Number(document.getElementById("debugPlannerTime").value),energy:document.getElementById("debugPlannerEnergy").value,focus:document.getElementById("debugPlannerFocus").value,place:document.getElementById("debugPlannerLocation").value};try{const result=generateQuests(opts);const el=document.getElementById("debugPlannerResult");if(el)el.textContent=JSON.stringify({preset:opts,result:result??"Planner invoked; inspect quest board below.",quests:(state.quests||[]).map(q=>({title:q.title,skill:q.skill,done:q.done,source:q.source}))},null,2);debugLog("Ran planner preset: "+JSON.stringify(opts));render();}catch(e){document.getElementById("debugPlannerResult").textContent="Planner error: "+String(e?.stack||e);debugLog("Planner test failed: "+String(e));}});
@@ -157,31 +157,31 @@ function initializeDebugFeatureHandlers(){
  for(const id of ["debugInjectRequirementFailure","debugInjectPurchaseFailure","debugInjectEquipFailure","debugInjectBonusFailure"]){const control=document.getElementById(id);if(!control||control.dataset.wayfarerHandler)continue;control.dataset.wayfarerHandler="1";control.addEventListener("change",()=>{if(!debugRequireSandbox()){control.checked=false;return;}renderStoreCatalog();renderCharacterInventory();renderCharacterOverview();render();window.WayfarerTabRenderers.debug.renderDebugPanel();const item=UNLOCKABLE_ITEMS.find(x=>x.id==="v0-test-theme");const status={requirement:"unlock requirement",purchase:"purchase eligibility",equip:"equipment action",bonus:"XP bonus calculation"};const kind=id==="debugInjectRequirementFailure"?"unlock requirement":id==="debugInjectPurchaseFailure"?"purchase":id==="debugInjectEquipFailure"?"equip":"XP bonus";debugLog("Test theme "+kind+" injection "+(control.checked?"enabled":"disabled")+"; theme/store/inventory surfaces refreshed immediately.");const result=document.getElementById("debugEquipmentLifecycleResults");if(result)result.textContent="Fault injection changed. Run the lifecycle suite again to verify the observed gameplay result.\n"+result.textContent;toast("Test theme refreshed for the changed fault injection.");});}
 }
 
-window.WayfarerTabRenderers.debug.applyUnlockAllItems = function(enabled){
+window.WayfarerTabRenderers.debug.applyUnlockAllItems=function(enabled){
  if(!debugRequireSandbox())return;
- debugUnlockAllItems=!!enabled;
  if(!Array.isArray(state.inventory))state.inventory=[];
  const grantable=[...UNLOCKABLE_ITEMS,...WAYFARER_ARTIFACTS];
- if(debugUnlockAllItems){
+ if(enabled){
+  if(!debugUnlockAllItems){debugGrantInventoryBaseline=JSON.parse(JSON.stringify(state.inventory));debugGrantPurchasedIds=[];}
+  debugUnlockAllItems=true;
   for(const item of grantable){
-   const isTheme=isThemeInventoryItem(item),isArtifact=isArtifactInventoryItem(item);
-   const granted={...item};
+   const isTheme=isThemeInventoryItem(item),isArtifact=isArtifactInventoryItem(item),granted={...item};
    if(isTheme){granted.themeLevel=debugThemeGrantLevel;granted.perkXp=5*debugThemeGrantLevel;granted.perkGold=2*(debugThemeGrantLevel-1);}
    if(isArtifact)granted.artifactLevel=debugArtifactGrantLevel;
-   const existing=state.inventory.find(entry=>entry&&entry.id===item.id);
+   const existing=state.inventory.find(x=>x?.id===item.id);
    if(existing){if(isTheme){existing.themeLevel=granted.themeLevel;existing.perkXp=granted.perkXp;existing.perkGold=granted.perkGold;}if(isArtifact)existing.artifactLevel=debugArtifactGrantLevel;}
    else state.inventory.push(granted);
   }
-  debugLog("Unlock all items enabled in Sandbox: themes at level "+debugThemeGrantLevel+" and nine artifacts at level "+debugArtifactGrantLevel+".");
   toast("All themes and artifacts unlocked in Sandbox.");
  }else{
-  const liveInventory=debugLiveStateBackup?.inventory||[],liveById=new Map(liveInventory.map(item=>[item?.id,item]));
-  state.inventory=state.inventory.filter(item=>!grantable.some(def=>def.id===item.id));
-  for(const item of grantable){const original=liveById.get(item.id);if(original)state.inventory.push({...original});}
-  if(state.equipment?.theme&&!hasUnlockable(state.equipment.theme))state.equipment.theme="dungeon-theme";
-  if(state.equipment?.artifact&&!hasUnlockable(state.equipment.artifact))state.equipment.artifact=null;
-  debugLog("Unlock all items disabled; live-owned items restored in Sandbox.");
-  toast("Sandbox item unlock override disabled.");
+  debugUnlockAllItems=false;
+  const baseline=new Map((debugGrantInventoryBaseline||[]).filter(x=>x?.id).map(x=>[x.id,x])),purchased=new Set(debugGrantPurchasedIds),current=new Map(state.inventory.filter(x=>x?.id).map(x=>[x.id,x]));
+  state.inventory=state.inventory.filter(x=>!grantable.some(def=>def.id===x.id));
+  for(const item of grantable){const retained=purchased.has(item.id)?current.get(item.id):baseline.get(item.id);if(retained)state.inventory.push({...retained});}
+  if(state.equipment?.theme&&!state.inventory.some(x=>x.id===state.equipment.theme))state.equipment.theme="dungeon-theme";
+  if(state.equipment?.artifact&&!state.inventory.some(x=>x.id===state.equipment.artifact))state.equipment.artifact=null;
+  debugGrantInventoryBaseline=null;debugGrantPurchasedIds=[];
+  toast("Temporary grants removed; paid Sandbox purchases retained.");
  }
  save(true);render();window.WayfarerTabRenderers.debug.renderDebugPanel();
 };
@@ -276,7 +276,7 @@ window.runThemeIntegrationTests = async function(){
  if(lockState.debugDisablePortrait){const art=document.getElementById("characterArtwork"),icon=document.querySelector(".themeIcon"),actualArt=(art?.getAttribute("src")||art?.src||"").split("/").pop(),actualIcon=(icon?.getAttribute("src")||icon?.src||"").split("/").pop(),gender=state?.profile?.gender==="female"?"female":"male",expectedArt=active?.character?.[gender]||null,expectedIcon=active?.icon?(active.icon.split("/").pop()):null,matches=!!expectedArt&&actualArt===expectedArt&&!!expectedIcon&&actualIcon===expectedIcon;add("Feature lock: equipped theme character and theme images still match",!isNonDungeon||matches,`Equipped=${current}; character=${actualArt}; expected character=${expectedArt||"missing debugCharacter metadata"}; theme icon=${actualIcon}; expected icon=${expectedIcon||"missing icon metadata"}`,"debug-lock-detection",expectedArt&&expectedIcon?undefined:"INCONCLUSIVE");}
  if(lockState.debugDisableMusic){const expected=active?.music||null,observed=themeMusicSource,matches=!!expected&&observed===expected;add("Feature lock: selected theme music remains applied",!isNonDungeon||matches,`Equipped=${current}; active music source=${observed||"not started"}; expected=${expected||"missing debugMusic metadata"}`,"debug-lock-detection",expected?undefined:"INCONCLUSIVE");}
  const passed=results.filter(x=>x.ok).length,failed=results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").length,inconclusive=results.filter(x=>x.status==="INCONCLUSIVE").length;
- const report={version:"v3.1.7",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
+ const report={version:"v3.1.8",status:failed?"FAILED":inconclusive?"INCONCLUSIVE":"PASSED",summary:{total:results.length,passed,failed,inconclusive},failures:results.filter(x=>!x.ok&&x.status!=="INCONCLUSIVE").map(x=>({test:x.name,category:x.category,expected:"Requirement is correctly registered, loaded, and visibly applied",actual:x.detail,severity:/background|icon|computed|lower|equip/i.test(x.name)?"high":"medium",suggestion:"Inspect the registered theme metadata, asset response, CSS selector, and computed styles."})),results,notes:["Theme Integration Tests discover Dungeon plus every registered unlockable theme from the shared registry and compare each against independent THEME_DEBUG_BASELINE expectations.","Baseline comparisons cover stable theme ID, display name, class, icon, background, male/female art, soundtrack, and computed palette variables. Missing baselines are INCONCLUSIVE, not PASS.","Test intentionally reuses Dungeon artwork, background, and soundtrack; this exception is explicitly documented in the independent baseline.","Every unlockable theme must declare debugThemeClass, debugBackground, debugCharacter.male/female, and debugMusic. Missing metadata is reported as FAIL or INCONCLUSIVE rather than silently skipped.","This browser-side integration test does not replace real end-to-end purchase/quest/account-isolation tests.","Visual class toggling is temporary and original body classes are restored without changing saved progress."]};
  const out=document.getElementById("debugThemeTestResults");if(out)out.textContent=JSON.stringify(report,null,2);debugLog("Theme compliance tests: "+passed+" passed, "+failed+" failed, "+inconclusive+" inconclusive.");return report;
 }
 document.getElementById("debugRunThemeTests")?.addEventListener("click",window.runThemeIntegrationTests);
@@ -336,18 +336,28 @@ window.runEquipmentLifecycleTests = function(){
  if(!debugIsAdmin()||!debugSandboxActive){toast("Admin Sandbox is required.");return;}
  const out=document.getElementById("debugEquipmentLifecycleResults");if(!out)return;
  const inject={requirement:!!document.getElementById("debugInjectRequirementFailure")?.checked,purchase:!!document.getElementById("debugInjectPurchaseFailure")?.checked,equip:!!document.getElementById("debugInjectEquipFailure")?.checked,bonus:!!document.getElementById("debugInjectBonusFailure")?.checked};
- const registry=[DUNGEON_THEME_ITEM,...UNLOCKABLE_ITEMS];
+ const registry=[DUNGEON_THEME_ITEM,...UNLOCKABLE_ITEMS,...WAYFARER_ARTIFACTS];
  const items=registry.filter(i=>i&&(i.equipable===true||["theme","artifact","pet"].includes(getInventoryItemType(i)))&&(!i.sandboxOnly||debugSandboxActive));
  const results=[];const check=(name,ok,detail)=>results.push({name,ok:!!ok,detail});
  for(const item of items){
+   if(getInventoryItemType(item)==="artifact"){
+    for(const targetLevel of [1,2,3]){
+     const test={inventory:[],equipment:{theme:item.theme},skillXp:{[item.skill]:debugXpForSkillLevel(artifactRequirement(targetLevel))},gold:1000};
+     for(let n=1;n<=targetLevel;n++){const result=artifactPurchase(item.id,test);check(item.name+" level "+n+" purchase",result.ok&&test.gold===1000-[150,250,400].slice(0,n).reduce((a,b)=>a+b,0),JSON.stringify(result));}
+     test.equipment.artifact=item.id;const own=artifactRewardBonus(test,item.skill),other=artifactRewardBonus(test,"__unrelated__"),factor=2**(targetLevel-1);
+     check(item.name+" level "+targetLevel+" matching rewards",own.xp===4*factor&&own.gold===4*factor&&other.xp===factor&&other.gold===factor,"Shared bonus helper");test.equipment.theme="dungeon-theme";const unmatched=artifactRewardBonus(test,item.skill);check(item.name+" level "+targetLevel+" unmatched rewards",unmatched.xp===3*factor&&unmatched.gold===3*factor,"No global synergy");
+    }continue;
+   }
+   
   if(item.specialUnlock){check(`${item.name}: special unlock policy`,item.id==="bloodthirst-theme"&&item.price===0&&item.unlockKills===null,"Not Store-purchasable; kill threshold intentionally remains unset.");continue;}
   const type=getInventoryItemType(item),requiredSkill=item.unlockSkill||null,requiredLevel=Number(item.unlockLevel??0),price=Math.max(0,Number(item.price)||0);
   const sandbox={...JSON.parse(JSON.stringify(state)),inventory:[],equipment:{},skillXp:{},selectedSkills:[],quests:[],gold:Math.max(1000,price+100),xp:0,completedTotal:0};
   if(item.id==="dungeon-theme"){sandbox.inventory.push({...item});sandbox.equipment.theme=item.id;check(`${item.name}: starter item present`,true,"Starter theme is available without Store purchase.");continue;}
-  const levelXp=(level)=>{let xp=0;for(let n=1;n<level;n++)xp+=n<=3?60:n<=6?90:n<=9?120:150;return xp;};
+  const levelXp=debugXpForSkillLevel;
   if(requiredSkill)sandbox.skillXp[requiredSkill]=levelXp(requiredLevel);
-  const level=requiredSkill?getSkillProgress(sandbox.skillXp[requiredSkill]).level:0;
-  const requirementOk=!requiredSkill||themeUnlockAllowed(item,level);
+   if(item.unlockType==="any-skill")sandbox.skillXp.Adventure=levelXp(requiredLevel);
+  const level=item.unlockType==="any-skill"?Math.max(1,...Object.values(sandbox.skillXp).map(x=>getSkillProgress(x).level)):getSkillProgress(sandbox.skillXp[requiredSkill]).level;
+  const requirementOk=themeUnlockAllowed(item,level);
   check(`${item.name}: unlock requirement`,requirementOk,inject.requirement&&item.id==="v0-test-theme"?"Injected failure: shared unlock gate rejected the Test theme.":`Expected ${requiredSkill||"no skill requirement"} level ${requiredLevel}; simulated level ${level}.`);
   if(!requirementOk)continue;
   const purchaseResult=attemptThemePurchase(item,sandbox,level),purchaseOk=purchaseResult.ok;
@@ -358,7 +368,7 @@ window.runEquipmentLifecycleTests = function(){
   if(type==="theme"&&item.perkSkill){const calculated=calculateThemeBonus(item.id,item.perkSkill),bonusOk=calculated>0;check(`${item.name}: effect/XP bonus`,bonusOk,`Expected positive ${item.perkSkill} bonus; shared calculation returned ${calculated} XP.`);const pool=buildQuestPool(item.perkSkill),template=pool.find(q=>q.skill===item.perkSkill)||null;const generated=!!template&&template.skill===item.perkSkill;check(`${item.name}: related quest generation`,generated,generated?`Shared quest-template pool produced ${template.title} for ${item.perkSkill}.`:`No eligible quest template for ${item.perkSkill}.`);if(generated){const base=Number(template.xp)||15;const bonus=calculateThemeBonus(item.id,item.perkSkill);const quest={...template,baseXp:base,xp:base+bonus,perkBonusXp:bonus};const before=Number(sandbox.skillXp[item.perkSkill])||0;const award=awardQuestRewards(sandbox,quest);const observed=(Number(sandbox.skillXp[item.perkSkill])||0)-before;const expected=base+bonus;check(`${item.name}: quest completion reward`,observed===expected,`Shared reward helper awarded ${observed} ${item.perkSkill} XP; expected ${expected} (${base} base + ${bonus} bonus).`);}}
   else check(`${item.name}: defined item effects`,true,"No theme XP-perk contract declared; type-specific effect coverage is not defined.");
  }
- const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v3.1.7",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
+ const passed=results.filter(r=>r.ok).length,failed=results.length-passed;out.textContent=JSON.stringify({version:"v3.1.8",status:failed?"FAILED":"PASSED",summary:{itemsDiscovered:items.length,total:results.length,passed,failed},injectables:inject,results,notes:["Lifecycle suite is the visible Debug test system; legacy test panels are hidden while their code remains intact.","Registry discovery cannot detect items omitted from every authoritative registry.","This is isolated-state simulation, not live browser click-through or account-isolation proof."]},null,2);debugLog(`Equipment lifecycle suite: ${items.length} equipables discovered; ${passed} passed, ${failed} failed.`);
 }
 document.getElementById("debugRunEquipmentLifecycle")?.addEventListener("click",window.runEquipmentLifecycleTests);
 

@@ -40,11 +40,11 @@ window.WayfarerTabRenderers.store.renderStoreCatalog = function(){
  if(balance)balance.textContent=String(Math.max(0,Number(state.gold)||0));
  const root=document.getElementById("storeThemeCatalog");if(!root)return;
  const catalog=UNLOCKABLE_ITEMS.filter(item=>!item.sandboxOnly||debugSandboxActive);
- const storeItems=catalog.filter(item=>getInventoryItemType(item)==="theme").map(base=>{if(base.unlockType==="any-skill")return hasUnlockable(base.id)?null:{...base,themeLevel:1,upgradeOf:null};const owned=state.inventory.find(x=>x&&String(x.id)===String(base.id));const current=Math.max(1,Number(owned?.themeLevel)||1);if(owned&&current>=5)return null;const next=owned?current+1:1;return {...base,themeLevel:next,unlockLevel:3+(next-1)*5,name:next===1?base.name:`${base.perkSkill} Level ${next}`,perkXp:5*next,perkGold:2*(next-1),price:100*next,upgradeOf:owned?base.id:null};}).filter(Boolean);
+ const storeItems=catalog.filter(item=>getInventoryItemType(item)==="theme").map(base=>{if(base.unlockType==="any-skill")return hasUnlockable(base.id,state)?null:{...base,themeLevel:1,upgradeOf:null};const owned=state.inventory.find(x=>x&&String(x.id)===String(base.id));const current=Math.max(1,Number(owned?.themeLevel)||1);if(owned&&current>=5)return null;const next=owned?current+1:1;return {...base,themeLevel:next,unlockLevel:3+(next-1)*5,name:next===1?base.name:`${base.perkSkill} Level ${next}`,perkXp:5*next,perkGold:2*(next-1),price:100*next,upgradeOf:owned?base.id:null};}).filter(Boolean);
  currentStoreItems=storeItems;
  root.innerHTML=storeItems.length?storeItems.map(item=>{const level=purchaseRequirementLevel(item,state);const unlocked=themeUnlockAllowed(item,level);const name=item.name;const titleIcon=item.id==="orthodox-theme"?"✝️":item.id==="academy-theme"?"📚":item.id==="social-interactions-theme"?"🗣️":item.id==="relationships-theme"?"🤝":item.id==="fitness-theme"?"🏛️":item.id==="spartan-endurance-theme"?"🛡️":item.id==="ceo-theme"?"⚓":"🧭";const perk=item.unlockType==="any-skill"?`+${item.perkXp} XP and +${item.perkGold} gold for every skill quest generated while equipped.`:`+${item.perkXp} ${esc(item.perkSkill)} XP and +${item.perkGold} gold per eligible quest generated while equipped.`;const requirement=item.unlockType==="any-skill"?`Reach level ${item.unlockLevel} in any skill · Highest level ${level}`:`Reach ${esc(item.unlockSkill)} level ${item.unlockLevel} to unlock · Current level ${level}`;return `<article class="card storeThemeCard${unlocked?"":" locked"}"><img src="${esc(item.icon)}" alt="${esc(name)} theme icon"><div><div class="row" style="align-items:flex-start"><h3 style="margin:0">${unlocked?titleIcon+" ":"🔒 "}${esc(name)}</h3><span class="themePrice">${unlocked?item.price+" coins":"🔒 Locked"}</span></div><p style="margin:5px 0">${esc(item.description)}</p><div class="themeRequirement"><strong>Perk:</strong> ${perk}</div>${unlocked?`<button class="btn" type="button" data-store-purchase-id="${esc(String(item.id))}">${item.upgradeOf?"Upgrade for ":"Buy for "}${item.price} coins</button>`:`<div class="themeRequirement">${requirement}</div>`}</div></article>`;}).join(""):'<div class="storeCategoryEmpty">All theme upgrades are at maximum level.</div>';
  const artifactRoot=document.getElementById("storeArtifactCatalog"),petRoot=document.getElementById("storePetCatalog");
- const pets=catalog.filter(item=>getInventoryItemType(item)==="pet"&&!hasUnlockable(item.id));
+ const pets=catalog.filter(item=>getInventoryItemType(item)==="pet"&&!hasUnlockable(item.id,state));
  if(artifactRoot)artifactRoot.innerHTML=(Array.isArray(window.WAYFARER_ARTIFACTS)?window.WAYFARER_ARTIFACTS:[]).map(def=>{
  const owned=state.inventory.find(x=>x&&x.id===def.id),current=owned?Math.max(1,Math.min(3,Math.floor(Number(owned.artifactLevel)||1))):0,next=current+1;
  const level=getSkillLevel(def.skill),required=artifactRequirement(next),price=artifactPrice(next),ready=level>=required;
@@ -82,6 +82,7 @@ if(storePurchaseRoot && !storePurchaseRoot.dataset.wayfarerPurchaseBound){
    else if(result.reason==="insufficient-gold")toast(`You need ${item.price} coins to buy the ${item.name} theme.`);
    else if(result.reason==="injected-purchase-failure")toast(item.name+" purchase failed in Debug fault-injection mode.");
    else if(result.reason==="special-unlock")toast("This theme cannot be purchased in the Store.");
+   else if(result.reason==="already-owned")toast(item.name+" is already owned.");
    renderStoreCatalog();return;
   }
   save();render();toast(item.upgradeOf?item.name+" purchased and upgraded.":item.name+" theme added to your inventory.");
@@ -98,6 +99,7 @@ if(artifactPurchaseRoot&&!artifactPurchaseRoot.dataset.artifactPurchaseBound){
   if(!def)return;
   const result=artifactPurchase(def.id,state);
   if(!result.ok){toast(result.reason==="locked"?"Reach "+def.skill+" level "+result.required+" first.":result.reason==="insufficient-gold"?"Not enough gold.":"Artifact unavailable.");return;}
+  if(debugSandboxActive&&debugUnlockAllItems)window.WayfarerRecordSandboxPurchase?.(def.id);
   save();render();toast(def.name+" level "+result.level+" purchased.");
  });
 }

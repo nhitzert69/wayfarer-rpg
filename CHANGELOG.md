@@ -1,3 +1,8 @@
+# Wayfarer v3.1.8 — QA regression repairs (2026-11-05)
+
+- Fixed all nine artifact artwork mappings; Sandbox grant restoration, grant/purchase separation, and XP/Skill XP/Coin Lab saves; expanded artifact lifecycle diagnostics and Mastery fixture; fixed Mastery duplicate Store offer and signed-out cloud status.
+- Source syntax checks only; live browser and Supabase tests remain unverified. Starting main commit 6461ed67130e0ba37229e3fa0ccfe82e28fe39f0.
+
 # Wayfarer v3.1.7 — Select artifact grant level in Debug (2026-11-05)
 
 - Added independent Artifact level (1–3) selector next to the existing Theme level (1–5) selector in Admin Sandbox Get All Items.
