@@ -1,3 +1,10 @@
+# Wayfarer v3.1.7 — Select artifact grant level in Debug (2026-11-05)
+
+- Added independent Artifact level (1–3) selector next to the existing Theme level (1–5) selector in Admin Sandbox Get All Items.
+- Sandbox unlock grants all nine artifacts at the selected level; changing the selection while enabled reapplies the level immediately. Theme level behavior remains unchanged.
+- Preserves original live inventory and Sandbox isolation; updates Debug version and PWA cache namespace. Source-level validation only; live browser and cloud tests remain outstanding.
+- Starting main commit `34f7d50b78b5c570ab13e5462abdf5877baa6608`.
+
 # Wayfarer v3.1.6 — Artifact Store and Debug integration (2026-11-05)
 
 - Admin Sandbox Unlock all items now includes all nine artifacts at level 3; disabling restores original owned artifacts and clears invalid equipped artifact IDs in the temporary Sandbox.

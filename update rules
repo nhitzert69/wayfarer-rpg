@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.7 — Artifact Debug level selection
+- Admin Sandbox Get All Items provides an independent artifact level selector (1–3) alongside theme level (1–5). Reapply to temporary artifact inventory when changed, without altering live ownership or quest snapshots.
+
 ## v3.1.6 — Artifact Debug and Store integration
 - Debug Sandbox Unlock all items must include artifacts and preserve original account ownership; Store must show a visible error if its artifact registry fails to load. Keep PWA cache version aligned.
 
