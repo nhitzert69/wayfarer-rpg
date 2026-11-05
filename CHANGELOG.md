@@ -1,3 +1,10 @@
+# Wayfarer v3.1.2 — Rebalanced skill-level quest XP (2026-11-05)
+
+- Replaced the previous per-level escalating quest XP with +2 XP at skill levels 2 and 4, +1 XP at 6 and 8, and +0.5 XP at 10, 12 and 14; capped cumulative bonus at +7.5 XP from level 14 onward. No new skill bonus at level 16+.
+- Preserved existing quest reward snapshots, skill XP totals, theme bonuses, gold rewards, Sandbox and account data. Newly generated quests use the new scaling; already generated quests retain their original locked rewards until regenerated.
+- Updated mandatory update rules, Debug build version and PWA cache namespace. Formula boundary checks performed; live browser, Supabase and PWA behavior remain unverified.
+- Starting main commit: `3c5ff430eeeb0d3c8f336705f4c1906d2be25153`.
+
 # Wayfarer v3.1.1 — Image asset folder organization (2026-11-05)
 
 - Moved theme images into `assets/images/themes/icons/`, `themes/backgrounds/`, `themes/characters/`, and the nine uploaded PNGs into `assets/images/artifacts/` as `artifact-01.png` through `artifact-09.png` (provisional names pending visual-to-skill confirmation). Original image blobs preserved exactly.
