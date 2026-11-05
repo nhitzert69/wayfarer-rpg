@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.0 — Mastery theme
+- Former Bloodthirst is renamed Mastery and sold for 300 coins after any skill reaches level 5. Preserve `bloodthirst-theme` saved ID, owned equipment, assets and global +2 XP/+2 gold quest bonus. No Mastery upgrades. This supersedes its previous special kill-based unlock.
+
 ## v3.0.99 — Missed daily quest recovery
 - Accounts lacking a lastDailyQuestCycle marker must regenerate on next authenticated use rather than silently accepting stale quests. Check focus/pageshow in addition to visibility/interval; preserve 04:00 Amsterdam time and Sandbox isolation.
 
