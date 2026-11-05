@@ -1,3 +1,10 @@
+# Wayfarer v3.1.0 — Mastery Store theme (2026-11-05)
+
+- Renamed Bloodthirst to Mastery while retaining the existing bloodthirst-theme ID, owned equipment, artwork/music and +2 XP/+2 gold bonus on all skill quests.
+- Mastery is now sold in the Store for 300 coins, unlocked at level 5 in any skill. Purchase checks actual skill XP and balance, and blocks repeat purchases; no upgrades.
+- Updated mandatory theme rules, Debug version and PWA cache namespace. Static integration checks performed; browser, purchase, equip and Supabase sync remain INCONCLUSIVE.
+- Starting main commit: `bb5a820d10e93ebbf7a83d28ed1bb6925742f554`.
+
 # Wayfarer v3.0.99 — Recover missed daily quests (2026-11-04)
 
 - Fixed the initial migration bug that silently marked an old Quest Board as current without generating new quests. Existing accounts with no cycle marker now regenerate on next authenticated use.
