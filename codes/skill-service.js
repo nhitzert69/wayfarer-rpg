@@ -37,7 +37,7 @@
   root.getSkillLevel=function(skill){return root.getSkillProgress(state.skillXp&&state.skillXp[skill]).level;};
   root.calculateSkillQuestLevelBonus=function(level){
     const attainedLevel=Math.max(1,Math.floor(Number(level)||1));let bonus=0;
-    for(let gainedLevel=2;gainedLevel<=attainedLevel;gainedLevel++)bonus+=gainedLevel>=20?1:gainedLevel>=10?2:3;
+    for(let gainedLevel=2;gainedLevel<=Math.min(attainedLevel,14);gainedLevel+=2)bonus+=gainedLevel>=10?0.5:gainedLevel>=6?1:2;
     return bonus;
   };
   root.getLevelBand=function(level){if(level<=3)return 1;if(level<=6)return 2;if(level<=9)return 3;return 3+Math.floor((level-7)/3);};
