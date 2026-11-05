@@ -5,7 +5,7 @@ function lifecycleFaultEnabled(kind,item){if(!debugIsAdmin()||!debugSandboxActiv
 function ensureDungeonThemeState(){
  let changed=false;
  if(!Array.isArray(state.inventory))state.inventory=[];
- for(const ownedItem of state.inventory){if(ownedItem&&ownedItem.id==="fitness-theme"&&ownedItem.name!=="Roman Discipline"){ownedItem.name="Roman Discipline";changed=true;}}
+ for(const ownedItem of state.inventory){if(ownedItem&&ownedItem.id==="fitness-theme"&&ownedItem.name!=="Roman Discipline"){ownedItem.name="Roman Discipline";changed=true;}if(ownedItem&&ownedItem.id==="bloodthirst-theme"&&ownedItem.name!=="Mastery"){ownedItem.name="Mastery";changed=true;}}
  const savedDungeonTheme=state.inventory.find(item=>item&&item.id==="dungeon-theme");if(!savedDungeonTheme){state.inventory.unshift({...DUNGEON_THEME_ITEM});changed=true;}else if(savedDungeonTheme.icon!==DUNGEON_THEME_ITEM.icon){savedDungeonTheme.icon=DUNGEON_THEME_ITEM.icon;changed=true;}
  if(!state.equipment||typeof state.equipment!=="object"){state.equipment={};changed=true;}
  if(!Object.prototype.hasOwnProperty.call(state.equipment,"theme")){state.equipment.theme="dungeon-theme";changed=true;}
