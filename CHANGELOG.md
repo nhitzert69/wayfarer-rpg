@@ -1,3 +1,9 @@
+# Wayfarer v3.1.4 — Restore theme character portraits (2026-11-05)
+
+- Fixed theme appearance service to load male and female portraits from the reorganized `assets/images/themes/characters/` folder, rather than the removed root images directory.
+- No artwork or saved character equipment was modified. Updated Debug and service-worker versions. Artifact implementation remains pending.
+- Source-level path checks performed; deployed browser and Supabase behavior unverified. Starting commit: `ea3deef237b64f0c377a083e7797435b15f48768`.
+
 # Wayfarer v3.1.2 — Rebalanced skill-level quest XP (2026-11-05)
 
 - Replaced the previous per-level escalating quest XP with +2 XP at skill levels 2 and 4, +1 XP at 6 and 8, and +0.5 XP at 10, 12 and 14; capped cumulative bonus at +7.5 XP from level 14 onward. No new skill bonus at level 16+.

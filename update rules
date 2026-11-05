@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.4 — Character portrait path regression
+- Theme character portraits must resolve from `assets/images/themes/characters/`; validate male and female paths for every registered theme after asset moves. Preserve theme appearance, saved equipment and account data.
+
 ## v3.1.2 — Skill quest XP scaling
 - Every second skill level awards cumulative quest XP: +2 at levels 2 and 4, +1 at levels 6 and 8, +0.5 at levels 10, 12 and 14; no new bonus at level 16 or above. Maximum skill-level bonus +7.5 XP. Existing quest rewards remain generation-time snapshots; do not rewrite completed quest history or alter theme bonuses, gold, or skill level thresholds.
 
