@@ -24,7 +24,7 @@ Before coding, document the theme name/description, stable internal ID, associat
 - Do not assume registry registration alone makes a theme purchasable, ownable, equipable, visible, styled, audible, or eligible for perks. Trace each lifecycle stage.
 - Avoid duplicate hard-coded allowlists when valid theme IDs can safely be derived from the shared registry.
 - Theme changes affect quests generated afterward only. Store applicable XP/coin/perk rewards on each quest at generation time; later equipment changes must not change existing quest rewards. Apply each eligible perk exactly once.
-- Preserve the starter Dungeon theme's special handling and all special/non-Store unlock rules. Do not invent kill thresholds or other unlock sources.
+- Preserve the starter Dungeon theme's special handling and all other special/non-Store unlock rules. Mastery explicitly supersedes the former Bloodthirst exception. Do not invent kill thresholds.
 
 ## D. Assets, performance, and accessibility
 - Store images under `assets/images/` and audio under `assets/sound/`, following the existing project organization.
@@ -61,7 +61,7 @@ Do not mark a theme complete until its full lifecycle has been traced and releva
 ---
 
 ## Bloodthirst and skill-theme upgrades (v2.0.2)
-- Bloodthirst is a special non-Store theme with a kill-based unlock. Do not invent or infer a kill threshold; keep it unconfigured until specified. While equipped, it adds +2 XP and +2 gold to every skill quest.
+- Former Bloodthirst is now Mastery, available in the Store for 300 coins after any skill reaches level 5. Keep its stable `bloodthirst-theme` ID, existing assets, and +2 XP/+2 gold perk for every skill quest. This replaces the kill-based non-Store unlock.
 - Skill-theme levels unlock at skill levels 3, 8, 13, 18, and 23. Their perks are +5/+10/+15/+20/+25 XP and +0/+2/+4/+6/+8 gold, with costs 100/200/300/400/500 coins. Only the next upgrade is offered; maximum level is 5.
 - Quest generation locks theme XP/gold bonuses into the quest; completing a quest must award those exact stored bonuses once, regardless of later equipment changes.
 - XP/gold cheat tools and character reset/restore are Sandbox-only and must not write temporary Sandbox state to live local/cloud saves.
