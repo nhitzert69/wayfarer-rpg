@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.6 — Artifact Debug and Store integration
+- Debug Sandbox Unlock all items must include artifacts and preserve original account ownership; Store must show a visible error if its artifact registry fails to load. Keep PWA cache version aligned.
+
 ## v3.1.5 — Artifact gameplay
 - Follow `artifact rules.md` for artifact registry, Store purchases, inventory equipment and generation-time reward locking. Validate the image identity of each numbered artifact asset before claiming artwork is final. Preserve theme, pet, account and Sandbox state.
 

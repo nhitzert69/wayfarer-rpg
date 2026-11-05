@@ -1,3 +1,9 @@
+# Wayfarer v3.1.6 — Artifact Store and Debug integration (2026-11-05)
+
+- Admin Sandbox Unlock all items now includes all nine artifacts at level 3; disabling restores original owned artifacts and clears invalid equipped artifact IDs in the temporary Sandbox.
+- Store now shows a visible error instead of an empty artifact catalog when its registry fails to load. Bumped the PWA cache namespace to refresh Store/Debug scripts.
+- Live browser, cloud persistence and image identity remain unverified. Starting main commit `08c396a65ff5b44e8d0eb892712789a195a1f2c4`.
+
 # Wayfarer v3.1.5 — Artifact gameplay foundation (2026-11-05)
 
 - Added nine artifact registry entries, independent artifact slot, Store purchases/upgrades at skill levels 6/15/25 for 150/250/400 gold, and skill-specific +3/+6/+12 XP/gold bonuses.
