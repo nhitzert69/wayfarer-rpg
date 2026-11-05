@@ -1,5 +1,9 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.2 — Skill quest XP scaling
+- Every second skill level awards cumulative quest XP: +2 at levels 2 and 4, +1 at levels 6 and 8, +0.5 at levels 10, 12 and 14; no new bonus at level 16 or above. Maximum skill-level bonus +7.5 XP. Existing quest rewards remain generation-time snapshots; do not rewrite completed quest history or alter theme bonuses, gold, or skill level thresholds.
+
+
 ## v3.1.0 — Mastery theme
 - Former Bloodthirst is renamed Mastery and sold for 300 coins after any skill reaches level 5. Preserve `bloodthirst-theme` saved ID, owned equipment, assets and global +2 XP/+2 gold quest bonus. No Mastery upgrades. This supersedes its previous special kill-based unlock.
 
