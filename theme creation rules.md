@@ -27,7 +27,7 @@ Before coding, document the theme name/description, stable internal ID, associat
 - Preserve the starter Dungeon theme's special handling and all other special/non-Store unlock rules. Mastery explicitly supersedes the former Bloodthirst exception. Do not invent kill thresholds.
 
 ## D. Assets, performance, and accessibility
-- Store images under `assets/images/` and audio under `assets/sound/`, following the existing project organization.
+- Store theme images under `assets/images/themes/` (icons, backgrounds and characters) and audio under `assets/sound/`, following the existing project organization.
 - Optimize images before inclusion; prefer WebP when visual quality/transparency are preserved. Compress music to an appropriate web-friendly MP3/OGG bitrate, then verify decoding, duration, volume, and loop boundaries.
 - Update all asset references and service-worker precache entries whenever files are added, moved, renamed, or converted.
 - Test image/audio responses and actual decoding where possible. File existence alone is not proof that an asset renders or plays.

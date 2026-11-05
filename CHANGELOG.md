@@ -1,3 +1,9 @@
+# Wayfarer v3.1.1 — Image asset folder organization (2026-11-05)
+
+- Moved theme images into `assets/images/themes/icons/`, `themes/backgrounds/`, `themes/characters/`, and the nine uploaded PNGs into `assets/images/artifacts/` as `artifact-01.png` through `artifact-09.png` (provisional names pending visual-to-skill confirmation). Original image blobs preserved exactly.
+- Updated active theme registry, CSS, Debug and service-worker precache references; bumped cache and Debug version. Artifact mechanics are not yet implemented.
+- Static path review only; deployed browser, offline PWA and artifact visual mapping are unverified. Starting commit: `6533a521e9ead25a728556c8bb8869e4b3006eef`.
+
 # Wayfarer v3.1.0 — Mastery Store theme (2026-11-05)
 
 - Renamed Bloodthirst to Mastery while retaining the existing bloodthirst-theme ID, owned equipment, artwork/music and +2 XP/+2 gold bonus on all skill quests.

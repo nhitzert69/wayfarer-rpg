@@ -114,7 +114,7 @@ body.v0TestTheme{--bg:#0b0e10;--panel:#191d20;--panel2:#24292c;--line:#586168;--
 /* v0.test.12: expose Sandbox Test skill and correct Test theme reward are hidden, not deleted; retain their markup and handlers for safe rollback. */
 .legacy-debug-panel-hidden{display:none!important}
 /* v0.test.6: the test theme has its own registered class and explicit Dungeon-identical background. */
-body.v0TestTheme{background-image:linear-gradient(180deg,rgba(8,10,12,.60) 0%,rgba(8,10,12,.72) 48%,rgba(8,10,12,.88) 100%),url("../assets/images/dungeon-background.webp")!important;background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important}
+body.v0TestTheme{background-image:linear-gradient(180deg,rgba(8,10,12,.60) 0%,rgba(8,10,12,.72) 48%,rgba(8,10,12,.88) 100%),url("../assets/images/themes/backgrounds/dungeon-background.webp")!important;background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important}
 body.v0TestTheme .card,body.v0TestTheme .equipmentSlot,body.v0TestTheme .inventoryCategory,body.v0TestTheme .characterInventoryCard{border-color:var(--line)}
 /* v0.14 Adventure portrait frame and exact image fit */
 .characterPortrait{position:relative;overflow:hidden;display:flex;align-items:stretch;justify-content:stretch;padding:0!important;box-sizing:border-box;background:#17100c!important}
@@ -175,7 +175,7 @@ body.academyTheme .characterPortrait{border-color:#B58A4A!important;box-shadow:0
   body.fitnessTheme{
     --bg:#241719;--panel:#342124;--panel2:#472b2a;--line:#9a6a37;--gold:#D9A441;--gold2:#b9802e;
     --cream:#F1E4CC;--muted:#d2bda2;--green:#8a9b76;--red:#8F1424;
-    background-image:linear-gradient(180deg,rgba(20,12,12,.70) 0%,rgba(20,12,12,.82) 48%,rgba(12,9,9,.92) 100%),url("../assets/images/fitness-background.webp")!important;
+    background-image:linear-gradient(180deg,rgba(20,12,12,.70) 0%,rgba(20,12,12,.82) 48%,rgba(12,9,9,.92) 100%),url("../assets/images/themes/backgrounds/fitness-background.webp")!important;
     background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#F1E4CC!important
   }
   body.fitnessTheme .pill{background:linear-gradient(145deg,#472b2a,#241719)!important;border-color:#D9A441!important;color:#F1E4CC!important}
@@ -198,7 +198,7 @@ body.fitnessTheme .characterPortrait{border-color:#D9A441!important;box-shadow:0
 .orthodoxTheme{
     --bg:#20131f;--panel:#302033;--panel2:#40283f;--line:#9b7549;--gold:#e8c16b;--gold2:#bd8d45;
     --cream:#f7ecd9;--muted:#c9b9c8;--green:#819783;--red:#c66d62;
-    background-image:linear-gradient(180deg,rgba(24,14,26,.78) 0%,rgba(19,12,21,.88) 48%,rgba(12,9,14,.94) 100%),url("../assets/images/orthodox-theme-background.webp")!important;
+    background-image:linear-gradient(180deg,rgba(24,14,26,.78) 0%,rgba(19,12,21,.88) 48%,rgba(12,9,14,.94) 100%),url("../assets/images/themes/backgrounds/orthodox-theme-background.webp")!important;
     background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#f7ecd9!important
   }
   body.orthodoxTheme .pill{background:linear-gradient(145deg,#40283f,#20131f)!important;border-color:#bd8d45!important;color:#f7ecd9!important}
@@ -262,15 +262,15 @@ body.orthodoxTheme #section-store .storeThemeCard{
 
 
 /* Sandbox-only feature isolation switches: lock the selected visual/audio layer to Dungeon defaults rather than removing it. */
-body.debug-disable-background{background:linear-gradient(rgba(8,10,12,.60),rgba(8,10,12,.88)),url("../assets/images/dungeon-background.webp") center center / cover fixed!important}
+body.debug-disable-background{background:linear-gradient(rgba(8,10,12,.60),rgba(8,10,12,.88)),url("../assets/images/themes/backgrounds/dungeon-background.webp") center center / cover fixed!important}
 body.debug-disable-colors{--bg:#101820!important;--panel:#1c2935!important;--panel2:#263746!important;--line:#52718a!important;--gold:#c5d8e6!important;--gold2:#8eaec4!important;--cream:#e5edf2!important;--muted:#a9bac5!important}
 body.debug-disable-colors .card,body.debug-disable-colors .panel,body.debug-disable-colors .inventoryItem,body.debug-disable-colors .equipmentSlot,body.debug-disable-colors .storeThemeCard,body.debug-disable-colors button,body.debug-disable-colors .btn{background-color:#1c2935!important;background-image:none!important;color:#e5edf2!important;border-color:#52718a!important}
-body.debug-disable-portrait #characterPortrait,body.debug-disable-portrait .characterPortrait{visibility:visible!important;content:url("../assets/images/male-dungeon.webp")!important}
-body.debug-disable-portrait .themeIcon{visibility:visible!important;content:url("../assets/images/dungeon-theme.webp")!important}
+body.debug-disable-portrait #characterPortrait,body.debug-disable-portrait .characterPortrait{visibility:visible!important;content:url("../assets/images/themes/characters/male-dungeon.webp")!important}
+body.debug-disable-portrait .themeIcon{visibility:visible!important;content:url("../assets/images/themes/icons/dungeon-theme.webp")!important}
 body.debug-disable-music{}
 
 /* Mozart's Salon — royal sapphire, ivory and antique gold. */
-body.mozartSalonTheme{--bg:#101f3a;--panel:#192c4d;--panel2:#243d65;--line:#496fa5;--gold:#d4ac55;--gold2:#b88936;--cream:#f5e7c3;--muted:#c0cbe0;--green:#83aa91;--red:#c66d62;background-image:linear-gradient(180deg,rgba(8,17,34,.64) 0%,rgba(10,22,43,.76) 48%,rgba(6,13,27,.91) 100%),url("../assets/images/piano-background.webp")!important;background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#f5e7c3!important}
+body.mozartSalonTheme{--bg:#101f3a;--panel:#192c4d;--panel2:#243d65;--line:#496fa5;--gold:#d4ac55;--gold2:#b88936;--cream:#f5e7c3;--muted:#c0cbe0;--green:#83aa91;--red:#c66d62;background-image:linear-gradient(180deg,rgba(8,17,34,.64) 0%,rgba(10,22,43,.76) 48%,rgba(6,13,27,.91) 100%),url("../assets/images/themes/backgrounds/piano-background.webp")!important;background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#f5e7c3!important}
 body.mozartSalonTheme .pill,body.mozartSalonTheme .tab,body.mozartSalonTheme .btn:not(.primary){background:linear-gradient(145deg,#243d65,#142746)!important;border-color:#496fa5!important;color:#f5e7c3!important}
 body.mozartSalonTheme .hero{background:linear-gradient(130deg,rgba(23,59,112,.97),rgba(25,44,77,.98) 58%,rgba(16,31,58,.99))!important;border-color:#d4ac55!important;box-shadow:inset 0 0 0 2px #101f3a,inset 0 0 0 4px #496fa5,0 12px 28px #000b!important}
 body.mozartSalonTheme .stat,body.mozartSalonTheme .card,body.mozartSalonTheme .panel,body.mozartSalonTheme .equipmentSlot,body.mozartSalonTheme .inventoryCategory,body.mozartSalonTheme .characterPortraitCard,body.mozartSalonTheme .characterInventoryCard,body.mozartSalonTheme .storeThemeCard{background:linear-gradient(145deg,rgba(25,44,77,.97),rgba(16,31,58,.98) 72%,rgba(36,61,101,.97))!important;border-color:#496fa5!important;color:#f5e7c3!important}
@@ -484,34 +484,34 @@ body.socialInteractionsTheme .tabs{background:linear-gradient(180deg,rgba(72,32,
 
 /* v0.14.5 demo b2 — immersive theme backgrounds. Keep UI panels opaque enough for legibility. */
 body:not(.adventureTheme):not(.academyTheme):not(.socialInteractionsTheme):not(.relationshipsTheme):not(.orthodoxTheme):not(.fitnessTheme):not(.mozartSalonTheme):not(.ceoTheme):not(.spartanEnduranceTheme):not(.v0TestTheme):not(.bloodthirstTheme){
- background-image:linear-gradient(180deg,rgba(8,10,12,.60) 0%,rgba(8,10,12,.72) 48%,rgba(8,10,12,.88) 100%),url("../assets/images/dungeon-background.webp")!important;
+ background-image:linear-gradient(180deg,rgba(8,10,12,.60) 0%,rgba(8,10,12,.72) 48%,rgba(8,10,12,.88) 100%),url("../assets/images/themes/backgrounds/dungeon-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
 }
 body.adventureTheme{
- background-image:linear-gradient(180deg,rgba(24,15,9,.40) 0%,rgba(24,15,9,.60) 48%,rgba(12,8,6,.82) 100%),url("../assets/images/adventure-background.webp")!important;
+ background-image:linear-gradient(180deg,rgba(24,15,9,.40) 0%,rgba(24,15,9,.60) 48%,rgba(12,8,6,.82) 100%),url("../assets/images/themes/backgrounds/adventure-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
 }
 body.academyTheme{
- background-image:linear-gradient(180deg,rgba(16,28,43,.38) 0%,rgba(20,27,39,.58) 48%,rgba(13,17,26,.82) 100%),url("../assets/images/academy-background.webp")!important;
+ background-image:linear-gradient(180deg,rgba(16,28,43,.38) 0%,rgba(20,27,39,.58) 48%,rgba(13,17,26,.82) 100%),url("../assets/images/themes/backgrounds/academy-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
 }
 body.socialInteractionsTheme{
- background-image:linear-gradient(180deg,rgba(25,12,6,.42) 0%,rgba(25,12,6,.62) 48%,rgba(12,7,4,.84) 100%),url("../assets/images/social-interactions-background.webp")!important;
+ background-image:linear-gradient(180deg,rgba(25,12,6,.42) 0%,rgba(25,12,6,.62) 48%,rgba(12,7,4,.84) 100%),url("../assets/images/themes/backgrounds/social-interactions-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
 }
 body.relationshipsTheme{
- background-image:linear-gradient(180deg,rgba(27,15,7,.42) 0%,rgba(27,15,7,.62) 48%,rgba(12,7,4,.84) 100%),url("../assets/images/relationships-background.webp")!important;
+ background-image:linear-gradient(180deg,rgba(27,15,7,.42) 0%,rgba(27,15,7,.62) 48%,rgba(12,7,4,.84) 100%),url("../assets/images/themes/backgrounds/relationships-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
 }
 body.orthodoxTheme{
- background-image:linear-gradient(180deg,rgba(24,14,26,.60) 0%,rgba(19,12,21,.72) 48%,rgba(12,9,14,.86) 100%),url("../assets/images/orthodox-theme-background.webp")!important;
+ background-image:linear-gradient(180deg,rgba(24,14,26,.60) 0%,rgba(19,12,21,.72) 48%,rgba(12,9,14,.86) 100%),url("../assets/images/themes/backgrounds/orthodox-theme-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;background-repeat:no-repeat!important;
 }
 @media(max-width:650px){body,body.adventureTheme,body.academyTheme,body.socialInteractionsTheme,body.relationshipsTheme,body.orthodoxTheme,body.fitnessTheme,body.mozartSalonTheme,body.ceoTheme,body.spartanEnduranceTheme{background-attachment:scroll!important;background-position:center top!important;background-repeat:no-repeat!important}}
 
 /* Spartan Endurance: crimson, bronze, laurel gold and obsidian. */
 
-body.ceoTheme{--bg:#172D49;--panel:#203954;--panel2:#2A4662;--line:#9C8150;--gold:#E2BD72;--gold2:#B08A43;--cream:#F3E8D0;--muted:#C5C8CB;--green:#849B83;--red:#9F3432;background-image:linear-gradient(180deg,rgba(10,22,38,.56) 0%,rgba(13,29,49,.76) 48%,rgba(8,18,31,.92) 100%),url("../assets/images/ceo-background.webp")!important;background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#F3E8D0!important}
+body.ceoTheme{--bg:#172D49;--panel:#203954;--panel2:#2A4662;--line:#9C8150;--gold:#E2BD72;--gold2:#B08A43;--cream:#F3E8D0;--muted:#C5C8CB;--green:#849B83;--red:#9F3432;background-image:linear-gradient(180deg,rgba(10,22,38,.56) 0%,rgba(13,29,49,.76) 48%,rgba(8,18,31,.92) 100%),url("../assets/images/themes/backgrounds/ceo-background.webp")!important;background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#F3E8D0!important}
 body.ceoTheme .pill,body.ceoTheme .tab,body.ceoTheme .btn:not(.primary){background:linear-gradient(145deg,#2A4662,#172D49)!important;border-color:#9C8150!important;color:#F3E8D0!important}
 body.ceoTheme .hero{background:linear-gradient(130deg,rgba(23,45,73,.97),rgba(32,57,84,.98) 58%,rgba(15,31,50,.99))!important;border-color:#E2BD72!important;box-shadow:inset 0 0 0 2px #172D49,inset 0 0 0 4px #9C8150,0 12px 28px #000b!important}
 body.ceoTheme .stat,body.ceoTheme .card,body.ceoTheme .panel,body.ceoTheme .equipmentSlot,body.ceoTheme .inventoryCategory,body.ceoTheme .characterPortraitCard,body.ceoTheme .characterInventoryCard,body.ceoTheme .storeThemeCard{background:linear-gradient(145deg,rgba(32,57,84,.97),rgba(23,45,73,.98) 72%,rgba(42,70,98,.97))!important;border-color:#9C8150!important;color:#F3E8D0!important}
@@ -524,7 +524,7 @@ body.ceoTheme .progress,body.ceoTheme .xpBar{background:#172D49!important;border
 body.spartanEnduranceTheme{
  --bg:#241719;--panel:#342124;--panel2:#472b2a;--line:#9a6a37;--gold:#D9A441;--gold2:#b9802e;
  --cream:#F1E4CC;--muted:#d2bda2;--green:#8a9b76;--red:#8F1424;
- background-image:linear-gradient(180deg,rgba(20,12,12,.70) 0%,rgba(20,12,12,.82) 48%,rgba(12,9,9,.92) 100%),url("../assets/images/spartan-endurance-background.webp")!important;
+ background-image:linear-gradient(180deg,rgba(20,12,12,.70) 0%,rgba(20,12,12,.82) 48%,rgba(12,9,9,.92) 100%),url("../assets/images/themes/backgrounds/spartan-endurance-background.webp")!important;
  background-size:cover!important;background-position:center top!important;background-attachment:fixed!important;color:#F1E4CC!important
 }
 body.spartanEnduranceTheme .pill{background:linear-gradient(145deg,#472b2a,#241719)!important;border-color:#D9A441!important;color:#F1E4CC!important}
@@ -538,7 +538,7 @@ body.spartanEnduranceTheme input,body.spartanEnduranceTheme select,body.spartanE
 
 
 /* Bloodthirst: crimson, ember and antique-gold legendary theme. */
-body.bloodthirstTheme{--bg:#171316;--panel:#21191c;--panel2:#302126;--line:#791e27;--gold:#d4b078;--gold2:#c65a32;--cream:#d9d0c5;--muted:#b5a5a2;--green:#c65a32;--red:#a82b36;background:linear-gradient(rgba(23,19,22,.84),rgba(23,19,22,.94)),url("../assets/images/bloodthirst-background.webp") center/cover fixed!important;color:#d9d0c5}
+body.bloodthirstTheme{--bg:#171316;--panel:#21191c;--panel2:#302126;--line:#791e27;--gold:#d4b078;--gold2:#c65a32;--cream:#d9d0c5;--muted:#b5a5a2;--green:#c65a32;--red:#a82b36;background:linear-gradient(rgba(23,19,22,.84),rgba(23,19,22,.94)),url("../assets/images/themes/backgrounds/bloodthirst-background.webp") center/cover fixed!important;color:#d9d0c5}
 body.bloodthirstTheme .hero,body.bloodthirstTheme .stat,body.bloodthirstTheme .card,body.bloodthirstTheme .equipmentSlot,body.bloodthirstTheme .inventoryCategory,body.bloodthirstTheme .characterPortraitCard,body.bloodthirstTheme .characterInventoryCard{background:linear-gradient(145deg,rgba(48,33,38,.97),rgba(23,19,22,.97))!important;border-color:#791e27!important;box-shadow:inset 0 0 0 1px #3d2025,0 8px 20px #0009!important}
 body.bloodthirstTheme .tabs{background:linear-gradient(180deg,#302126,#171316)!important;border-bottom-color:#791e27!important}
 body.bloodthirstTheme .tab{background:linear-gradient(180deg,#38252b,#21191c)!important;border-color:#791e27!important;color:#d9d0c5!important}
