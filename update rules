@@ -1,5 +1,9 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.9 — Admin reflux reference tab
+- Add a read-only Admin-only Reflux Guide with a dedicated tab module. Gate navigation and content by the existing signed-in Admin check; preserve all account data, Sandbox, and existing nine tabs. Include the new module in the offline cache.
+
+
 ## v3.1.8 — QA regression repairs
 - Preserve Sandbox grant metadata and paid Sandbox purchases, verify artifact artwork, Mastery ownership, XP Lab persistence, and diagnostics with artifact coverage.
 
