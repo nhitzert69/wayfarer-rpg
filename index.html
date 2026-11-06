@@ -73,6 +73,7 @@
   <button class="tab" data-tab="groceries" type="button">🛒 Groceries</button>
   <button class="tab" data-tab="journal">📜 Journal</button>
   <button class="tab" data-tab="settings">⚙ Settings</button>
+  <button class="tab" id="refluxTabButton" data-tab="reflux" type="button" style="display:none">🌿 Reflux Guide</button>
   <button class="tab" id="debugTabButton" data-tab="debug" type="button">🛠 Debug</button>
 </nav>
 
@@ -245,6 +246,8 @@
     <p class="sub">Choose your skills and generate quests whenever you're ready. There are no difficulty settings or difficulty-based rewards.</p>
   </div>
 </section>
+<section class="section" id="section-reflux" style="display:none" aria-label="Admin reflux food guide"><div class="sectionHead"><div><h2>🌿 Reflux Food Guide</h2><p>Foods and drinks to favor, and common triggers to test.</p></div></div><div id="refluxGuideContent" class="card"></div></section>
+
 <section class="section" id="section-debug">
   <div class="sectionHead"><div><h2>Debug Workshop</h2><p>Admin-only testing tools. Sandbox changes never write to your real character.</p></div></div>
   <div class="debugSandboxBanner"><strong id="debugSandboxStatus">Sandbox inactive</strong><p class="sub">Start a sandbox to test XP, quests, dates, and planner behavior against a temporary copy. Exiting discards sandbox changes.</p><div class="debugTools"><button class="btn" id="debugStartSandbox">Start isolated sandbox</button><button class="btn secondary" id="debugExitSandbox">Exit sandbox</button></div><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugAllowThemeUnequip" type="checkbox" style="margin-top:3px" disabled><span><strong>Allow unequipped theme</strong><small style="display:block;color:var(--muted)">Sandbox testing only. Allows the required theme to be temporarily removed.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugOverrideQuestRules" type="checkbox" style="margin-top:3px" disabled><span><strong>Override quest safeguards</strong><small style="display:block;color:var(--muted)">Sandbox only. Bypass the 4-hour quest-generation cooldown and skip quest-completion confirmations for testing.</small></span></label><label class="debugThemeToggle" style="display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:9px"><input id="debugUnlockAllItems" type="checkbox" style="margin-top:3px" disabled><span><strong>Unlock all items</strong><small style="display:block;color:var(--muted)">Sandbox only. Grants every registered unlockable item for testing, including future themes, pets and artifacts.</small></span></label><div class="debugTools" style="margin-top:10px"><label for="debugThemeGrantLevel">Theme level for Get All Items <select id="debugThemeGrantLevel"><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option><option value="4">Level 4</option><option value="5">Level 5</option></select></label><label for="debugArtifactGrantLevel">Artifact level for Get All Items <select id="debugArtifactGrantLevel"><option value="1">Level 1</option><option value="2">Level 2</option><option value="3" selected>Level 3</option></select></label><small class="sub">Choose theme and artifact levels independently. Changes apply to temporary Sandbox items only; pets are unchanged.</small></div></div>
@@ -297,7 +300,7 @@
 window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModulePromises = window.WayfarerTabModulePromises || {};
 window.WayfarerTabRegistry = window.WayfarerTabRegistry || {};
-const WAYFARER_TAB_NAMES = ["quests","character","store","skills","todo","groceries","journal","settings","debug"];
+const WAYFARER_TAB_NAMES = ["quests","character","store","skills","todo","groceries","journal","settings","debug","reflux"];
 function loadWayfarerTab(tabName){
  if(!WAYFARER_TAB_NAMES.includes(tabName)) return Promise.resolve(false);
  if(window.WayfarerTabModules[tabName]) { window.WayfarerTabRegistry[tabName]="loaded"; window.WayfarerTabModules[tabName](); return Promise.resolve(true); }
@@ -336,7 +339,7 @@ function wayfarerActiveTabKey(){
 }
 function activateWayfarerTab(tabName,remember=true){
  if(!WAYFARER_TAB_NAMES.includes(tabName))tabName=cloudUser?"quests":"settings";
- if(tabName==="debug"&&typeof debugIsAdmin==="function"&&!debugIsAdmin())tabName="quests";
+ if((tabName==="debug"||tabName==="reflux")&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))tabName="quests";
  const button=document.querySelector('.tab[data-tab="'+tabName+'"]');
  if(!button) return false;
  document.querySelectorAll(".tab").forEach(tab=>tab.classList.toggle("active",tab===button));
@@ -344,13 +347,14 @@ function activateWayfarerTab(tabName,remember=true){
  if(remember){try{localStorage.setItem(wayfarerActiveTabKey(),tabName);}catch(e){}}
  if(tabName==="skills"&&typeof renderSkillCatalog==="function")renderSkillCatalog();
  if(tabName==="debug"&&typeof renderDebugPanel==="function")renderDebugPanel();
+  if(tabName==="reflux")window.WayfarerTabRenderers?.reflux?.();
  loadWayfarerTab(tabName);
  return true;
 }
 function restorePreferredWayfarerTab(){
  let preferred="";try{preferred=localStorage.getItem(wayfarerActiveTabKey())||"";}catch(e){}
  if(!WAYFARER_TAB_NAMES.includes(preferred))preferred=cloudUser?"quests":"settings";
- if(preferred==="debug"&&typeof debugIsAdmin==="function"&&!debugIsAdmin())preferred="quests";
+ if((preferred==="debug"||preferred==="reflux")&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))preferred="quests";
  return activateWayfarerTab(preferred,false);
 }
 document.querySelectorAll(".tab").forEach(button=>button.addEventListener("click",()=>activateWayfarerTab(button.dataset.tab,true)));
@@ -505,7 +509,7 @@ async function finishSignIn(username,pin,create,gender=null){
  renderSkillCatalog();
  if(typeof renderDebugPanel === "function") renderDebugPanel();
 }
-function enforceAccountGate(){const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=signedIn||btn.dataset.tab==='settings';btn.style.display=allowed?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=signedIn?'':(sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
+function enforceAccountGate(){const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=(signedIn||btn.dataset.tab==='settings')&&(!["debug","reflux"].includes(btn.dataset.tab)|| (signedIn&&typeof debugIsAdmin==="function"&&debugIsAdmin()));btn.style.display=allowed?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=(signedIn&&(!['section-debug','section-reflux'].includes(sec.id)||(typeof debugIsAdmin==='function'&&debugIsAdmin())))?'':(!signedIn&&sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
 let accountFlowMode=null;
 function showAccountMode(mode){accountFlowMode=mode;document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="block";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display=mode==="create"?"inline-flex":"none";document.getElementById("signInBtn").style.display=mode==="login"?"inline-flex":"none";hideGenderChoice();if(mode==="create"){const field=document.getElementById("accountGenderField");if(field)field.style.display="block";}}
 function resetAccountMode(){accountFlowMode=null;hideGenderChoice();document.getElementById("accountModeChooser").style.display="flex";document.getElementById("accountUsernameField").style.display="none";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="none";}
@@ -622,6 +626,7 @@ function render(){
    else if(activeTabName==="journal")renderers.journal?.();
    else if(activeTabName==="settings")renderers.settings?.();
    else if(activeTabName==="debug")renderers.debug?.renderDebugPanel?.();
+    else if(activeTabName==="reflux")renderers.reflux?.();
  }
  if(activeTabName && !window.WayfarerTabModules?.[activeTabName] && !window.WayfarerTabModulePromises?.[activeTabName] && typeof loadWayfarerTab==="function") loadWayfarerTab(activeTabName);
 }
