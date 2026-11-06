@@ -30,7 +30,7 @@ const groups=[
 ];
 function render(){
  const root=document.getElementById("refluxGuideContent");
- const allowed=!!window.cloudUser && typeof debugIsAdmin==="function" && debugIsAdmin();
+ const allowed=typeof cloudUser!=="undefined" && !!cloudUser && typeof debugIsAdmin==="function" && debugIsAdmin();
  const button=document.getElementById("refluxTabButton");
  if(button){button.style.display=allowed?"inline-flex":"none";button.disabled=!allowed;}
  if(!root)return;
