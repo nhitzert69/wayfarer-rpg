@@ -1,3 +1,9 @@
+# Wayfarer v3.1.10 — Reflux tracker (2026-11-06)
+
+- Added Admin-only reflux habit diary with automatic draft saving, explicit Did/Didn't/Not logged values, notes, next-morning throat score (0–10), End Day action and completed history with editing.
+- Added seven-day comparisons showing habit-specific average scores and sample sizes; associations are not causal conclusions. Uses existing account-specific Wayfarer save/cloud sync and preserves Sandbox behavior.
+- Updated PWA cache, Debug version and rules. Starting commit `429fd521e4ffc8f2efa081116500b28d2faf3a6b`. Static review only; live browser and Supabase testing remain INCONCLUSIVE.
+
 # Wayfarer v3.1.9 — Admin reflux food guide (2026-11-06)
 
 - Added Admin-only Reflux Guide tab with separate `codes/tabs/reflux.js`, covering foods/drinks to favor, potential triggers, sample meals, habits and medical follow-up cautions.
