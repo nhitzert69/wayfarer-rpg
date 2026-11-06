@@ -1,3 +1,9 @@
+# Wayfarer v3.1.9 — Admin reflux food guide (2026-11-06)
+
+- Added Admin-only Reflux Guide tab with separate `codes/tabs/reflux.js`, covering foods/drinks to favor, potential triggers, sample meals, habits and medical follow-up cautions.
+- Added Admin authorization to tab navigation and account gate, included the module in the PWA precache, and aligned Debug build versions.
+- Starting main commit `378ebee8c6a7dd11a8bb401026ce12ce85c9ff0f`. Static source review only; live browser, Supabase and deployed PWA verification remain INCONCLUSIVE.
+
 # Wayfarer v3.1.8 — QA regression repairs (2026-11-05)
 
 - Fixed all nine artifact artwork mappings; Sandbox grant restoration, grant/purchase separation, and XP/Skill XP/Coin Lab saves; expanded artifact lifecycle diagnostics and Mastery fixture; fixed Mastery duplicate Store offer and signed-out cloud status.
