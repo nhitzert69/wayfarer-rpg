@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.12 — Dated morning, afternoon and evening reflux diary
+- Select diary date explicitly. Morning asks about eating within three hours of previous bedtime and waking throat severity. Log habits and reflux scores separately for morning, afternoon and evening. End Day saves incomplete answers as Not logged. Retain previous-format history separately and never falsely reinterpret old morning scores. Compare late eating to waking throat and period habits to same-period reflux. Preserve Admin-only access and account save/Sandbox isolation.
+
 ## v3.1.11 — Reflux catch-up entry correction
 - Keep morning score and End Day controls operable for catch-up logging. When the calendar is not yet the following morning, explicitly warn before finalizing to prevent accidental future-dated symptom attribution.
 
