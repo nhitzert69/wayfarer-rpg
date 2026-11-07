@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.11 — Reflux catch-up entry correction
+- Keep morning score and End Day controls operable for catch-up logging. When the calendar is not yet the following morning, explicitly warn before finalizing to prevent accidental future-dated symptom attribution.
+
 ## v3.1.10 — Admin reflux daily tracker
 - Preserve account-scoped draft and completed history, explicit Did/Didn't/Not logged habits, following-morning severity, End Day completion, correction and weekly association report. Keep Admin authorization and Sandbox isolation. Never claim correlations prove causes.
 
