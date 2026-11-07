@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.13 — Guitar skill and quests
+- Add Guitar under Instruments & music with extensive beginner, intermediate, advanced and master quest templates. Preserve Piano, existing skills, skill XP, account data and reward snapshot rules; do not invent a guitar theme or artifact.
+
 ## v3.1.12 — Dated morning, afternoon and evening reflux diary
 - Select diary date explicitly. Morning asks about eating within three hours of previous bedtime and waking throat severity. Log habits and reflux scores separately for morning, afternoon and evening. End Day saves incomplete answers as Not logged. Retain previous-format history separately and never falsely reinterpret old morning scores. Compare late eating to waking throat and period habits to same-period reflux. Preserve Admin-only access and account save/Sandbox isolation.
 

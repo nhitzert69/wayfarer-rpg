@@ -1,3 +1,9 @@
+# Wayfarer v3.1.13 — Guitar skill and quest library (2026-11-07)
+
+- Added Guitar to Instruments & music alongside Piano, with 100 distinct guitar quest templates across beginner, intermediate, advanced and master tiers. Guitar quests use the existing 10-minute practice format, skill progression, quest rewards and persistence.
+- Added Guitar quest icon and planning classification. No new theme or artifact; no changes to existing account data.
+- Validation: static JavaScript syntax and registry/template counts; live browser and Supabase regression remain unverified.
+
 # Wayfarer v3.1.12 — Dated reflux diary redesign (2026-11-07)
 
 - Rebuilt Admin reflux tracker into selectable-date morning, afternoon and evening sections. Morning asks about eating within three hours of the prior bedtime and waking throat irritation; each period has independent Did/Didn't/Not logged habits and 0–10 reflux score.

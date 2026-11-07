@@ -7,7 +7,8 @@ const skillCatalog = [
   ["Relationships","Invest in friendships, family and acquaintances."]
  ]},
  {category:"Instruments & music", icon:"🎼", skills:[
-  ["Piano","Practise piano technique and songs."]
+  ["Piano","Practise piano technique and songs."],
+  ["Guitar","Learn guitar chords, rhythm, technique, songs, and musical expression."]
  ]},
  {category:"Fitness & movement", icon:"🏅", skills:[
   ["Fitness","Build strength through resistance training, bodyweight exercises, and consistent technique practice."],
