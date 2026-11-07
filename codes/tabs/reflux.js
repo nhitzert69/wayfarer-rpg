@@ -1,4 +1,4 @@
-/* Wayfarer v3.1.11 — Admin reflux guide and daily tracking. */
+/* Wayfarer v3.1.12 — Admin reflux guide and dated period diary. */
 (()=>{
 "use strict";
 window.WayfarerTabRenderers=window.WayfarerTabRenderers||{};
@@ -29,70 +29,110 @@ const groups=[
  ["Smoking","Work toward stopping smoking; smoke and heated tobacco can irritate the throat."]]}
 ];
 
-const HABITS=[["coffee","Coffee or caffeine"],["fizzy","Fizzy drinks"],["mint","Mint"],["spicy","Spicy or acidic food"],["fatty","Fatty or fried food"],["tobacco","Smoking or heated tobacco"],["late","Food within 3 hours of bed"],["large","Large meals"],["water","Enough water"],["small","Smaller meals"],["upright","Stayed upright after meals"],["noSnacks","No late-night snacks"]];
+
+const habits=[["coffee","Coffee or caffeine"],["fizzy","Fizzy drinks"],["mint","Mint or peppermint"],["spicy","Spicy or acidic food"],["fatty","Fatty or fried food"],["tobacco","Cigarettes or heated tobacco"],["large","Large meals"],["water","Enough water"],["small","Smaller meals"],["upright","Stayed upright after meals"],["noSnacks","Avoided late-night snacks"]];
+const periods=["morning","afternoon","evening"];
 const authorized=()=>typeof cloudUser!=="undefined"&&!!cloudUser&&typeof debugIsAdmin==="function"&&debugIsAdmin();
-const today=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Amsterdam",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-const tomorrow=s=>{const d=new Date(s+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10);};
-const node=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
-function data(){if(!state.refluxTracker)state.refluxTracker={draft:null,history:[]};const t=state.refluxTracker;if(!Array.isArray(t.history))t.history=[];if(!t.draft)t.draft={day:today(),habits:{},score:null,notes:""};return t;}
-function saveLog(){if(authorized())save(true);}
-function weekly(host,history){
- const old=host.querySelector("#refluxWeekly");if(old)old.remove();
- const out=node("div");out.id="refluxWeekly";const from=new Date(today()+"T12:00:00Z");from.setUTCDate(from.getUTCDate()-6);const first=from.toISOString().slice(0,10);
- const days=history.filter(x=>x.day>=first&&x.day<=today()&&Number.isInteger(x.score));
- out.append(node("h4",first+" to "+today()),node("p",days.length+" completed days. "+(days.length?"Average throat irritation: "+(days.reduce((s,x)=>s+x.score,0)/days.length).toFixed(1)+"/10":"No scores yet.")));
- if(days.length<4)out.append(node("p","Very limited data: four or more days are needed for an initial comparison."));
- const table=node("table");table.style.cssText="width:100%;font-size:0.85em";const head=node("tr");for(const s of ["Habit","Did","Didn't","Pattern"])head.append(node("th",s));table.append(head);
- for(const [id,label] of HABITS){const a=days.filter(x=>x.habits?.[id]==="yes"),b=days.filter(x=>x.habits?.[id]==="no");const avg=xs=>xs.length?xs.reduce((s,x)=>s+x.score,0)/xs.length:null;const av=avg(a),bv=avg(b);const tr=node("tr");
-  for(const s of [label,av===null?"—":av.toFixed(1)+" ("+a.length+")",bv===null?"—":bv.toFixed(1)+" ("+b.length+")",a.length<2||b.length<2?"Too little data":av-bv>=1?"Higher after habit":bv-av>=1?"Lower after habit":"Similar"]){const td=node("td",s);td.style.padding="6px";tr.append(td);}table.append(tr);
- }out.append(table,node("p","Unlogged habits are excluded. Patterns do not establish causes; sleep, stress and other habits may influence symptoms."));host.append(out);
+const dateNow=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Amsterdam",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+const validDate=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s+"T12:00:00Z"));
+const el=(tag,content)=>{const e=document.createElement(tag);if(content!==undefined)e.textContent=content;return e;};
+function empty(day){return {day,late:null,morningThroat:null,periods:{morning:{habits:{},score:null},afternoon:{habits:{},score:null},evening:{habits:{},score:null}},notes:""};}
+function normalize(raw,day){
+ const x=empty(day);if(!raw||typeof raw!=="object")return x;
+ x.day=day;x.notes=String(raw.notes||"").slice(0,1000);
+ if(raw.late==="yes"||raw.late==="no")x.late=raw.late;
+ if(Number.isInteger(raw.morningThroat)&&raw.morningThroat>=0&&raw.morningThroat<=10)x.morningThroat=raw.morningThroat;
+ for(const p of periods){const from=raw.periods?.[p];if(!from)continue;for(const [id] of habits){if(["yes","no"].includes(from.habits?.[id]))x.periods[p].habits[id]=from.habits[id];}if(Number.isInteger(from.score)&&from.score>=0&&from.score<=10)x.periods[p].score=from.score;}
+ return x;
+}
+function tracker(){
+ if(!state.refluxTracker||typeof state.refluxTracker!=="object")state.refluxTracker={draft:null,history:[]};
+ const t=state.refluxTracker;if(!Array.isArray(t.history))t.history=[];
+ if(!t.drafts||typeof t.drafts!=="object")t.drafts={};
+ // Preserve the previous diary as legacy records rather than silently misattribute scores.
+ if(!t.periodDiaryMigrated){
+  t.legacyHistory=Array.isArray(t.legacyHistory)?t.legacyHistory:[];
+  for(const entry of t.history){if(entry&&entry.day&&!t.legacyHistory.some(x=>x.day===entry.day))t.legacyHistory.push(JSON.parse(JSON.stringify(entry)));}
+  if(t.draft&&validDate(t.draft.day)){const day=t.draft.day;const x=empty(day);x.notes=String(t.draft.notes||"");for(const [id] of habits){if(["yes","no"].includes(t.draft.habits?.[id]))x.periods.evening.habits[id]=t.draft.habits[id];}if(["yes","no"].includes(t.draft.habits?.late))x.late=t.draft.habits.late;t.drafts[day]=x;}
+  t.history=[];t.periodDiaryMigrated=true;save(true);
+ }
+ return t;
+}
+function saveDiary(){if(authorized())save(true);}
+function select(values,current,onChange){
+ const s=el("select");for(const [value,label] of values){const o=el("option",label);o.value=value;s.append(o);}s.value=current??"";s.addEventListener("change",()=>onChange(s.value));return s;
+}
+const yesNo=[["","Not logged"],["yes","Did"],["no","Didn't"]];
+const scoreOptions=[["","Not logged"],...Array.from({length:11},(_,i)=>[String(i),i+"/10"])];
+function row(host,label,control){
+ const r=el("div");r.style.cssText="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:9px 0;border-bottom:1px solid rgba(170,150,130,.3)";
+ r.append(el("span",label),control);host.append(r);
+}
+function scores(s){return Number.isInteger(s)?s+"/10":"Not logged";}
+function summary(host,history){
+ host.querySelector("#refluxReport")?.remove();
+ const report=el("div");report.id="refluxReport";report.style.marginTop="14px";
+ const end=dateNow(),start=new Date(end+"T12:00:00Z");start.setUTCDate(start.getUTCDate()-6);const first=start.toISOString().slice(0,10);
+ const week=history.filter(x=>x.day>=first&&x.day<=end);report.append(el("h4","Last seven dates: "+first+" to "+end),el("p",week.length+" completed entries. Scores not logged are excluded."));
+ const average=values=>values.length?(values.reduce((a,b)=>a+b,0)/values.length).toFixed(1):"—";
+ for(const p of periods){const values=week.map(x=>x.periods?.[p]?.score).filter(Number.isInteger);report.append(el("p",p[0].toUpperCase()+p.slice(1)+" reflux: "+average(values)+"/10 (n="+values.length+")"));}
+ const lateYes=week.filter(x=>x.late==="yes"&&Number.isInteger(x.morningThroat)),lateNo=week.filter(x=>x.late==="no"&&Number.isInteger(x.morningThroat));
+ report.append(el("h4","Food within 3 hours of bed → waking throat"));
+ report.append(el("p","Did: "+average(lateYes.map(x=>x.morningThroat))+"/10 (n="+lateYes.length+") · Didn't: "+average(lateNo.map(x=>x.morningThroat))+"/10 (n="+lateNo.length+")"));
+ for(const p of periods){
+  report.append(el("h4",p[0].toUpperCase()+p.slice(1)+" habits and reflux"));
+  const table=el("table");table.style.cssText="width:100%;font-size:.85em";
+  const head=el("tr");for(const label of ["Habit","Did avg (n)","Didn't avg (n)"])head.append(el("th",label));table.append(head);
+  for(const [id,label] of habits){const a=week.filter(x=>x.periods?.[p]?.habits?.[id]==="yes"&&Number.isInteger(x.periods[p].score)),b=week.filter(x=>x.periods?.[p]?.habits?.[id]==="no"&&Number.isInteger(x.periods[p].score));
+   const tr=el("tr");for(const value of [label,average(a.map(x=>x.periods[p].score))+" ("+a.length+")",average(b.map(x=>x.periods[p].score))+" ("+b.length+")"]){const td=el("td",value);td.style.padding="6px";tr.append(td);}table.append(tr);
+  }report.append(table);
+ }
+ report.append(el("p","These are associations, not diagnoses or proof of triggers. Small samples, simultaneous habits, and sleep or stress can affect the results."));host.append(report);
 }
 function showTracker(root){
- if(!authorized())return;const t=data(),draft=t.draft;
- const area=node("section");area.style.cssText="margin:20px 0;padding:16px 0;border-top:1px solid var(--line)";
- area.append(node("h3","Daily reflux tracker"),node("p","Choose Did, Didn't or Not logged for each habit. Drafts save automatically."),node("h4","Habits for "+draft.day));
- for(const [id,label] of HABITS){const row=node("div");row.style.cssText="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line)";const caption=node("label",label);caption.htmlFor="reflux-"+id;row.append(caption);
- const select=node("select");select.id="reflux-"+id;for(const [value,text] of [["","Not logged"],["yes","Did"],["no","Didn't"]]){const option=node("option",text);option.value=value;select.append(option);}
- select.value=draft.habits?.[id]||"";select.addEventListener("change",()=>{draft.habits=draft.habits||{};if(select.value)draft.habits[id]=select.value;else delete draft.habits[id];saveLog();});row.append(select);area.append(row);}
- const label=node("label","Notes (optional)");label.htmlFor="reflux-notes";label.style.display="block";label.style.marginTop="12px";area.append(label);
- const notes=node("textarea");notes.id="reflux-notes";notes.rows=2;notes.maxLength=1000;notes.style.width="100%";notes.value=draft.notes||"";notes.addEventListener("input",()=>{draft.notes=notes.value;saveLog();});area.append(notes);
- area.append(node("h4","Morning after: "+tomorrow(draft.day)));
- const ready=today()>draft.day;area.append(node("p",ready?"Rate your throat upon waking.":"You can enter a morning score now for catch-up entries. Only do this if the score is from the morning after the habits listed; otherwise wait until tomorrow."));
- const scoreLabel=node("label","Throat irritation: 0 (none) to 10 (severe)");scoreLabel.htmlFor="reflux-score";area.append(scoreLabel);
- const score=node("select");score.id="reflux-score";for(const v of ["",...Array.from({length:11},(_,i)=>String(i))]){const opt=node("option",v===""?"Select score":v+"/10");opt.value=v;score.append(opt);}score.value=Number.isInteger(draft.score)?String(draft.score):"";score.addEventListener("change",()=>{draft.score=score.value===""?null:Number(score.value);saveLog();});area.append(score);
- const end=node("button","✓ End Day");end.className="btn primary";end.type="button";end.style.margin="12px 0";end.addEventListener("click",()=>{
  if(!authorized())return;
- if(!Number.isInteger(draft.score)||draft.score<0||draft.score>10){alert("Choose a morning score.");return;}
- if(!Object.keys(draft.habits||{}).length){alert("Log at least one habit.");return;}
- if(!ready&&!confirm("The following morning for "+draft.day+" is "+tomorrow(draft.day)+", which has not arrived yet. Only continue if you are correcting a backdated record and this score really belongs to the morning after those habits. Save anyway?"))return;
- if(ready&&!confirm("Save completed day "+draft.day+"?"))return;
- t.history=t.history.filter(x=>x.day!==draft.day);t.history.push(JSON.parse(JSON.stringify(draft)));t.history.sort((a,b)=>a.day.localeCompare(b.day));t.draft={day:today(),habits:{},score:null,notes:""};saveLog();render();
- });area.append(end);
- const report=node("div");report.append(node("h3","Weekly summary"));const sum=node("button","Summarize Week");sum.className="btn secondary";sum.type="button";sum.addEventListener("click",()=>{if(authorized())weekly(report,t.history);});report.append(sum);area.append(report);
- const history=node("div");history.append(node("h3","Completed days"));
- for(const entry of [...t.history].sort((a,b)=>b.day.localeCompare(a.day)).slice(0,30)){const row=node("div");row.style.cssText="display:flex;justify-content:space-between;gap:8px;margin:8px 0";row.append(node("span",entry.day+" · "+entry.score+"/10"));const edit=node("button","Edit");edit.type="button";edit.className="btn secondary small";edit.addEventListener("click",()=>{
- if(!authorized())return;if(Object.keys(t.draft?.habits||{}).length||t.draft?.notes){alert("Finish your current draft before editing.");return;}
- if(!confirm("Reopen "+entry.day+" for correction?"))return;t.history=t.history.filter(x=>x.day!==entry.day);t.draft=JSON.parse(JSON.stringify(entry));saveLog();render();
- });row.append(edit);history.append(row);}if(!t.history.length)history.append(node("p","No completed days yet."));area.append(history);root.prepend(area);
-}
-
-function render(){
- const root=document.getElementById("refluxGuideContent");
- const allowed=typeof cloudUser!=="undefined" && !!cloudUser && typeof debugIsAdmin==="function" && debugIsAdmin();
- const button=document.getElementById("refluxTabButton");
- if(button){button.style.display=allowed?"inline-flex":"none";button.disabled=!allowed;}
- if(!root)return;
- root.replaceChildren();
- if(!allowed){root.textContent="Admin access required.";return;}
- const intro=document.createElement("p");intro.className="sub";intro.textContent="Personal triggers vary. These foods are options, not a cure; do not eliminate foods that cause no symptoms.";root.append(intro);
- for(const group of groups){
-  const section=document.createElement("section");section.style.marginTop="18px";
-  const h=document.createElement("h3");h.textContent=group.heading;section.append(h);
-  const list=document.createElement("ul");list.style.lineHeight="1.7";
-  for(const [name,detail] of group.items){const li=document.createElement("li");const strong=document.createElement("strong");strong.textContent=name+": ";li.append(strong,document.createTextNode(detail));list.append(li);}
-  section.append(list);root.append(section);
+ const t=tracker(),wrapper=el("section");wrapper.style.cssText="margin:20px 0;padding:16px 0;border-top:1px solid rgba(170,150,130,.4)";
+ wrapper.append(el("h3","Daily reflux tracker"),el("p","Choose the date the habits occurred. Fill in morning, afternoon and evening whenever convenient, including the following night."));
+ const dateLabel=el("label","Diary date ");dateLabel.htmlFor="reflux-date";wrapper.append(dateLabel);
+ const picker=el("input");picker.type="date";picker.id="reflux-date";picker.max=dateNow();picker.value=t.selectedDay&&validDate(t.selectedDay)?t.selectedDay:dateNow();if(picker.value>dateNow())picker.value=dateNow();
+ t.selectedDay=picker.value;picker.addEventListener("change",()=>{if(!validDate(picker.value)||picker.value>dateNow()){picker.value=t.selectedDay;return;}t.selectedDay=picker.value;saveDiary();render();});wrapper.append(picker);
+ const day=t.selectedDay;const existing=t.history.find(x=>x.day===day);
+ const draft=t.drafts[day]?normalize(t.drafts[day],day):existing?normalize(existing,day):empty(day);
+ if(!existing&&!t.drafts[day])t.drafts[day]=draft;
+ const saveDraft=()=>{t.drafts[day]=draft;saveDiary();};
+ const morning=el("section");morning.style.marginTop="16px";morning.append(el("h4","🌅 Morning"));
+ row(morning,"Ate within 3 hours before last night's bedtime",select(yesNo,draft.late,v=>{draft.late=v||null;saveDraft();}));
+ row(morning,"Throat irritation on waking (0–10)",select(scoreOptions,Number.isInteger(draft.morningThroat)?String(draft.morningThroat):"",v=>{draft.morningThroat=v===""?null:Number(v);saveDraft();}));
+ wrapper.append(morning);
+ for(const p of periods){
+  const section=el("section");section.style.marginTop="18px";section.append(el("h4",p==="morning"?"Morning habits":p==="afternoon"?"☀️ Afternoon":"🌙 Evening"));
+  for(const [id,label] of habits)row(section,label,select(yesNo,draft.periods[p].habits[id]||"",v=>{if(v)draft.periods[p].habits[id]=v;else delete draft.periods[p].habits[id];saveDraft();}));
+  row(section,"Reflux severity during "+p+" (0–10)",select(scoreOptions,Number.isInteger(draft.periods[p].score)?String(draft.periods[p].score):"",v=>{draft.periods[p].score=v===""?null:Number(v);saveDraft();}));
+  wrapper.append(section);
  }
- const note=document.createElement("p");note.className="notice";note.textContent="For recurring regurgitation, throat burning or difficulty eating, consult a GP. Seek prompt medical care for trouble swallowing, food sticking, bleeding or unexplained weight loss.";root.append(note);
+ const notesLabel=el("label","Notes (optional)");notesLabel.style.display="block";notesLabel.style.marginTop="16px";notesLabel.htmlFor="reflux-notes";wrapper.append(notesLabel);
+ const notes=el("textarea");notes.id="reflux-notes";notes.rows=3;notes.maxLength=1000;notes.style.width="100%";notes.value=draft.notes;notes.addEventListener("input",()=>{draft.notes=notes.value;saveDraft();});wrapper.append(notes);
+ const finish=el("button",existing?"✓ Update Day":"✓ End Day");finish.type="button";finish.className="btn primary";finish.style.margin="12px 0";
+ finish.addEventListener("click",()=>{if(!authorized())return;
+  if(!Number.isInteger(draft.morningThroat)&&!periods.some(p=>Number.isInteger(draft.periods[p].score))){alert("Please enter at least one symptom score.");return;}
+  if(!confirm("Save reflux diary for "+day+"? Missing answers remain Not logged."))return;
+  t.history=t.history.filter(x=>x.day!==day);t.history.push(JSON.parse(JSON.stringify(draft)));t.history.sort((a,b)=>a.day.localeCompare(b.day));delete t.drafts[day];saveDiary();render();
+ });wrapper.append(finish);
+ const report=el("section");report.append(el("h3","Weekly summary"));const summarize=el("button","Summarize Week");summarize.type="button";summarize.className="btn secondary";summarize.addEventListener("click",()=>summary(report,t.history));report.append(summarize);wrapper.append(report);
+ const history=el("section");history.style.marginTop="16px";history.append(el("h3","Completed days"));
+ for(const entry of [...t.history].sort((a,b)=>b.day.localeCompare(a.day)).slice(0,40)){const line=el("div");line.style.cssText="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:6px 0";line.append(el("span",entry.day+" · waking "+scores(entry.morningThroat)+" · evening "+scores(entry.periods?.evening?.score)));
+  const edit=el("button","Edit");edit.type="button";edit.className="btn secondary small";edit.addEventListener("click",()=>{t.selectedDay=entry.day;saveDiary();render();});line.append(edit);history.append(line);}
+ if(!t.history.length)history.append(el("p","No completed entries yet."));
+ if(t.legacyHistory?.length){const legacy=el("details");legacy.append(el("summary","Previous-format entries ("+t.legacyHistory.length+")"));for(const item of t.legacyHistory)legacy.append(el("p",item.day+" · previous morning score "+scores(item.score)));history.append(legacy);}
+ wrapper.append(history);root.prepend(wrapper);
+}
+function render(){
+ const root=document.getElementById("refluxGuideContent"),ok=authorized(),button=document.getElementById("refluxTabButton");
+ if(button){button.style.display=ok?"inline-flex":"none";button.disabled=!ok;}
+ if(!root)return;root.replaceChildren();if(!ok){root.textContent="Admin access required.";return;}
+ const intro=el("p","Personal triggers vary. These foods are options, not a cure; do not eliminate foods that cause no symptoms.");root.append(intro);
+ for(const group of groups){const section=el("section");section.style.marginTop="18px";section.append(el("h3",group.heading));const list=el("ul");list.style.lineHeight="1.7";for(const [name,detail] of group.items){const li=el("li");const strong=el("strong",name+": ");li.append(strong,document.createTextNode(detail));list.append(li);}section.append(list);root.append(section);}
+ root.append(el("p","For recurring regurgitation or throat burning, consult a GP. Seek prompt medical care for difficulty swallowing, bleeding or unexplained weight loss."));
  showTracker(root);
 }
 window.WayfarerTabRenderers.reflux=render;
