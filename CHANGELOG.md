@@ -1,3 +1,9 @@
+# Wayfarer v3.1.11 — Reflux check-in unlock fix (2026-11-07)
+
+- Removed hard calendar-date disabling of morning throat score and End Day controls, allowing manual catch-up entries. Added a confirmation warning when attempting to finalize before the actual following morning, to avoid misattributing symptoms.
+- Preserved explicit score and habit requirements, account-specific saved history and Sandbox isolation. Updated PWA cache, Debug version and rules.
+- Starting main commit `0107702a87e7d4a96d5f29b91723c9745c9b16c5`. Source verification only; live iPhone and cloud sync remain unverified.
+
 # Wayfarer v3.1.10 — Reflux tracker (2026-11-06)
 
 - Added Admin-only reflux habit diary with automatic draft saving, explicit Did/Didn't/Not logged values, notes, next-morning throat score (0–10), End Day action and completed history with editing.
