@@ -1,4 +1,4 @@
-/* Wayfarer v3.1.10 — Admin reflux guide and daily tracking. */
+/* Wayfarer v3.1.11 — Admin reflux guide and daily tracking. */
 (()=>{
 "use strict";
 window.WayfarerTabRenderers=window.WayfarerTabRenderers||{};
@@ -57,14 +57,15 @@ function showTracker(root){
  const label=node("label","Notes (optional)");label.htmlFor="reflux-notes";label.style.display="block";label.style.marginTop="12px";area.append(label);
  const notes=node("textarea");notes.id="reflux-notes";notes.rows=2;notes.maxLength=1000;notes.style.width="100%";notes.value=draft.notes||"";notes.addEventListener("input",()=>{draft.notes=notes.value;saveLog();});area.append(notes);
  area.append(node("h4","Morning after: "+tomorrow(draft.day)));
- const ready=today()>draft.day;area.append(node("p",ready?"Rate your throat upon waking.":"Morning check-in unlocks the following calendar day."));
+ const ready=today()>draft.day;area.append(node("p",ready?"Rate your throat upon waking.":"You can enter a morning score now for catch-up entries. Only do this if the score is from the morning after the habits listed; otherwise wait until tomorrow."));
  const scoreLabel=node("label","Throat irritation: 0 (none) to 10 (severe)");scoreLabel.htmlFor="reflux-score";area.append(scoreLabel);
- const score=node("select");score.id="reflux-score";score.disabled=!ready;for(const v of ["",...Array.from({length:11},(_,i)=>String(i))]){const opt=node("option",v===""?"Select score":v+"/10");opt.value=v;score.append(opt);}score.value=Number.isInteger(draft.score)?String(draft.score):"";score.addEventListener("change",()=>{draft.score=score.value===""?null:Number(score.value);saveLog();});area.append(score);
- const end=node("button","✓ End Day");end.className="btn primary";end.type="button";end.disabled=!ready;end.style.margin="12px 0";end.addEventListener("click",()=>{
- if(!authorized()||today()<=draft.day)return;
+ const score=node("select");score.id="reflux-score";for(const v of ["",...Array.from({length:11},(_,i)=>String(i))]){const opt=node("option",v===""?"Select score":v+"/10");opt.value=v;score.append(opt);}score.value=Number.isInteger(draft.score)?String(draft.score):"";score.addEventListener("change",()=>{draft.score=score.value===""?null:Number(score.value);saveLog();});area.append(score);
+ const end=node("button","✓ End Day");end.className="btn primary";end.type="button";end.style.margin="12px 0";end.addEventListener("click",()=>{
+ if(!authorized())return;
  if(!Number.isInteger(draft.score)||draft.score<0||draft.score>10){alert("Choose a morning score.");return;}
  if(!Object.keys(draft.habits||{}).length){alert("Log at least one habit.");return;}
- if(!confirm("Save completed day "+draft.day+"?"))return;
+ if(!ready&&!confirm("The following morning for "+draft.day+" is "+tomorrow(draft.day)+", which has not arrived yet. Only continue if you are correcting a backdated record and this score really belongs to the morning after those habits. Save anyway?"))return;
+ if(ready&&!confirm("Save completed day "+draft.day+"?"))return;
  t.history=t.history.filter(x=>x.day!==draft.day);t.history.push(JSON.parse(JSON.stringify(draft)));t.history.sort((a,b)=>a.day.localeCompare(b.day));t.draft={day:today(),habits:{},score:null,notes:""};saveLog();render();
  });area.append(end);
  const report=node("div");report.append(node("h3","Weekly summary"));const sum=node("button","Summarize Week");sum.className="btn secondary";sum.type="button";sum.addEventListener("click",()=>{if(authorized())weekly(report,t.history);});report.append(sum);area.append(report);
