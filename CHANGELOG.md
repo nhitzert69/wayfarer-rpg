@@ -1,3 +1,9 @@
+# Wayfarer v3.1.12 — Dated reflux diary redesign (2026-11-07)
+
+- Rebuilt Admin reflux tracker into selectable-date morning, afternoon and evening sections. Morning asks about eating within three hours of the prior bedtime and waking throat irritation; each period has independent Did/Didn't/Not logged habits and 0–10 reflux score.
+- End Day saves the selected date; completed entries can be edited, unfinished drafts persist, and weekly comparisons distinguish nighttime eating/waking throat from daytime habit/symptom patterns.
+- Preserved old-format records under legacy history rather than mislabeling their scores; updated PWA cache, Debug version and rules. Live mobile/cloud tests remain unverified.
+
 # Wayfarer v3.1.11 — Reflux check-in unlock fix (2026-11-07)
 
 - Removed hard calendar-date disabling of morning throat score and End Day controls, allowing manual catch-up entries. Added a confirmation warning when attempting to finalize before the actual following morning, to avoid misattributing symptoms.
