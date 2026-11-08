@@ -1,3 +1,10 @@
+# Wayfarer v3.1.14 — Automatic daily quests and Sandbox-only manual generation (2026-11-08)
+
+- Created GitHub source backup branch `backup/v3.1.13-before-daily-quests` before editing main.
+- Removed the four-hour manual quest-generation cooldown and its Sandbox reset control. Manual Generate quests and campaign planner are restricted to Admin Sandbox; the button is hidden outside Sandbox.
+- Removed Override quest safeguards control; quest completion confirmations remain in force. Preserved the 04:00 Europe/Amsterdam daily quest regeneration, automatic generation, Adventure generator, reward snapshots and account isolation.
+- Deprecated legacy cooldown state without deleting account fields or rewriting live account data. Static checks only; browser and Supabase validation pending.
+
 # Wayfarer v3.1.13 — Guitar skill and quest library (2026-11-07)
 
 - Added Guitar to Instruments & music alongside Piano, with 100 distinct guitar quest templates across beginner, intermediate, advanced and master tiers. Guitar quests use the existing 10-minute practice format, skill progression, quest rewards and persistence.

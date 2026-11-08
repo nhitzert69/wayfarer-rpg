@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.14 — Automatic daily quests, Sandbox-only manual generation
+- Back up the exact main commit before editing. Daily quests regenerate at 04:00 Europe/Amsterdam. Hide manual Generate quests and its planner outside Admin Sandbox; eliminate the four-hour cooldown, reset button and override quest safeguards option while retaining quest completion confirmation. Keep Adventure generation, reward snapshots, account isolation and legacy save compatibility.
+
 ## v3.1.13 — Guitar skill and quests
 - Add Guitar under Instruments & music with extensive beginner, intermediate, advanced and master quest templates. Preserve Piano, existing skills, skill XP, account data and reward snapshot rules; do not invent a guitar theme or artifact.
 

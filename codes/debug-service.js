@@ -9,7 +9,7 @@
   };
   root.debugFaultEnabled=function(id){return !!(debugIsAdmin()&&debugSandboxActive&&document.getElementById(id)?.checked);};
   root.debugFaultSkill=function(){return String(document.getElementById("debugFaultSkillSelect")?.value||"");};
-  root.debugQuestRulesOverridden=function(){return !!(debugSandboxActive&&debugOverrideQuestRules);};
+  root.debugQuestRulesOverridden=function(){return false;};
   root.debugInspect=function(){
     const el=document.getElementById("debugSaveInspector");if(!el)return;
     const d=debugSandboxActive?state:(debugLiveStateBackup||state);

@@ -365,30 +365,25 @@ function pickCampaignQuest(skill,opts,usedTitles,availableMinutes=Infinity){
  const shortlist=eligible.slice(0,Math.min(6,eligible.length));
  return shortlist[Math.floor(Math.random()*shortlist.length)];
 }
-const QUEST_GENERATION_COOLDOWN_MS=4*60*60*1000;
-function getNewlySelectedQuestSkills(){
- ensureSelectedSkills();
- const previouslyGenerated=new Set(Array.isArray(state.lastGeneratedSkills)?state.lastGeneratedSkills:[]);
- const alreadyHasQuest=new Set((state.quests||[]).filter(q=>q&&q.source==="generated").map(q=>q.skill));
- return state.selectedSkills.filter(skill=>!previouslyGenerated.has(skill)&&!alreadyHasQuest.has(skill));
-}
-function formatCooldown(ms){const total=Math.max(0,Math.ceil(ms/1000));const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),sec=total%60;return `${h}h ${String(m).padStart(2,"0")}m ${String(sec).padStart(2,"0")}s`;}
 function updateGenerateButtonStatus(){
- const button=document.getElementById("generateBtn");if(!button)return;
- const remaining=debugQuestRulesOverridden()?0:Number(state.questGenerationCooldownUntil||0)-Date.now();
- if(remaining>0){const newSkills=getNewlySelectedQuestSkills();button.textContent=newSkills.length?`✦ Generate quests for ${newSkills.length} new skill${newSkills.length===1?"":"s"}`:`✦ Generate quests · ${formatCooldown(remaining)}`;button.disabled=!newSkills.length;button.title=newSkills.length?"Generate quests only for newly selected skills; existing quests will remain.":"New quests available when the 4-hour cooldown ends.";}
- else{button.textContent="✦ Generate quests";button.disabled=false;button.title="Generate a fresh set of quests for your selected skills.";}
+ const button=document.getElementById("generateBtn");
+ if(!button)return;
+ const visible=!!(debugSandboxActive&&debugIsAdmin());
+ button.hidden=!visible;
+ button.style.display=visible?"":"none";
+ button.disabled=!visible;
+ button.textContent="✦ Generate quests";
+ button.title="Generate a fresh set of quests for selected skills in the isolated Admin Sandbox.";
+ if(!visible)openCampaignPlanner(false);
 }
-setInterval(updateGenerateButtonStatus,1000);
 function generateQuests(opts,automatic=false,cycleOverride=null){
   ensureSelectedSkills();
-  const now=Date.now();
-  const cooldownActive=!automatic&&!debugQuestRulesOverridden()&&Number(state.questGenerationCooldownUntil||0)>now;
-  const skills=cooldownActive?getNewlySelectedQuestSkills():[...state.selectedSkills];
+  if(!automatic&&(!debugSandboxActive||!debugIsAdmin())){toast("Manual quest generation is available only in Admin Sandbox.");return;}
+  const skills=[...state.selectedSkills];
   if(!skills.length){
    if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=(cycleOverride||amsterdamQuestCycleKey());save();return;}
-   openCampaignPlanner(false);if(cooldownActive)toast("Quest generation is cooling down. Existing quests are kept; newly selected skills can still receive quests.");else toast("Choose at least one skill in the Skills tab first.");updateGenerateButtonStatus();return;}
-  const preserveExisting=cooldownActive;
+   openCampaignPlanner(false);toast("Choose at least one skill in the Skills tab first.");updateGenerateButtonStatus();return;}
+  const preserveExisting=false;
   if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
   const settings=opts||{
     time:Number(document.getElementById("campaignTime")?.value||60),
@@ -430,7 +425,7 @@ function generateQuests(opts,automatic=false,cycleOverride=null){
   }else{
     state.quests=chosen;
     state.lastGeneratedSkills=[...state.selectedSkills];
-    state.questGenerationCooldownUntil=Date.now()+QUEST_GENERATION_COOLDOWN_MS;
+    state.questGenerationCooldownUntil=0;
   }
   state.activeDate=today();
   if(automatic)state.lastDailyQuestCycle=(cycleOverride||amsterdamQuestCycleKey());
@@ -439,14 +434,14 @@ function generateQuests(opts,automatic=false,cycleOverride=null){
   openCampaignPlanner(false);
   if(!chosen.length){toast("No eligible quests were found in the quest library for the selected skills.");return;}
   const total=chosen.reduce((sum,q)=>sum+(q.estimatedMinutes||10),0);
-  if(!automatic)toast(preserveExisting?`Added ${chosen.length} quest${chosen.length===1?"":"s"} for newly selected skills. Existing quests and cooldown preserved.`:`Campaign ready: ${chosen.length} quests, about ${total} minutes planned. Next full refresh in 4 hours.`);
+  if(!automatic)toast(`Sandbox campaign ready: ${chosen.length} quests, about ${total} minutes planned. Daily quests still regenerate at 04:00 Amsterdam time.`);
 }
 const generateQuestsButton=document.getElementById("generateBtn");
 // The primary button opens the campaign planner; quest generation happens only
 // when the user confirms the plan. Keep the existing planner and quest logic intact.
-if(generateQuestsButton)generateQuestsButton.addEventListener("click",()=>openCampaignPlanner(true));
+if(generateQuestsButton)generateQuestsButton.addEventListener("click",()=>{if(!debugSandboxActive||!debugIsAdmin())return;openCampaignPlanner(true);});
 ["campaignTime","campaignEnergy"].forEach(id=>document.getElementById(id)?.addEventListener("change",updateCampaignPreview));
-document.getElementById("buildCampaignBtn")?.addEventListener("click",()=>generateQuests());
+document.getElementById("buildCampaignBtn")?.addEventListener("click",()=>{if(debugSandboxActive&&debugIsAdmin())generateQuests();else openCampaignPlanner(false);});
 document.getElementById("closeCampaignPlanner")?.addEventListener("click",()=>openCampaignPlanner(false));
 document.getElementById("cancelCampaignBtn")?.addEventListener("click",()=>openCampaignPlanner(false));
 updateCampaignPreview();
@@ -472,7 +467,7 @@ function completeQuest(id,done=true){
  const q=state.quests.find(q=>String(q.id)===String(id));
  if(!q||q.done===done)return;
  if(!done){toast("Earned XP is never removed. Your completed quest stays recorded.");return;}
- if(!debugQuestRulesOverridden()&&!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP + ${5+Math.max(0,Number(q.perkBonusGold)||0)} coins${q.perkBonusXp?` (includes ${q.perkBonusXp} ${q.perkThemeName||"theme"} bonus XP)`:""}?`))return;
+ if(!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP + ${5+Math.max(0,Number(q.perkBonusGold)||0)} coins${q.perkBonusXp?` (includes ${q.perkBonusXp} ${q.perkThemeName||"theme"} bonus XP)`:""}?`))return;
  // Record completion and award XP immediately, before the visual card animation.
  q.done=true;
  const award=awardQuestRewards(state,q);
