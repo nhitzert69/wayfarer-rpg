@@ -1,5 +1,10 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.30 — Chess match lifecycle and side selection
+- When no chess match is active, show New Game but hide Resign. New Game opens a choice between White (red Catholic) and Black (purple Orthodox), with Cancel. Start only after a side is selected. During an active match show Resign but hide New Game; restore New Game after win, loss, draw or resignation. Never permit abandoned active games to be replaced without recording their outcome.
+- The player can move only their chosen color, Stockfish controls the other color, and choosing Black rotates the board with Black at the bottom and Stockfish opening as White. Persist selected color and game state per account, preserve Elo/PGN/history and correct color-independent checkmate accounting. Test both colors, initial engine move, refresh, offline engine loading, resign, draw, victory and account isolation.
+
+
 ## v3.1.29 — Chess touch and engine readiness
 - White chess selection and legal moves must work while Stockfish loads; engine readiness only gates computer moves. Show loading/failure state and feedback for selected squares and moves. New Game resets selection and confirms restart. Test mobile tap, worker failure, game restart, PGN and account isolation.
 
