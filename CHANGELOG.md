@@ -1,3 +1,7 @@
+## v3.1.31 — Stockfish worker startup fallback (2026-11-10)
+- Added a second Stockfish CDN provider, worker load error reporting, initialization timeout and automatic retry when the first source fails. Retained active chess match and saved progress while retrying.
+- Updated mandatory update rules, regression checks and PWA cache. This is a resilience change, not a confirmed iPhone engine fix; self-hosted Stockfish assets and live Safari verification remain outstanding.
+
 ## v3.1.30 — Chess side selection and contextual controls (2026-11-10)
 - New Game now opens White (Catholic red) / Black (Orthodox purple) selection when no game is active. Resign is displayed only during a game; New Game returns after game conclusion. Black-side games rotate the board and Stockfish opens as White.
 - Updated computer-turn checks and winner accounting for either player color; preserved existing saved games, PGN and Elo history. New accounts start with no active match.
