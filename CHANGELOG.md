@@ -1,3 +1,8 @@
+## v3.1.32 — Pawn promotion chooser and local two-player Chess (2026-11-10)
+- Human pawn promotions now present Queen/Rook/Bishop/Knight choices instead of automatically promoting to queen. Cancel keeps the position unchanged.
+- Added local two-player mode to New Game: both players alternate moves on one device, with saved PGN, no Stockfish involvement and no Elo changes. Preserved AI White/Black selection and existing game history.
+- Updated update rules, QA plan and PWA cache. Live iPhone gameplay verification pending.
+
 ## v3.1.31 — Stockfish worker startup fallback (2026-11-10)
 - Added a second Stockfish CDN provider, worker load error reporting, initialization timeout and automatic retry when the first source fails. Retained active chess match and saved progress while retrying.
 - Updated mandatory update rules, regression checks and PWA cache. This is a resilience change, not a confirmed iPhone engine fix; self-hosted Stockfish assets and live Safari verification remain outstanding.
