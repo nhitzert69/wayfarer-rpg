@@ -1,3 +1,9 @@
+# Wayfarer v3.1.17 — Theme Store level display (2026-11-10)
+
+- Theme cards show their permanent name and current Level 0/5 through 5/5, like artifacts. One-tier Mastery displays Level 0/1 or 1/1.
+- Next upgrade level appears separately; fully upgraded themes remain visible with Max status.
+- Preserve purchase IDs, upgrade pricing, unlock checks, perks, inventory, and account progress. Static syntax checks only; live browser/Supabase not tested.
+
 # Wayfarer v3.1.16 — Weekly skill quest schedule (2026-11-10)
 
 - Replaced Priority/Secondary selectors with Monday–Sunday main-quest scheduling for each selected skill. Unscheduled weekdays are side quests. Weekdays use the 04:00 Europe/Amsterdam quest-cycle date, including DST.

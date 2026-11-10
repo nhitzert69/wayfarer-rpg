@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-standalone-v3.1.16";
+const CACHE = "wayfarer-standalone-v3.1.17";
 const ASSETS = [
   "./assets/images/themes/icons/andalusian-serenade-theme.png", "./assets/images/themes/characters/male-andalusian-serenade.png", "./assets/images/themes/characters/female-andalusian-serenade.png", "./assets/images/themes/backgrounds/andalusian-serenade-background.png", "./assets/images/artifacts/artifact-serenaders-guitar.png", "./assets/sound/andalusian-serenade-theme.mp3",
   "./assets/images/themes/backgrounds/bloodthirst-background.webp", "./assets/images/themes/icons/bloodthirst-theme.webp", "./assets/images/themes/characters/male-bloodthirst.webp", "./assets/images/themes/characters/female-bloodthirst.webp", "./assets/sound/bloodthirst-theme.mp3",
