@@ -1,6 +1,7 @@
-const CACHE = "wayfarer-standalone-v3.1.24";
+const CACHE = "wayfarer-standalone-v3.1.25";
 const ASSETS = [
   "./codes/tabs/chess.js",
+  "./assets/Chess/board_with_frame.png", "./assets/Chess/new_game.png", "./assets/Chess/resign.png", "./assets/Chess/orthodox_king.png", "./assets/Chess/orthodox_queen.png", "./assets/Chess/orthodox_rook.png", "./assets/Chess/orthodox_bishop.png", "./assets/Chess/orthodox_knight.png", "./assets/Chess/orthodox_pawn.png", "./assets/Chess/catholic_king.png", "./assets/Chess/catholic_queen.png", "./assets/Chess/catholic_rook.png", "./assets/Chess/catholic_bishop.png", "./assets/Chess/catholic_knight.png", "./assets/Chess/catholic_pawn.png",
   "./assets/images/themes/icons/andalusian-serenade-theme.png", "./assets/images/themes/characters/male-andalusian-serenade.png", "./assets/images/themes/characters/female-andalusian-serenade.png", "./assets/images/themes/backgrounds/andalusian-serenade-background.png", "./assets/images/artifacts/artifact-serenaders-guitar.png", "./assets/sound/andalusian-serenade-theme.mp3",
   "./assets/images/themes/backgrounds/bloodthirst-background.webp", "./assets/images/themes/icons/bloodthirst-theme.webp", "./assets/images/themes/characters/male-bloodthirst.webp", "./assets/images/themes/characters/female-bloodthirst.webp", "./assets/sound/bloodthirst-theme.mp3",
   "./assets/images/themes/backgrounds/ceo-background.webp", "./assets/images/themes/characters/male-ceo.webp", "./assets/images/themes/characters/female-ceo.webp", "./assets/images/themes/icons/ceo-theme.webp", "./assets/sound/ceo-theme.mp3",
