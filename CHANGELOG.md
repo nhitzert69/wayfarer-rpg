@@ -1,3 +1,8 @@
+## v3.1.33 — Audit remediation first pass (2026-11-10)
+- Removed failing jsDelivr engine endpoint; added Retry Engine, stalled-move watchdog and worker restart preserving PGN.
+- Removed Debug renderer override of grouped navigation visibility. Added network-first online JS/CSS service-worker fetch with offline fallback.
+- Self-hosted engine, full automatic release handoff and authenticated Safari testing remain outstanding. HOLD remains pending verification.
+
 ## v3.1.32 — Pawn promotion chooser and local two-player Chess (2026-11-10)
 - Human pawn promotions now present Queen/Rook/Bishop/Knight choices instead of automatically promoting to queen. Cancel keeps the position unchanged.
 - Added local two-player mode to New Game: both players alternate moves on one device, with saved PGN, no Stockfish involvement and no Elo changes. Preserved AI White/Black selection and existing game history.
