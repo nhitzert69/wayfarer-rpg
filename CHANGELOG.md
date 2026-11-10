@@ -1,3 +1,8 @@
+## v3.1.27 — Permanent release freshness requirement (2026-11-10)
+- Added mandatory update rule requiring latest successfully deployed Wayfarer code and assets on online launch/resume, including version checks, cache invalidation, safe update flow and offline-compatible fallback.
+- Updated mandatory bugtest plan with cached-client, installed PWA, iOS Safari, desktop, offline and deployment verification scenarios.
+- Documentation-only release: the existing cache-first service worker behavior has **not** yet been changed; latest-version enforcement remains to be implemented and tested.
+
 ## v3.1.26 — Login navigation and Debug visibility fixes (2026-11-10)
 - Signed-out visitors now see only Settings and its login UI; all main group selectors and other subtabs are hidden, and unauthorized tab activation is redirected to Settings.
 - Fixed inactive Debug/Reflux and other section visibility by removing the inline-display override that bypassed `.section.active` on initial load. Retained Admin authorization and per-account tab restoration.
