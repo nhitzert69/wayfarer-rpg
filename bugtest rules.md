@@ -1,10 +1,13 @@
 # Wayfarer RPG — Bug Test Rules (MANDATORY)
-Version: v3.1.32 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
+Version: v3.1.33 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
 
 ## 0. Purpose, ownership and non-negotiable maintenance
 This is the authoritative repeatable end-to-end and regression test plan for Wayfarer RPG. Read this document before every full QA run, release validation, bug fix and feature update, together with `update rules` and applicable `theme creation rules.md` and `artifact rules.md`. The source of truth is the current live main branch, not a ZIP, cached build, old report or assumptions. If a referenced rules file is absent, record that discrepancy; do not invent its contents. The former `game rules.md` has been retired; game requirements now live in `update rules`.
 
 Every update, including documentation-only changes, MUST review and revise this file: compare the current navigation, registries, features, state fields, rules, prices, levels, unlocks, admin permissions, file paths, service-worker cache and release version against actual source. Add new test cases for new behavior and failure modes; revise obsolete tests, remove references to removed UI, and preserve historical regression coverage. Update this header's version and review date and record the QA-plan change in the top CHANGELOG entry. Never silently carry forward an outdated test plan. Do not mark a test PASS merely because it is written here.
+
+## v3.1.33 — Engine and navigation regression
+- Verify retry after startup failure, 12-second bestmove watchdog, PGN persistence, no engine in local mode, Debug hidden outside Admin, network-first online JS/CSS and offline fallback. Live browser testing pending.
 
 ## v3.1.32 — Promotion and local two-player regression
 - Test human promotions to queen, rook, bishop and knight, including capture promotions, with both colors; verify Cancel leaves position unchanged and promotion saves correct PGN. Test local 2-player mode with alternating legal turns, captures, castling, en passant, checkmate, stalemate, resign, refresh and account isolation. Verify Stockfish never plays in local mode and Elo/results remain unchanged. Existing AI games must remain playable. Live browser testing pending.
