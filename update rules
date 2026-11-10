@@ -1,5 +1,9 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.22 — Settings tab visibility rendering
+- The optional-tab checkboxes must populate when Settings opens, including first lazy load, after sign-in, and after refresh. Ensure tab module initialization and active-tab rendering are ordered correctly.
+- Regression-test hide/show of each optional tab, mandatory tabs always visible, Admin-only tab access, account-specific persistence and iPhone layout. Preserve v3.1.21 Sandbox fix and chess functionality.
+
 ## v3.1.21 — Sandbox standalone Adventure cycle integrity
 - Standalone Short and Day Adventure generation must never overwrite the Sandbox Time Machine date or reopen completed skill quest rewards for that cycle. Preserve the simulated cycle through Adventure generation, selected-skill toggles, weekly Main/Side classification, completion ledger and refresh.
 - Regression test both Adventure types after advancing the Sandbox date, completing a skill quest and toggling the skill 20 times; exactly one same-cycle reward, new quest only on next cycle. Preserve normal 04:00 Amsterdam rollover and standalone Adventure snapshots.

@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-standalone-v3.1.21";
+const CACHE = "wayfarer-standalone-v3.1.22";
 const ASSETS = [
   "./codes/tabs/chess.js",
   "./assets/images/themes/icons/andalusian-serenade-theme.png", "./assets/images/themes/characters/male-andalusian-serenade.png", "./assets/images/themes/characters/female-andalusian-serenade.png", "./assets/images/themes/backgrounds/andalusian-serenade-background.png", "./assets/images/artifacts/artifact-serenaders-guitar.png", "./assets/sound/andalusian-serenade-theme.mp3",

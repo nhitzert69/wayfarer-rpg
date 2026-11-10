@@ -1,3 +1,8 @@
+## v3.1.22 — Restore Settings tab visibility controls (2026-11-10)
+- Fixed optional-tab checkboxes failing to appear after opening Settings. Navigation now invokes the active tab renderer after lazy module initialization, and the visibility UI is refreshed for signed-in accounts.
+- Preserved mandatory tabs, Admin authorization, per-account hidden tab preferences, chess, and existing save paths.
+- Updated bugtest and update rules. Static syntax checks only; live iPhone browser and Supabase persistence require verification.
+
 ## v3.1.21 — Preserve Sandbox quest cycle during standalone Adventures (2026-11-10)
 - Fixed WF-319-002: generating a Short or Day Adventure no longer overwrites the Sandbox Time Machine date with the real date. This keeps weekly Main/Side classification and the same-cycle generated-quest completion ledger consistent and prevents reopening a completed skill quest through the reported date-rewind path.
 - Kept the normal 04:00 Amsterdam daily reset, existing Adventure rewards, v3.1.20 Chess, optional tab visibility, and account/Sandbox isolation unchanged.

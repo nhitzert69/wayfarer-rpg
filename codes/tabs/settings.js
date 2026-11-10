@@ -16,7 +16,9 @@ const renderSettingsControls = function(settings = state?.settings || {}) {
 const REQUIRED=new Set(["quests","character","store","skills","settings"]);
 const LABELS={todo:"☑ To Do",groceries:"🛒 Groceries",journal:"📜 Journal",chess:"♟ Chess",reflux:"🌿 Reflux Guide",debug:"🛠 Debug"};
 function renderTabVisibility(){
- const el=document.getElementById("tabVisibilityOptions");if(!el||!cloudUser)return;
+ const el=document.getElementById("tabVisibilityOptions");if(!el)return;
+ // The account may hydrate after this module initializes; controls must still render.
+ if(!cloudUser){el.replaceChildren();return;}
  const settings=state.settings||(state.settings={});
  const hidden=Array.isArray(settings.hiddenTabs)?settings.hiddenTabs:[];
  el.replaceChildren();

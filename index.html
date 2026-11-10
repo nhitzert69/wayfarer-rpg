@@ -352,7 +352,12 @@ function activateWayfarerTab(tabName,remember=true){
  if(tabName==="skills"&&typeof renderSkillCatalog==="function")renderSkillCatalog();
  if(tabName==="debug"&&typeof renderDebugPanel==="function")renderDebugPanel();
   if(tabName==="reflux")window.WayfarerTabRenderers?.reflux?.();
- loadWayfarerTab(tabName);
+ // Re-render after the asynchronous module is ready, not only during the global render.
+ loadWayfarerTab(tabName).then(loaded=>{
+  if(loaded&&document.querySelector(".tab.active")?.dataset.tab===tabName){
+   window.WayfarerTabRenderers?.[tabName]?.();
+  }
+ });
  return true;
 }
 function restorePreferredWayfarerTab(){
