@@ -1,3 +1,8 @@
+## v3.1.24 — Ornate navigation group styling (2026-11-10)
+- Replaced plain white category buttons with distinct fantasy-styled Core (royal purple), Personal (forest green), Games (steel blue), and Admin (burgundy) group selectors, using gold/metallic borders and a prominent selected-state glow.
+- Preserved original subtabs, tab selection logic, authorization, game state and saved data; added keyboard focus and reduced-motion styling and responsive 3-column mobile/4-column desktop layout.
+- Updated PWA cache version and bugtest rules for responsive, accessibility, theme and Admin regression checks. Static source update only; browser/iOS and Supabase testing remain pending.
+
 ## v3.1.23 — Grouped navigation (2026-11-10)
 - Reorganized all existing pages into four main navigation groups with subtabs: Core (Quest Board, Character, Store, Skills, Settings), Personal (To Do, Groceries, Journal), Games (Chess), and Admin (Debug, Reflux Guide).
 - Admin group appears only to accounts authorized for Debug, including ChatGPT testing accounts. Existing Admin authorization checks remain in place; no new role is granted.
