@@ -1,5 +1,10 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.25 — Christendom chess art and retired game rules
+- Game requirements now live in `update rules`; `game rules.md` is retired and must not block game updates.
+- Chess uses `assets/Chess/` with red Catholic White pieces, purple Orthodox Black pieces, ornate board/frame, and New Game/Resign button artwork. Preserve legal chess, engine, Elo, saved PGN, result recording, authorization and account isolation. Test square alignment on mobile and desktop, check/highlight readability, loading failures and asset decoding.
+
+
 ## v3.1.23 — Grouped navigation and authorized Admin access
 - Main navigation groups: Core (Quest Board, Character, Store, Skills, Settings), Personal (To Do, Groceries, Journal), Games (Chess and future games), Admin (Debug and Reflux Guide). All existing pages become subtabs.
 - Admin group must remain invisible and inaccessible to non-admin accounts. CHATGPT testing uses existing Admin authorization, not a separate group or expanded privilege.
@@ -100,7 +105,7 @@
 ## v3.0.3 conservative cleanup rule
 - Remove assets only after checking application code, registered themes, service-worker precache, and documentation for references. Do not remove files merely for appearing old or redundant. Preserve all gameplay and account behavior.
 
-These rules are mandatory for every Wayfarer update, including documentation-only, bug-fix, Debug-only, theme, game, refactor, and release-packaging changes. They are the master development and release standard. The companion files `theme creation rules.md` and `game rules.md` are also mandatory whenever their scope applies. Read all applicable rule files before editing. If a required file cannot be read, stop and ask for it; do not proceed by assumption.
+These rules are mandatory for every Wayfarer update, including documentation-only, bug-fix, Debug-only, theme, game, refactor, and release-packaging changes. They are the master development and release standard. The companion file `theme creation rules.md` remains mandatory when its scope applies. The former `game rules.md` has been retired; game and chess requirements are maintained in this `update rules` file. Read all applicable rule files before editing. If a required file cannot be read, stop and ask for it; do not proceed by assumption.
 
 ## Active main-branch workflow (2026-10-30; supersedes prior branch instructions)
 - `main` is the active development and production branch. Apply authorized updates directly to `main` after inspecting current files; do not require `update-before-commit` or a pull request.
@@ -117,7 +122,7 @@ These rules are mandatory for every Wayfarer update, including documentation-onl
 ## 1. Rule hierarchy and change control
 - Follow this master standard for every change.
 - Follow `theme creation rules.md` for theme registration, assets, visuals, music, Store, unlocks, Inventory, equipment, perks, rewards, theme diagnostics, and theme-related cleanup.
-- Follow `game rules.md` for Kingdoms of the Unknown, game architecture, game saves, game UI, game testing, and Wayfarer/game integration.
+- Follow the applicable game requirements in this `update rules` file for game architecture, saves, UI, testing, and integration.
 - When a change touches multiple areas, all applicable rule files apply.
 - If requirements conflict, pause before editing, identify the conflict, and resolve it explicitly. Do not silently ignore either rule.
 - Changing a mandatory rule is itself a versioned project change: edit the rule deliberately, explain why in the changelog, and preserve unrelated requirements and historical release notes.
@@ -166,7 +171,7 @@ These rules are mandatory for every Wayfarer update, including documentation-onl
 - The top changelog entry must identify the release version/date, summarize actual changes, and state validation performed and important unverified behavior.
 - Keep the app's diagnostic/build version, embedded Debug report versions, service-worker cache namespace, top changelog entry, and release ZIP filename aligned. Document any deliberate exception.
 - Keep `CHANGELOG.md` in the service-worker asset list and ensure the deployed Version History can fetch it.
-- Every complete release ZIP must include `update rules`, `theme creation rules.md`, and `game rules.md`, plus all source, configuration, schema, assets, and changelog files required by the project. Verify archive contents and integrity before providing the link.
+- Every complete release ZIP must include `update rules` and `theme creation rules.md`, plus all source, configuration, schema, assets, and changelog files required by the project. Verify archive contents and integrity before providing the link.
 - Use a short, consistent filename such as `Wayfarer_v3_0_0.zip`. Never invent or reuse a download path that has not been verified in the current session.
 - Do not claim the release is live until it has actually been deployed. A ZIP delivery is not itself a deployment.
 
