@@ -598,3 +598,19 @@ body.andalusianSerenadeTheme .progress,body.andalusianSerenadeTheme .xpBar{backg
 @media(min-width:600px){.wayfarer-groups{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:430px){.wayfarer-groups{gap:7px;padding:11px 12px!important}.wayfarer-groups .groupTab{font-size:15px!important;padding:10px 4px;min-height:47px}}
 @media(prefers-reduced-motion:reduce){.wayfarer-groups .groupTab{transition:none}}
+
+/* v3.1.25 — Christendom Chess: responsive artwork and interactive square overlay */
+.christendom-board{position:relative;width:min(100%,520px);aspect-ratio:1/1;margin:12px auto;background:url("../assets/Chess/board_with_frame.png") center/100% 100% no-repeat}
+.christendom-squares{position:absolute;inset:9.25% 8.1% 8.6% 8.1%;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr))}
+.christendom-square{appearance:none;position:relative;min-width:0;min-height:0;width:100%;height:100%;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;display:flex;align-items:center;justify-content:center;background:transparent!important;box-shadow:none!important;cursor:pointer;touch-action:manipulation}
+.christendom-square img{width:95%;height:95%;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 1px 2px #0008)}
+.christendom-square.is-selected{background:#ffdf6d70!important;outline:2px solid #ffdf6d;outline-offset:-2px}
+.christendom-square.is-legal:after{content:"";position:absolute;inset:32%;border-radius:50%;background:#63c48ba8;pointer-events:none}
+.christendom-square.is-legal:has(img):after{inset:5%;background:transparent;border:3px solid #63c48bc9}
+.christendom-square:focus-visible{outline:3px solid #fce7a3!important;outline-offset:-3px}
+.christendom-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px auto;width:min(100%,520px)}
+.christendom-action{appearance:none;display:block;flex:1;min-width:0;border:0!important;background:transparent!important;padding:0!important;margin:0!important;box-shadow:none!important;cursor:pointer}
+.christendom-action img{display:block;width:100%;height:auto;object-fit:contain}
+.christendom-action:hover{filter:brightness(1.12)}
+.christendom-action:focus-visible{outline:3px solid #ffdf8c;outline-offset:2px;border-radius:8px}
+.christendom-action:disabled{opacity:.4;cursor:not-allowed}
