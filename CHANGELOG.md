@@ -1,3 +1,7 @@
+## v3.1.28 — Fix navigation overlay during scrolling (2026-11-10)
+- Removed inherited sticky positioning from grouped navigation and subtabs so both rows scroll with the page rather than float over Chess and other content on iPhone.
+- Bumped service-worker cache version and updated permanent rules and mandatory QA plan. Live iPhone validation remains pending; the separate automatic-update cache policy is not yet implemented.
+
 ## v3.1.27 — Permanent release freshness requirement (2026-11-10)
 - Added mandatory update rule requiring latest successfully deployed Wayfarer code and assets on online launch/resume, including version checks, cache invalidation, safe update flow and offline-compatible fallback.
 - Updated mandatory bugtest plan with cached-client, installed PWA, iOS Safari, desktop, offline and deployment verification scenarios.
