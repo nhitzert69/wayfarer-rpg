@@ -1,5 +1,10 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.32 — Chess promotion and local two-player mode
+- All human pawn promotions require a choice of Queen, Rook, Bishop or Knight, including capture promotions, for both sides and in local games. Cancel must leave the board unchanged; do not auto-queen human moves. Computer promotion remains controlled by Stockfish.
+- New Game offers vs Stockfish as White, vs Stockfish as Black, or local two-player chess. Local players alternate White and Black on the same device with a fixed White-bottom board, legal chess rules, save/reload and a resignation result; never invoke Stockfish for local games or alter Elo, wins, losses or draws. Preserve the existing AI mode and historical saves.
+
+
 ## v3.1.31 — Stockfish startup resilience
 - Detect worker script load errors, message errors and UCI handshake timeouts; attempt a secondary provider when primary Stockfish CDN fails. Never silently stall the opponent or discard an active match. Keep turn, PGN, Elo and side selection intact. The long-term target remains self-hosting a licensed lightweight single-threaded engine, with its JS/WASM and license files deployed and versioned together.
 - Verify engine UCI handshake and actual bestmove on iOS Safari, desktop, both player colors, offline and after backgrounding; an unverified fallback is not a confirmed fix.
