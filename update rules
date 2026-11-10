@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.16 — Weekly quest scheduling and same-day completion memory
+- Each selected skill has Monday–Sunday main-quest days; other days are side quests. Use the 04:00 Europe/Amsterdam cycle date, not device timezone. New selections generate a quest immediately; deselections remove only generated quests, never custom or adventure quests. Preserve daily completion memory across toggles and refresh so rewards cannot be farmed. Keep account data, Sandbox isolation, quest snapshots and automatic daily generation. Migrate old Priority to all seven days and Secondary to none.
+
 ## v3.1.15 — Guitar theme and artifact
 - Andalusian Serenade uses the Guitar skill and standard 5-level skill-theme progression. The Serenader's Guitar uses the existing 3-level artifact progression and matching-theme synergy. Preserve saved IDs, rewards, Sandbox and all other themes. Never merge a theme commit without the six actual image/audio assets present at registered paths; validate decoding and mobile styling.
 

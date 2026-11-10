@@ -25,7 +25,7 @@ window.WayfarerTabRenderers.skills.renderSkillCatalog = function(){
  root.innerHTML=skillCatalog.filter(cat=>debugSandboxActive||!cat.skills.some(skill=>skill[0]==="Test")).map(cat=>`<div class="skillCategory"><h3>${cat.icon} ${esc(cat.category)}</h3><div class="skillChoices">${cat.skills.map(([name,desc])=>{
    const selected=state.selectedSkills.includes(name);
    const priority=getSkillPriority(name);
-   return `<div class="skillChoice" style="display:flex;align-items:flex-start;gap:10px"><input type="checkbox" data-skill-choice="${esc(name)}" aria-label="Select ${esc(name)}" ${selected?"checked":""}><span style="flex:1;min-width:0"><strong>${esc(name)}</strong><small>${esc(desc)}</small>${selected?`<label style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px;color:var(--gold)">Quest role <select data-skill-priority="${esc(name)}" style="margin-left:auto;max-width:145px;padding:6px 8px;background:#101315;color:#f0e6d4;border:1px solid #8f6b43;border-radius:8px"><option value="priority" ${priority==="priority"?"selected":""}>👑 Priority</option><option value="secondary" ${priority==="secondary"?"selected":""}>✦ Secondary</option></select></label>`:""}</span></div>`;
+   return `<div class="skillChoice" style="display:flex;align-items:flex-start;gap:10px"><input type="checkbox" data-skill-choice="${esc(name)}" aria-label="Select ${esc(name)}" ${selected?"checked":""}><span style="flex:1;min-width:0"><strong>${esc(name)}</strong><small>${esc(desc)}</small>${selected?`<div style="margin-top:9px;font-size:12px;color:var(--gold)">Main quest days <div role="group" aria-label="${esc(name)} main quest days" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((day,i)=>`<label style="display:inline-flex;align-items:center;gap:3px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;color:var(--cream);cursor:pointer"><input type="checkbox" data-skill-weekday="${esc(name)}" data-weekday="${i}" ${weekdays.includes(i)?"checked":""}>${day}</label>`).join("")}</div><small>Other days: side quest. Changes save automatically.</small></div>`:""}</span></div>`;
  }).join("")}</div></div>`).join("");
  const count=document.getElementById("selectedSkillCount");
  if(count)count.textContent=`${state.selectedSkills.length} skill${state.selectedSkills.length===1?"":"s"} selected`;
@@ -38,12 +38,22 @@ if(skillCatalogRoot&&!skillCatalogRoot.dataset.wayfarerSkillActionsBound){
   const input=event.target.closest("[data-skill-choice]");
   if(input&&skillCatalogRoot.contains(input)){
    const name=input.dataset.skillChoice;
-   if(input.checked){if(!state.selectedSkills.includes(name))state.selectedSkills.push(name);if(!state.skillPriorities[name])state.skillPriorities[name]="secondary";}
-   else{state.selectedSkills=state.selectedSkills.filter(s=>s!==name);delete state.skillPriorities[name];}
-   renderSkillCatalog();renderSkillProgress();return;
+   if(input.checked){if(!state.selectedSkills.includes(name))state.selectedSkills.push(name);}
+   else state.selectedSkills=state.selectedSkills.filter(s=>s!==name);
+   ensureSelectedSkills();save(true);renderSkillCatalog();renderSkillProgress();
+   if(typeof window.WayfarerSyncSelectedSkillQuests==="function")window.WayfarerSyncSelectedSkillQuests();
+   else if(typeof loadWayfarerTab==="function")loadWayfarerTab("quests").then(ok=>{if(ok)window.WayfarerSyncSelectedSkillQuests?.();});
+   return;
   }
-  const select=event.target.closest("[data-skill-priority]");
-  if(select&&skillCatalogRoot.contains(select)){state.skillPriorities[select.dataset.skillPriority]=select.value;save(true);renderSkillCatalog();}
+  const dayInput=event.target.closest("[data-skill-weekday]");
+  if(dayInput&&skillCatalogRoot.contains(dayInput)){
+   const name=dayInput.dataset.skillWeekday,day=Number(dayInput.dataset.weekday);
+   if(!state.selectedSkills.includes(name)||!Number.isInteger(day)||day<0||day>6)return;
+   const days=new Set(state.skillWeekdays[name]||[]);
+   if(dayInput.checked)days.add(day);else days.delete(day);
+   state.skillWeekdays[name]=[...days].sort((a,b)=>a-b);
+   save(true);renderSkillCatalog();return;
+  }
  });
 }
 window.WayfarerTabModules = window.WayfarerTabModules || {};

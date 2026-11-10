@@ -376,6 +376,49 @@ function updateGenerateButtonStatus(){
  button.title="Generate a fresh set of quests for selected skills in the isolated Admin Sandbox.";
  if(!visible)openCampaignPlanner(false);
 }
+// Track completed generated quests by skill and 04:00 Amsterdam quest cycle.
+function questCompletionLedger(cycle){
+ if(!state.completedSkillQuestCycles||typeof state.completedSkillQuestCycles!=="object"||Array.isArray(state.completedSkillQuestCycles))state.completedSkillQuestCycles={};
+ if(!state.completedSkillQuestCycles[cycle]||typeof state.completedSkillQuestCycles[cycle]!=="object")state.completedSkillQuestCycles[cycle]={};
+ if(state.lastDailyQuestCycle===cycle){
+  for(const quest of state.quests||[])if(quest?.done&&quest?.source==="generated"&&quest.skill)state.completedSkillQuestCycles[cycle][quest.skill]=true;
+ }
+ const keys=Object.keys(state.completedSkillQuestCycles).sort();
+ for(const key of keys.slice(0,Math.max(0,keys.length-35)))delete state.completedSkillQuestCycles[key];
+ return state.completedSkillQuestCycles[cycle];
+}
+function syncSelectedSkillQuests(){
+ ensureSelectedSkills();
+ if(typeof checkDailyQuestReset==="function")checkDailyQuestReset();
+ const cycle=amsterdamQuestCycleKey(),completed=questCompletionLedger(cycle);
+ const selected=new Set(state.selectedSkills);
+ if(!Array.isArray(state.quests))state.quests=[];
+ let changed=false;
+ state.quests=state.quests.filter(quest=>{
+  if(quest?.source==="generated"&&quest.skill&&!selected.has(quest.skill)){changed=true;return false;}
+  return true;
+ });
+ if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
+ const existing=new Set(state.quests.filter(q=>q?.source==="generated"&&q.skill).map(q=>q.skill));
+ const opts={time:60,energy:"normal",focus:"balanced",place:"either"};
+ const usedTitles=new Set(state.quests.map(q=>q?.title).filter(Boolean));
+ for(const skill of state.selectedSkills){
+  if(existing.has(skill)||completed[skill])continue;
+  const quest=pickCampaignQuest(skill,opts,usedTitles,Infinity);
+  if(!quest)continue;
+  const minutes=quest._minutes,place=quest._place||opts.place;
+  delete quest._minutes;delete quest._score;delete quest._place;
+  const baseXp=Number(quest.xp)||15;
+  state.quests.push({...quest,...questRewardSnapshot(skill,baseXp),estimatedMinutes:minutes,planFocus:opts.focus,planPlace:place,done:false,source:"generated",id:createQuestId()});
+  state.questHistory[skill]=[quest.title,...(state.questHistory[skill]||[]).filter(t=>t!==quest.title)].slice(0,8);
+  usedTitles.add(quest.title);changed=true;
+ }
+ state.lastGeneratedSkills=[...state.selectedSkills];
+ if(changed)save();
+ else render();
+ return changed;
+}
+window.WayfarerSyncSelectedSkillQuests=syncSelectedSkillQuests;
 function generateQuests(opts,automatic=false,cycleOverride=null){
   ensureSelectedSkills();
   if(!automatic&&(!debugSandboxActive||!debugIsAdmin())){toast("Manual quest generation is available only in Admin Sandbox.");return;}
@@ -391,13 +434,16 @@ function generateQuests(opts,automatic=false,cycleOverride=null){
     focus:document.getElementById("campaignFocus")?.value||"balanced",
     place:document.getElementById("campaignPlace")?.value||"either"
   };
-  const priority=skills.filter(skill=>getSkillPriority(skill)==="priority");
-  const secondary=skills.filter(skill=>getSkillPriority(skill)!=="priority");
+  const cycle=cycleOverride||amsterdamQuestCycleKey();
+   const completed=questCompletionLedger(cycle);
+   const priority=skills.filter(skill=>getSkillPriority(skill,cycle)==="priority");
+  const secondary=skills.filter(skill=>getSkillPriority(skill,cycle)!=="priority");
   const ordered=[...priority.sort((a,b)=>focusScore(b,settings.focus)-focusScore(a,settings.focus)),...secondary.sort((a,b)=>focusScore(b,settings.focus)-focusScore(a,settings.focus))];
   const chosen=[];const usedTitles=new Set();
   // Selected time prioritizes Main Quests; it never caps the number of selected skills receiving quests.
   for(const skill of ordered){
-    const quest=pickCampaignQuest(skill,settings,usedTitles,Infinity);
+     if(completed[skill])continue;
+     const quest=pickCampaignQuest(skill,settings,usedTitles,Infinity);
     if(!quest)continue;
     const minutes=quest._minutes;
     const chosenPlace=quest._place||settings.place;
@@ -409,7 +455,7 @@ function generateQuests(opts,automatic=false,cycleOverride=null){
   }
   // If an adventure/social focus is chosen, make the campaign feel connected through a shared plan note.
   if(chosen.length>1){
-    const lead=chosen.find(q=>getSkillPriority(q.skill)==="priority")||chosen[0];
+    const lead=chosen.find(q=>getSkillPriority(q.skill,cycle)==="priority")||chosen[0];
     const support=chosen.filter(q=>q.id!==lead.id);
     if(settings.focus==="adventure"&&support.some(q=>/Social Interactions|Relationships|Conversation|Networking|Hosting/.test(q.skill)))lead.description += " Treat any natural, comfortable interaction during the outing as progress toward your social skills too.";
     if(settings.focus==="social"&&support.some(q=>/Adventure|Walking & Hiking|Photography|Geography/.test(q.skill)))lead.description += " If it feels practical, choose a public place or activity that gives you a natural shared topic to talk about.";
@@ -470,7 +516,8 @@ function completeQuest(id,done=true){
  if(!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP + ${5+Math.max(0,Number(q.perkBonusGold)||0)} coins${q.perkBonusXp?` (includes ${q.perkBonusXp} ${q.perkThemeName||"theme"} bonus XP)`:""}?`))return;
  // Record completion and award XP immediately, before the visual card animation.
  q.done=true;
- const award=awardQuestRewards(state,q);
+  if(q.source==="generated"&&q.skill)questCompletionLedger(amsterdamQuestCycleKey())[q.skill]=true;
+  const award=awardQuestRewards(state,q);
  const skill=award.skill;
  const perkThemeName=q.perkThemeName||"";
  if(!state.questDays.includes(today()))state.questDays.push(today());
@@ -508,10 +555,10 @@ window.WayfarerTabRenderers.quests = function() {
  const sideGrid = document.getElementById("sideQuestGrid");
  if (mainGrid) mainGrid.innerHTML = mainQuests.length
    ? mainQuests.map(questCard).join("")
-   : '<div class="empty">No main quests yet. Mark one or more selected skills as Priority in the Skills tab, then generate quests.</div>';
+   : '<div class="empty">No main quests today. Choose main quest weekdays in Skills; other days are side quests.</div>';
  if (sideGrid) sideGrid.innerHTML = sideQuests.length
    ? sideQuests.map(questCard).join("")
-   : '<div class="empty">No side quests right now. Select secondary skills and generate quests, or enjoy your clear board.</div>';
+   : '<div class="empty">No side quests right now. Your selected skills appear here on days not scheduled as main quests.</div>';
  // Delegation avoids duplicate completion handlers when the tab is revisited.
  [mainGrid, sideGrid].filter(Boolean).forEach(grid => {
    if (grid.dataset.questActionsBound === "true") return;

@@ -1,3 +1,10 @@
+# Wayfarer v3.1.16 — Weekly skill quest schedule (2026-11-10)
+
+- Replaced Priority/Secondary selectors with Monday–Sunday main-quest scheduling for each selected skill. Unscheduled weekdays are side quests. Weekdays use the 04:00 Europe/Amsterdam quest-cycle date, including DST.
+- Skill selection saves immediately; newly selected skills get a generated quest immediately, and deselection removes generated quests. Adventure and custom quests remain intact.
+- Completed generated quests are remembered by skill and quest cycle across deselection, reselection and refresh. No repeat quest or rewards until the next cycle. Migrate existing Priority to seven main days and Secondary to zero main days, preserving XP and progress.
+- Preserve theme/artifact reward snapshots, Sandbox isolation, cloud save and automatic daily regeneration. Static validation only; live browser/Supabase checks pending.
+
 # Wayfarer v3.1.15 — Andalusian Serenade Guitar theme and artifact (released)
 
 - Register Guitar's Andalusian Serenade theme, 5 standard levels, and The Serenader's Guitar artifact, 3 standard levels, using existing purchase, inventory, equipment, Sandbox, skill reward snapshots, and synergy services.

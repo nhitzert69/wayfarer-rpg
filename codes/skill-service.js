@@ -20,10 +20,20 @@
     state.selectedSkills=state.selectedSkills.filter(s=>root.allSkillNames().includes(s));
     if(!state.skillXp||typeof state.skillXp!=="object")state.skillXp={};
     if(!state.skillPriorities||typeof state.skillPriorities!=="object")state.skillPriorities={};
-    state.selectedSkills.forEach(skill=>{if(!["priority","secondary"].includes(state.skillPriorities[skill]))state.skillPriorities[skill]="secondary";});
-    Object.keys(state.skillPriorities).forEach(skill=>{if(!state.selectedSkills.includes(skill))delete state.skillPriorities[skill];});
+    if(!state.skillWeekdays||typeof state.skillWeekdays!=="object"||Array.isArray(state.skillWeekdays))state.skillWeekdays={};
+    for(const skill of state.selectedSkills){
+      if(!Object.prototype.hasOwnProperty.call(state.skillWeekdays,skill))state.skillWeekdays[skill]=state.skillPriorities[skill]==="priority"?[0,1,2,3,4,5,6]:[];
+    }
+    for(const [skill,days] of Object.entries(state.skillWeekdays)){
+      if(!root.allSkillNames().includes(skill)){delete state.skillWeekdays[skill];continue;}
+      state.skillWeekdays[skill]=Array.isArray(days)?[...new Set(days.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<=6))].sort((a,b)=>a-b):[];
+    }
   };
-  root.getSkillPriority=function(skill){root.ensureSelectedSkills();return state.skillPriorities[skill]||"secondary";};
+  root.skillWeekdayForCycle=function(cycle){
+    const key=/^\d{4}-\d{2}-\d{2}$/.test(String(cycle||""))?cycle:typeof amsterdamQuestCycleKey==="function"?amsterdamQuestCycleKey():new Date().toISOString().slice(0,10);
+    return (new Date(key+"T12:00:00Z").getUTCDay()+6)%7;
+  };
+  root.getSkillPriority=function(skill,cycle){root.ensureSelectedSkills();return state.skillWeekdays[skill]?.includes(root.skillWeekdayForCycle(cycle))?"priority":"secondary";};
   root.skillDescription=function(name){for(const c of skillCatalog){const found=c.skills.find(s=>s[0]===name);if(found)return found[1];}return "";};
   root.xpNeededForNextLevel=function(level){
     level=Math.max(1,Math.floor(Number(level)||1));
