@@ -1,10 +1,13 @@
 # Wayfarer RPG — Bug Test Rules (MANDATORY)
-Version: v3.1.29 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
+Version: v3.1.30 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
 
 ## 0. Purpose, ownership and non-negotiable maintenance
 This is the authoritative repeatable end-to-end and regression test plan for Wayfarer RPG. Read this document before every full QA run, release validation, bug fix and feature update, together with `update rules` and applicable `theme creation rules.md` and `artifact rules.md`. The source of truth is the current live main branch, not a ZIP, cached build, old report or assumptions. If a referenced rules file is absent, record that discrepancy; do not invent its contents. The former `game rules.md` has been retired; game requirements now live in `update rules`.
 
 Every update, including documentation-only changes, MUST review and revise this file: compare the current navigation, registries, features, state fields, rules, prices, levels, unlocks, admin permissions, file paths, service-worker cache and release version against actual source. Add new test cases for new behavior and failure modes; revise obsolete tests, remove references to removed UI, and preserve historical regression coverage. Update this header's version and review date and record the QA-plan change in the top CHANGELOG entry. Never silently carry forward an outdated test plan. Do not mark a test PASS merely because it is written here.
+
+## v3.1.30 — Chess match lifecycle and color selection
+- Fresh account: only New Game visible; click to choose White/Black or Cancel. White starts as red Catholic, Black starts as purple Orthodox with rotated board and Stockfish moving first. During match only Resign visible. After resign, win, loss or draw only New Game visible. Confirm selected side, PGN, Elo, history and account isolation survive refresh. Verify no simultaneous duplicate engine move or unauthorized move while engine is thinking. Browser validation pending.
 
 ## v3.1.29 — Chess interaction regression
 - Test iPhone Safari first pawn tap, highlighted destination, move, Stockfish reply, New Game before and after a move, resignation, PGN persistence and worker failure/loading. Confirm status feedback and account isolation. Browser testing pending.
