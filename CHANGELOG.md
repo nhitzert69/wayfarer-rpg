@@ -1,3 +1,8 @@
+## v3.1.30 — Chess side selection and contextual controls (2026-11-10)
+- New Game now opens White (Catholic red) / Black (Orthodox purple) selection when no game is active. Resign is displayed only during a game; New Game returns after game conclusion. Black-side games rotate the board and Stockfish opens as White.
+- Updated computer-turn checks and winner accounting for either player color; preserved existing saved games, PGN and Elo history. New accounts start with no active match.
+- Updated PWA cache, rules and QA suite. Browser testing pending; previously noted automatic cache freshness remains outstanding.
+
 ## v3.1.29 — Chess interaction and New Game feedback (2026-11-10)
 - Removed engine-readiness gate from human chess moves; Stockfish still waits for initialization. Added selection and move feedback, explicit engine loading/failure feedback, and New Game confirmation/selection reset.
 - Updated PWA cache, rules and QA plan. Live browser verification pending; broader cache freshness still outstanding.
