@@ -1,8 +1,8 @@
 /* Wayfarer Chess: chess.js rules and Stockfish ASM UCI worker, lazy loaded. */
 (()=>{
 const CHESS_URL="https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js";
-const ENGINE_URLS=["https://unpkg.com/stockfish@19.0.1/bin/stockfish-19-asm.js","https://cdn.jsdelivr.net/npm/stockfish@19.0.1/bin/stockfish-19-asm.js"];
-let ChessClass=null, game=null, worker=null, selected=null, busy=false, initialized=false, engineReady=false, requestId=0, loadedAccount="", engineError="", chessNotice="", choosingSide=false, pendingPromotion=null;
+const ENGINE_URLS=["https://unpkg.com/stockfish@19.0.1/bin/stockfish-19-asm.js"]; // Verified fallback endpoint removed (HTTP 403).
+let ChessClass=null, game=null, worker=null, selected=null, busy=false, initialized=false, engineReady=false, requestId=0, loadedAccount="", engineError="", chessNotice="", choosingSide=false, pendingPromotion=null, moveTimer=null, engineFailed=false;
 const root=()=>document.getElementById("chessRoot");
 const data=()=>{if(!state.chess||typeof state.chess!=="object")state.chess={elo:800,wins:0,losses:0,draws:0,history:[],pgn:"",active:false,color:"w"};return state.chess;};
 const local=()=>data().mode==="local";
@@ -15,9 +15,9 @@ const strength=()=>Math.max(0,Math.min(20,Math.round((target()-400)/100)));
 const opponent=()=>Math.max(400,target());
 function finish(result){const d=data();if(!d.active)return;if(local()){d.active=false;d.localHistory=d.localHistory||[];d.localHistory.unshift({date:new Date().toISOString(),result,pgn:game.pgn()});d.localHistory=d.localHistory.slice(0,50);chessNotice=result;persist();draw();return;}d.active=false;const score=result==="win"?1:result==="draw"?.5:0;const expected=1/(1+Math.pow(10,(opponent()-d.elo)/400));const delta=Math.round(24*(score-expected));d.elo=Math.max(100,Math.min(3000,d.elo+delta));d[result==="win"?"wins":result==="loss"?"losses":"draws"]++;d.history.unshift({date:new Date().toISOString(),result,delta,elo:d.elo,pgn:game.pgn()});d.history=d.history.slice(0,50);persist();draw();}
 function terminal(){if(!game.isGameOver())return false;if(local()){finish(game.isDraw()?"Draw":game.isCheckmate()?(game.turn()==="w"?"Black wins":"White wins"):"Draw");}else finish(game.isDraw()?"draw":game.isCheckmate()?(game.turn()===human()?"loss":"win"):"draw");return true;}
-function stop(){requestId++;busy=false;if(worker&&engineReady)worker.postMessage("stop");}
-function newGame(color){if(data().active)return;stop();selected=null;pendingPromotion=null;choosingSide=false;engineError="";game=new ChessClass();const d=data();d.pgn="";d.active=true;d.mode=color==="local"?"local":"engine";d.color=color==="b"?"b":"w";chessNotice=local()?"Local two-player match started. White moves first.":"New game started. You play "+(human()==="w"?"White (red Catholic).":"Black (purple Orthodox).");persist();draw();if(!local()&&game.turn()===computer())engineMove();}
-function engineMove(){if(local()||!game||!data().active||game.turn()!==computer()||busy)return;if(!engineReady){chessNotice="Waiting for Stockfish to finish loading.";draw();return;}busy=true;const id=++requestId;worker.postMessage("setoption name UCI_LimitStrength value true");worker.postMessage("setoption name UCI_Elo value "+target());worker.postMessage("setoption name Skill Level value "+strength());worker.postMessage("position fen "+game.fen());worker.postMessage("go movetime 500");worker._moveId=id;draw();}
+function stop(){clearTimeout(moveTimer);moveTimer=null;requestId++;busy=false;if(worker&&engineReady)worker.postMessage("stop");}
+function newGame(color){if(data().active)return;stop();selected=null;pendingPromotion=null;choosingSide=false;engineError="";game=new ChessClass();const d=data();d.pgn="";d.active=true;d.mode=color==="local"?"local":"engine";d.color=color==="b"?"b":"w";chessNotice=local()?"Local two-player match started. White moves first.":"New game started. You play "+(human()==="w"?"White (red Catholic).":"Black (purple Orthodox).");persist();draw();if(!local()&&(!engineReady||engineFailed))retryEngine();else if(!local()&&game.turn()===computer())engineMove();}
+function engineMove(){if(local()||!game||!data().active||game.turn()!==computer()||busy)return;if(!engineReady){chessNotice="Waiting for Stockfish to finish loading.";draw();return;}busy=true;const id=++requestId;worker.postMessage("setoption name UCI_LimitStrength value true");worker.postMessage("setoption name UCI_Elo value "+target());worker.postMessage("setoption name Skill Level value "+strength());worker.postMessage("position fen "+game.fen());worker.postMessage("go movetime 500");worker._moveId=id;clearTimeout(moveTimer);const current=worker;moveTimer=setTimeout(()=>{if(worker===current&&busy&&requestId===id){stop();engineError="Stockfish move timed out. Retry Engine to continue.";engineFailed=true;engineReady=false;current.terminate();worker=null;draw();}},12000);draw();}
 function draw(){
  const el=root();if(!el||!game)return;const d=data();
  const legal=d.active&&selected?game.moves({square:selected,verbose:true}).map(m=>m.to):[];
@@ -40,12 +40,14 @@ function draw(){
   html+='<button class="christendom-action" id="chessResign" type="button" aria-label="Resign"><img alt="" src="'+assets+'resign.png"></button>';
  }
  html+='</div>';
+ if(!local()&&engineFailed)html+='<button class="btn secondary" id="chessRetryEngine" type="button">Retry Engine</button>';
  if(!d.active&&choosingSide)html+='<div class="card" role="group" aria-label="Choose chess mode"><strong>Choose a match</strong><div class="row" style="flex-wrap:wrap;gap:10px;margin-top:10px"><button class="btn" id="chessWhite" type="button">Vs Stockfish · White</button><button class="btn secondary" id="chessBlack" type="button">Vs Stockfish · Black</button><button class="btn" id="chessLocal" type="button">Local · 2 players</button><button class="btn secondary" id="chessCancel" type="button">Cancel</button></div></div>';
  if(d.active&&pendingPromotion)html+='<div class="card" role="group" aria-label="Choose promotion"><strong>Promote pawn to:</strong><div class="row" style="flex-wrap:wrap;gap:8px;margin-top:8px">'+["q","r","b","n"].map((p,i)=>'<button type="button" class="btn secondary" data-promotion="'+p+'">'+["Queen","Rook","Bishop","Knight"][i]+'</button>').join("")+'<button type="button" class="btn secondary" id="chessPromotionCancel">Cancel</button></div></div>';
  html+='<p class="sub">Stockfish matches affect your Wayfarer Elo. Local two-player games do not. Internet is required to load chess rules; Stockfish matches also need the engine.</p>';
  if(d.history.length)html+='<details><summary>Recent games ('+d.history.length+')</summary><ol>'+d.history.slice(0,12).map(x=>'<li>'+escape(x.result)+' · '+(x.delta>=0?"+":"")+x.delta+' Elo · '+escape(x.elo)+'</li>').join("")+'</ol></details>';
  el.innerHTML=html;
  el.querySelectorAll("[data-square]").forEach(b=>b.addEventListener("click",()=>clickSquare(b.dataset.square)));
+ const retryBtn=el.querySelector("#chessRetryEngine");if(retryBtn)retryBtn.onclick=()=>retryEngine();
  const newBtn=el.querySelector("#chessNew");
  if(newBtn)newBtn.onclick=()=>{choosingSide=true;chessNotice="Choose White or Black to start.";draw();};
  const whiteBtn=el.querySelector("#chessWhite");
@@ -88,10 +90,11 @@ function clickSquare(sq){
  chessNotice=selected?"Selected "+selected+". Choose a highlighted destination.":"Select a piece of the side to move.";
  draw();
 }
+function retryEngine(){if(local())return;stop();if(worker){worker.terminate();worker=null;}engineFailed=false;engineReady=false;engineError="Restarting Stockfish…";draw();startEngine(0);}
 function startEngine(attempt=0){
  if(attempt>=ENGINE_URLS.length){
-  engineReady=false;busy=false;
-  engineError="Stockfish could not load from either provider. Your match is saved; reconnect and reopen Chess to retry.";
+  engineReady=false;busy=false;engineFailed=true;
+  engineError="Stockfish could not load. Your match is saved; select Retry Engine.";
   draw();return;
  }
  try{
@@ -119,12 +122,12 @@ function startEngine(attempt=0){
    const line=String(ev.data);
    if(line.startsWith("wayfarer-engine-load-error:")){fail(line);return;}
    if(line.includes("uciok")){
-    ready=true;clearTimeout(timeout);engineReady=true;engineError="";draw();
+    ready=true;clearTimeout(timeout);engineReady=true;engineFailed=false;engineError="";draw();
     if(data().active&&!local()&&game?.turn()===computer())engineMove();
    }
    const match=line.match(/bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/);
    if(match&&busy&&!local()&&current._moveId===requestId&&game?.turn()===computer()){
-    busy=false;
+    busy=false;clearTimeout(moveTimer);moveTimer=null;
     try{
      game.move({from:match[1].slice(0,2),to:match[1].slice(2,4),promotion:match[1][4]||"q"});
      selected=null;chessNotice="Stockfish played "+match[1].slice(0,4)+".";
@@ -137,6 +140,6 @@ function startEngine(attempt=0){
   current.postMessage("uci");
  }catch(e){console.warn("Stockfish startup failed",e);engineError="Retrying Stockfish…";draw();startEngine(attempt+1);}
 }
-async function init(){const el=root();if(!el)return;const account=String(cloudUser?.id||"");if(!account)return;if(initialized&&loadedAccount===account){draw();return;}loadedAccount=account;initialized=true;engineReady=false;engineError="";chessNotice="";selected=null;choosingSide=false;pendingPromotion=null;busy=false;if(worker){worker.terminate();worker=null;}el.textContent="Loading chess rules and Stockfish…";try{if(!ChessClass){const mod=await import(CHESS_URL);ChessClass=mod.Chess;}game=new ChessClass();const d=data();if(d.active&&d.pgn){try{game.loadPgn(d.pgn);}catch(e){d.pgn="";game.reset();}}if(d.active&&game.isGameOver())terminal();draw();if(!local())startEngine();}catch(e){el.textContent="Chess could not load. Check your internet connection and reopen this tab.";console.error("Chess dependency failed",e);initialized=false;}}
+async function init(){const el=root();if(!el)return;const account=String(cloudUser?.id||"");if(!account)return;if(initialized&&loadedAccount===account){draw();if(!local()&&engineFailed)retryEngine();return;}loadedAccount=account;initialized=true;engineReady=false;engineFailed=false;engineError="";chessNotice="";selected=null;choosingSide=false;pendingPromotion=null;busy=false;if(worker){worker.terminate();worker=null;}clearTimeout(moveTimer);moveTimer=null;el.textContent="Loading chess rules and Stockfish…";try{if(!ChessClass){const mod=await import(CHESS_URL);ChessClass=mod.Chess;}game=new ChessClass();const d=data();if(d.active&&d.pgn){try{game.loadPgn(d.pgn);}catch(e){d.pgn="";game.reset();}}if(d.active&&game.isGameOver())terminal();draw();if(!local())startEngine();}catch(e){el.textContent="Chess could not load. Check your internet connection and reopen this tab.";console.error("Chess dependency failed",e);initialized=false;}}
 window.WayfarerTabModules=window.WayfarerTabModules||{};window.WayfarerTabRenderers=window.WayfarerTabRenderers||{};window.WayfarerTabModules.chess=()=>{if(document.querySelector(".tab.active")?.dataset.tab==="chess")init();};window.WayfarerTabRenderers.chess=()=>{if(initialized&&game&&loadedAccount===String(cloudUser?.id||""))draw();else init();};
 })();
