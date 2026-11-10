@@ -1,5 +1,11 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.26 — Signed-out navigation and Debug section isolation
+- Signed-out accounts must see only the Settings subtab and its login content; hide every group selector and all other subtabs, prevent group switching and redirect any attempted tab activation to Settings. Never persist guest attempts as a signed-in preferred tab.
+- Only the selected `.section.active` may be displayed. Account authorization must hide Debug and Reflux content for unauthorized accounts and must never set inactive sections to inline display values that override the active-section CSS.
+- Test initial load, logout, sign-in, refresh, switching groups, authorized Admin, non-admin and account-scoped tab restoration.
+
+
 ## v3.1.25 — Christendom chess art and retired game rules
 - Game requirements now live in `update rules`; `game rules.md` is retired and must not block game updates.
 - Chess uses `assets/Chess/` with red Catholic White pieces, purple Orthodox Black pieces, ornate board/frame, and New Game/Resign button artwork. Preserve legal chess, engine, Elo, saved PGN, result recording, authorization and account isolation. Test square alignment on mobile and desktop, check/highlight readability, loading failures and asset decoding.
