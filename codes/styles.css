@@ -14,7 +14,7 @@ h1,h2,h3,p{margin-top:0} h1{font:700 24px Georgia,serif;letter-spacing:.5px;marg
 .progress{height:9px;background:#100e0c;border:1px solid #60472a;border-radius:999px;overflow:hidden;margin:13px 0 7px}.progress>div{height:100%;width:0;background:linear-gradient(90deg,#9b6a2c,#f1d18b);transition:width .25s}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
 .stat{padding:12px;background:#120f0d55;border:1px solid #5a422b;border-radius:12px}.stat b{display:block;font:700 19px Georgia,serif;color:var(--gold)}.stat span{font-size:11px;color:var(--muted)}
-.tabs{display:flex;gap:7px;overflow:auto;padding:14px 0 12px;position:sticky;top:0;z-index:5;background:#15120feF}
+.tabs{display:flex;gap:7px;overflow:auto;padding:14px 0 12px;position:static;z-index:auto;background:#15120feF}
 .tab{border:1px solid var(--line);border-radius:10px;background:#211a14;color:var(--muted);padding:9px 13px;white-space:nowrap}.tab.active{background:#604321;color:#fff0ce;border-color:var(--gold2)}
 .section{display:none}.section.active{display:block}
 .sectionHead{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:10px 0 14px}.sectionHead h2{font:700 23px Georgia,serif;margin:0}.sectionHead p{color:var(--muted);font-size:12px;margin:4px 0 0}
@@ -614,3 +614,6 @@ body.andalusianSerenadeTheme .progress,body.andalusianSerenadeTheme .xpBar{backg
 .christendom-action:hover{filter:brightness(1.12)}
 .christendom-action:focus-visible{outline:3px solid #ffdf8c;outline-offset:2px;border-radius:8px}
 .christendom-action:disabled{opacity:.4;cursor:not-allowed}
+
+/* v3.1.28 — Grouped navigation scrolls naturally instead of overlapping content on iOS. */
+.wayfarer-groups,.wayfarer-subtabs{position:static!important;top:auto!important;z-index:auto!important;overflow:visible}
