@@ -1,3 +1,10 @@
+# Wayfarer v3.1.19 — Skills and Sandbox date regression fixes (2026-11-10)
+
+- Fixed WF-317-001: define and normalize per-skill weekday arrays before rendering Skills; move quest reconciliation ahead of fallible Skills UI rerender so partial deselection removes generated quests immediately.
+- Fixed WF-317-002: Skills Save no longer overwrites selectedSkills from potentially blank/broken checkbox markup; reject unavailable catalog and preserve existing selections.
+- Fixed WF-317-003: use one effective Sandbox Time Machine cycle for generated quests, Main/Side classification, completion ledger and selection sync; preserve simulated activeDate across generation and use UTC-safe consecutive day advancement. Normal mode still uses 04:00 Europe/Amsterdam.
+- Updated `update rules` and `bugtest rules.md` with mandatory targeted regression cases. Static JavaScript syntax checks passed; live browser/Supabase retesting pending.
+
 # Wayfarer v3.1.18 — Permanent full-app bug-testing rules (2026-11-10)
 
 - Added root `bugtest rules.md`: comprehensive fresh-account and regression QA covering all current tabs, weekly quest schedules, 04:00 Amsterdam rollover, completion exploits, themes, artifacts, rewards, Supabase, account/Sandbox isolation, Admin Reflux, assets/audio, mobile, PWA/offline, failure paths and reporting.

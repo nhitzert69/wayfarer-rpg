@@ -376,6 +376,13 @@ function updateGenerateButtonStatus(){
  button.title="Generate a fresh set of quests for selected skills in the isolated Admin Sandbox.";
  if(!visible)openCampaignPlanner(false);
 }
+// Resolve a single quest-cycle date across generation, rendering and Sandbox Time Machine.
+function effectiveQuestCycle(override=null){
+ if(/^\d{4}-\d{2}-\d{2}$/.test(String(override||"")))return override;
+ if(debugSandboxActive&&/^\d{4}-\d{2}-\d{2}$/.test(String(state.activeDate||"")))return state.activeDate;
+ return amsterdamQuestCycleKey();
+}
+window.WayfarerEffectiveQuestCycle=effectiveQuestCycle;
 // Track completed generated quests by skill and 04:00 Amsterdam quest cycle.
 function questCompletionLedger(cycle){
  if(!state.completedSkillQuestCycles||typeof state.completedSkillQuestCycles!=="object"||Array.isArray(state.completedSkillQuestCycles))state.completedSkillQuestCycles={};
@@ -390,7 +397,7 @@ function questCompletionLedger(cycle){
 function syncSelectedSkillQuests(){
  ensureSelectedSkills();
  if(typeof checkDailyQuestReset==="function")checkDailyQuestReset();
- const cycle=amsterdamQuestCycleKey(),completed=questCompletionLedger(cycle);
+ const cycle=effectiveQuestCycle(),completed=questCompletionLedger(cycle);
  const selected=new Set(state.selectedSkills);
  if(!Array.isArray(state.quests))state.quests=[];
  let changed=false;
@@ -424,7 +431,7 @@ function generateQuests(opts,automatic=false,cycleOverride=null){
   if(!automatic&&(!debugSandboxActive||!debugIsAdmin())){toast("Manual quest generation is available only in Admin Sandbox.");return;}
   const skills=[...state.selectedSkills];
   if(!skills.length){
-   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=(cycleOverride||amsterdamQuestCycleKey());save();return;}
+   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=effectiveQuestCycle(cycleOverride);save();return;}
    openCampaignPlanner(false);toast("Choose at least one skill in the Skills tab first.");updateGenerateButtonStatus();return;}
   const preserveExisting=false;
   if(!state.questHistory||typeof state.questHistory!=="object")state.questHistory={};
@@ -434,7 +441,7 @@ function generateQuests(opts,automatic=false,cycleOverride=null){
     focus:document.getElementById("campaignFocus")?.value||"balanced",
     place:document.getElementById("campaignPlace")?.value||"either"
   };
-  const cycle=cycleOverride||amsterdamQuestCycleKey();
+  const cycle=effectiveQuestCycle(cycleOverride);
    const completed=questCompletionLedger(cycle);
    const priority=skills.filter(skill=>getSkillPriority(skill,cycle)==="priority");
   const secondary=skills.filter(skill=>getSkillPriority(skill,cycle)!=="priority");
@@ -462,7 +469,7 @@ function generateQuests(opts,automatic=false,cycleOverride=null){
     if(settings.focus==="balanced")lead.description += " Use this as the anchor for today's session; fit the supporting quests around it where practical.";
   }
   if(!chosen.length){
-   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=(cycleOverride||amsterdamQuestCycleKey());save();return;}
+   if(automatic){state.quests=[];state.lastGeneratedSkills=[];state.questGenerationCooldownUntil=0;state.lastDailyQuestCycle=effectiveQuestCycle(cycleOverride);save();return;}
    openCampaignPlanner(false);toast("No eligible quests were found in the quest library for the selected skills. Existing quests were kept.");updateGenerateButtonStatus();return;}
   if(preserveExisting){
     const existingIds=new Set((state.quests||[]).map(q=>String(q.id)));
@@ -473,8 +480,8 @@ function generateQuests(opts,automatic=false,cycleOverride=null){
     state.lastGeneratedSkills=[...state.selectedSkills];
     state.questGenerationCooldownUntil=0;
   }
-  state.activeDate=today();
-  if(automatic)state.lastDailyQuestCycle=(cycleOverride||amsterdamQuestCycleKey());
+  state.activeDate=debugSandboxActive?effectiveQuestCycle(cycleOverride):today();
+  if(automatic)state.lastDailyQuestCycle=effectiveQuestCycle(cycleOverride);
   save();
   updateGenerateButtonStatus();
   openCampaignPlanner(false);
@@ -516,7 +523,7 @@ function completeQuest(id,done=true){
  if(!window.confirm(`Complete “${q.title}” and claim +${Number(q.xp)||0} XP + ${5+Math.max(0,Number(q.perkBonusGold)||0)} coins${q.perkBonusXp?` (includes ${q.perkBonusXp} ${q.perkThemeName||"theme"} bonus XP)`:""}?`))return;
  // Record completion and award XP immediately, before the visual card animation.
  q.done=true;
-  if(q.source==="generated"&&q.skill)questCompletionLedger(amsterdamQuestCycleKey())[q.skill]=true;
+  if(q.source==="generated"&&q.skill)questCompletionLedger(effectiveQuestCycle())[q.skill]=true;
   const award=awardQuestRewards(state,q);
  const skill=award.skill;
  const perkThemeName=q.perkThemeName||"";
@@ -549,8 +556,8 @@ window.WayfarerTabRenderers = window.WayfarerTabRenderers || {};
 window.WayfarerTabRenderers.quests = function() {
  const quests = Array.isArray(state?.quests) ? state.quests : [];
  const activeQuests = quests.filter(q => q && !q.done);
- const mainQuests = activeQuests.filter(q => getSkillPriority(q.skill) === "priority");
- const sideQuests = activeQuests.filter(q => getSkillPriority(q.skill) !== "priority");
+ const mainQuests = activeQuests.filter(q => getSkillPriority(q.skill,effectiveQuestCycle()) === "priority");
+ const sideQuests = activeQuests.filter(q => getSkillPriority(q.skill,effectiveQuestCycle()) !== "priority");
  const mainGrid = document.getElementById("mainQuestGrid");
  const sideGrid = document.getElementById("sideQuestGrid");
  if (mainGrid) mainGrid.innerHTML = mainQuests.length

@@ -24,7 +24,7 @@ window.WayfarerTabRenderers.skills.renderSkillCatalog = function(){
  ensureSelectedSkills();
  root.innerHTML=skillCatalog.filter(cat=>debugSandboxActive||!cat.skills.some(skill=>skill[0]==="Test")).map(cat=>`<div class="skillCategory"><h3>${cat.icon} ${esc(cat.category)}</h3><div class="skillChoices">${cat.skills.map(([name,desc])=>{
    const selected=state.selectedSkills.includes(name);
-   const priority=getSkillPriority(name);
+   const weekdays=Array.isArray(state.skillWeekdays?.[name])?state.skillWeekdays[name]:[];
    return `<div class="skillChoice" style="display:flex;align-items:flex-start;gap:10px"><input type="checkbox" data-skill-choice="${esc(name)}" aria-label="Select ${esc(name)}" ${selected?"checked":""}><span style="flex:1;min-width:0"><strong>${esc(name)}</strong><small>${esc(desc)}</small>${selected?`<div style="margin-top:9px;font-size:12px;color:var(--gold)">Main quest days <div role="group" aria-label="${esc(name)} main quest days" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((day,i)=>`<label style="display:inline-flex;align-items:center;gap:3px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;color:var(--cream);cursor:pointer"><input type="checkbox" data-skill-weekday="${esc(name)}" data-weekday="${i}" ${weekdays.includes(i)?"checked":""}>${day}</label>`).join("")}</div><small>Other days: side quest. Changes save automatically.</small></div>`:""}</span></div>`;
  }).join("")}</div></div>`).join("");
  const count=document.getElementById("selectedSkillCount");
@@ -40,9 +40,12 @@ if(skillCatalogRoot&&!skillCatalogRoot.dataset.wayfarerSkillActionsBound){
    const name=input.dataset.skillChoice;
    if(input.checked){if(!state.selectedSkills.includes(name))state.selectedSkills.push(name);}
    else state.selectedSkills=state.selectedSkills.filter(s=>s!==name);
-   ensureSelectedSkills();save(true);renderSkillCatalog();renderSkillProgress();
+   ensureSelectedSkills();
+   // Persist selection first, but never allow a broken catalog render to prevent quest reconciliation.
+   save(true);
    if(typeof window.WayfarerSyncSelectedSkillQuests==="function")window.WayfarerSyncSelectedSkillQuests();
-   else if(typeof loadWayfarerTab==="function")loadWayfarerTab("quests").then(ok=>{if(ok)window.WayfarerSyncSelectedSkillQuests?.();});
+   else if(typeof loadWayfarerTab==="function")loadWayfarerTab("quests").then(ok=>{if(ok)window.WayfarerSyncSelectedSkillQuests?.();}).catch(error=>console.error("Quest reconciliation failed:",error));
+   try{renderSkillCatalog();renderSkillProgress();}catch(error){console.error("Skill catalog render failed after selection:",error);toast("Skill saved, but the catalog could not refresh.");}
    return;
   }
   const dayInput=event.target.closest("[data-skill-weekday]");
@@ -66,16 +69,18 @@ if(saveSkillsButton&&!saveSkillsButton.dataset.wayfarerSkillSaveBound){
  saveSkillsButton.dataset.wayfarerSkillSaveBound="true";
  saveSkillsButton.addEventListener("click",function(event){
  event.preventDefault();
+ // The checkbox change handler already updates state. Never infer an empty
+ // selection from a blank/failed catalog; that would destroy saved choices.
  const catalog=document.getElementById("skillCatalog");
- if(catalog){
-   state.selectedSkills=Array.from(catalog.querySelectorAll("[data-skill-choice]:checked"))
-     .map(input=>input.getAttribute("data-skill-choice"))
-     .filter(name=>allSkillNames().includes(name));
+ if(!catalog||!catalog.querySelector("[data-skill-choice]")){
+   toast("Skills catalog unavailable; existing selections were preserved.");
+   return;
  }
  ensureSelectedSkills();
  try{
    // Core save owns local/cloud persistence and enforces Sandbox isolation.
    save(true);
+   if(typeof window.WayfarerSyncSelectedSkillQuests==="function")window.WayfarerSyncSelectedSkillQuests();
    renderSkillProgress();
    renderSkillCatalog();
    window.scrollTo({top: 0, behavior: "smooth"});

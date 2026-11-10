@@ -1,5 +1,5 @@
 # Wayfarer RPG — Bug Test Rules (MANDATORY)
-Version: v3.1.18 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
+Version: v3.1.19 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
 
 ## 0. Purpose, ownership and non-negotiable maintenance
 This is the authoritative repeatable end-to-end and regression test plan for Wayfarer RPG. Read this document before every full QA run, release validation, bug fix and feature update, together with `update rules` and applicable `theme creation rules.md` and `artifact rules.md`. The source of truth is the current live main branch, not a ZIP, cached build, old report or assumptions. If a referenced rules file is absent, record that discrepancy; do not invent its contents. In particular, verify whether `game rules.md` exists before claiming it was read.
@@ -97,5 +97,11 @@ Every test case: ID, area, scenario, preconditions, exact steps, expected outcom
 
 Deliver: executive summary; full test matrix; pass/fail/blocked counts; prioritized bug list; source-level analysis; account/Sandbox isolation evidence; mobile screenshots; asset/network/console summary; release readiness and untested risks; suggested fix order. Never mark a test PASS solely on code inspection, syntax validation, or an earlier release's report. Do not edit code during an audit unless explicitly authorized. If critical/high defects remain or account isolation/persistence cannot be verified, state release risk clearly and do not certify the release as fully tested.
 
-## 16. Mandatory update checklist for future maintainers
+## 16. v3.1.19 targeted regression gates (WF-317-001/002/003)
+- WF-317-001: Existing selected Adventure/Piano profile opens Skills without a console exception, shows all seven weekdays, and retains selections. Selecting Guitar immediately creates exactly one generated quest. Deselecting Guitar while Adventure remains selected removes Guitar's generated quest but keeps Adventure's; reselect unfinished Guitar restores one quest.
+- WF-317-002: With two saved selections, simulate catalog-render failure or empty catalog markup; pressing Save must preserve both selections, XP, schedules and board, and must not show a false success toast. Deliberately deselecting all through working controls must still clear only generated quests. Reload and check persistence.
+- WF-317-003: In authorized Sandbox, advance +1 day twice; each activeDate and lastDailyQuestCycle must advance monotonically. A Wednesday-only skill must appear Main on simulated Wednesday, Side on Thursday. Complete, deselect and reselect on simulated Wednesday: no duplicate; next simulated day may generate fresh quest. Normal mode must ignore Sandbox simulated dates and retain 04:00 Amsterdam DST-safe rollover.
+- Test all above with empty and legacy accounts, 0/3/7 weekdays, rapid toggles, reload, mobile 375/430px and error logs. Keep separate static and real-browser evidence.
+
+## 17. Mandatory update checklist for future maintainers
 On EVERY Wayfarer update: [ ] read live main + all applicable rules; [ ] inspect new/removed UI, tabs, data fields and registries; [ ] update this file's version/date; [ ] revise scenarios and expected behavior; [ ] add boundary/negative/regression tests for changed behavior; [ ] confirm privacy/Sandbox/legacy migration coverage; [ ] align release identifiers and top CHANGELOG entry; [ ] run static checks; [ ] run accessible real-browser tests or explicitly report blockers; [ ] verify main commit and deployed build separately. Documentation-only releases must also complete the review and version/changelog/cache steps.

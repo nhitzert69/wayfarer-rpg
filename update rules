@@ -1,5 +1,11 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.19 — Skills catalog, safe save and Sandbox cycle regression fixes
+- Skills catalog must normalize weekday arrays before rendering; no ReferenceError for selected skills. Skill changes must reconcile generated quests before any fallible UI rerender. The Save button must never derive a destructive empty selection from a blank or failed catalog.
+- Resolve one effective quest cycle for Sandbox Time Machine generation, Main/Side rendering, completion ledger and skill synchronization; use the real 04:00 Amsterdam cycle outside Sandbox. Consecutive Time Machine day advances must not reset to real today.
+- Regression-test the three reported WF-317-001/002/003 cases, including a simulated renderer failure, partial deselection, same-cycle completion lock, 0/3/7 weekday schedules and consecutive simulated dates. Preserve cloud/account and Sandbox isolation.
+- Update `bugtest rules.md` alongside this release and record verification limits.
+
 ## v3.1.18 — Permanent bug-testing standard (mandatory)
 - Keep root `bugtest rules.md` permanently in GitHub. Read it before QA and before every application update, including rules-only and documentation-only releases.
 - **Every update MUST review and update `bugtest rules.md` to match the current live repository**: navigation/tabs, UI, data and save paths, new/removed features, theme/artifact registries, permissions, requirements, pricing, reward math, version and asset paths. Update its header version/date, add tests for changed behavior and failure cases, revise obsolete tests, preserve critical regression coverage, and mention the QA-plan revision in the top CHANGELOG entry.
