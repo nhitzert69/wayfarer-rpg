@@ -1,3 +1,9 @@
+# Wayfarer v3.1.18 — Permanent full-app bug-testing rules (2026-11-10)
+
+- Added root `bugtest rules.md`: comprehensive fresh-account and regression QA covering all current tabs, weekly quest schedules, 04:00 Amsterdam rollover, completion exploits, themes, artifacts, rewards, Supabase, account/Sandbox isolation, Admin Reflux, assets/audio, mobile, PWA/offline, failure paths and reporting.
+- Updated `update rules` to require reading and maintaining the bug-testing document on **every** future release, including documentation-only changes; version/date and scenario coverage must track current source.
+- Documentation-only release: no gameplay code changed. Updated Debug release label and service-worker cache to v3.1.18. No browser/Supabase execution claimed.
+
 # Wayfarer v3.1.17 — Theme Store level display (2026-11-10)
 
 - Theme cards show their permanent name and current Level 0/5 through 5/5, like artifacts. One-tier Mastery displays Level 0/1 or 1/1.

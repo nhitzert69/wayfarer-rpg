@@ -1,5 +1,11 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.18 — Permanent bug-testing standard (mandatory)
+- Keep root `bugtest rules.md` permanently in GitHub. Read it before QA and before every application update, including rules-only and documentation-only releases.
+- **Every update MUST review and update `bugtest rules.md` to match the current live repository**: navigation/tabs, UI, data and save paths, new/removed features, theme/artifact registries, permissions, requirements, pricing, reward math, version and asset paths. Update its header version/date, add tests for changed behavior and failure cases, revise obsolete tests, preserve critical regression coverage, and mention the QA-plan revision in the top CHANGELOG entry.
+- Follow the file's complete fresh-account, authorized Sandbox, multi-account, cloud persistence, 04:00 Amsterdam rollover, desktop/mobile, offline, security, and cross-feature regression matrix. Distinguish executed browser tests from static validation and report blocked/untested cases; never claim a release was fully tested from syntax checks alone.
+- Do not delete, rename or bypass this file in later updates without explicit user approval. Keep this rule and `bugtest rules.md` consistent.
+
 ## v3.1.17 — Theme Store level presentation
 - Show theme names and current Level 0/5–5/5 on Store cards like artifacts. Preserve underlying upgrade names/IDs, prices, unlocks and purchase behavior; show fully upgraded themes rather than hiding them. One-tier Mastery displays 0/1–1/1.
 
