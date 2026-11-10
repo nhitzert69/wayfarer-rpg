@@ -1,7 +1,7 @@
 /* Wayfarer Chess: chess.js rules and Stockfish ASM UCI worker, lazy loaded. */
 (()=>{
 const CHESS_URL="https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js";
-const ENGINE_URL="https://cdn.jsdelivr.net/npm/stockfish@19.0.1/bin/stockfish-19-asm.js";
+const ENGINE_URLS=["https://unpkg.com/stockfish@19.0.1/bin/stockfish-19-asm.js","https://cdn.jsdelivr.net/npm/stockfish@19.0.1/bin/stockfish-19-asm.js"];
 let ChessClass=null, game=null, worker=null, selected=null, busy=false, initialized=false, engineReady=false, requestId=0, loadedAccount="", engineError="", chessNotice="", choosingSide=false;
 const root=()=>document.getElementById("chessRoot");
 const data=()=>{if(!state.chess||typeof state.chess!=="object")state.chess={elo:800,wins:0,losses:0,draws:0,history:[],pgn:"",active:false,color:"w"};return state.chess;};
@@ -71,7 +71,55 @@ function clickSquare(sq){
  chessNotice=selected?"Selected "+selected+". Choose a highlighted destination.":"Select one of your pieces.";
  draw();
 }
-function startEngine(){try{const blob=new Blob(['importScripts('+JSON.stringify(ENGINE_URL)+');'],{type:"text/javascript"});const url=URL.createObjectURL(blob);worker=new Worker(url);URL.revokeObjectURL(url);worker.onmessage=ev=>{const line=String(ev.data);if(line.includes("uciok")){engineReady=true;engineError="";draw();if(data().active&&game?.turn()===computer())engineMove();}const match=line.match(/bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/);if(match&&busy&&worker._moveId===requestId&&game?.turn()===computer()){busy=false;try{game.move({from:match[1].slice(0,2),to:match[1].slice(2,4),promotion:match[1][4]||"q"});persist();draw();terminal();}catch(e){console.error("Stockfish illegal move",e);draw();}}};worker.onerror=e=>{engineReady=false;busy=false;engineError="Stockfish failed to load. You can move your pieces, but the opponent cannot respond until the engine is available.";draw();const el=root();if(false&&el)el.insertAdjacentHTML("beforeend",'<p role="alert">Stockfish could not load. Check your connection and reopen Chess.</p>');console.error("Stockfish worker error",e);};worker.postMessage("uci");}catch(e){root().textContent="Unable to start Stockfish: "+e.message;}}
+function startEngine(attempt=0){
+ if(attempt>=ENGINE_URLS.length){
+  engineReady=false;busy=false;
+  engineError="Stockfish could not load from either provider. Your match is saved; reconnect and reopen Chess to retry.";
+  draw();return;
+ }
+ try{
+  if(worker){worker.terminate();worker=null;}
+  engineReady=false;busy=false;
+  const source='try { importScripts('+JSON.stringify(ENGINE_URLS[attempt])+'); } catch (error) { postMessage("wayfarer-engine-load-error: "+String(error)); }';
+  const blob=new Blob([source],{type:"text/javascript"});
+  const url=URL.createObjectURL(blob);
+  const current=new Worker(url);
+  worker=current;
+  URL.revokeObjectURL(url);
+  let ready=false;
+  const timeout=setTimeout(()=>{if(worker===current&&!ready)fail("Stockfish initialization timed out");},18000);
+  function fail(reason){
+   if(worker!==current)return;
+   clearTimeout(timeout);current.terminate();worker=null;
+   engineReady=false;busy=false;
+   console.warn("Stockfish source "+(attempt+1)+" failed:",reason);
+   engineError="Retrying Stockfish from another provider…";
+   draw();
+   startEngine(attempt+1);
+  }
+  current.onmessage=ev=>{
+   if(worker!==current)return;
+   const line=String(ev.data);
+   if(line.startsWith("wayfarer-engine-load-error:")){fail(line);return;}
+   if(line.includes("uciok")){
+    ready=true;clearTimeout(timeout);engineReady=true;engineError="";draw();
+    if(data().active&&game?.turn()===computer())engineMove();
+   }
+   const match=line.match(/bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/);
+   if(match&&busy&&current._moveId===requestId&&game?.turn()===computer()){
+    busy=false;
+    try{
+     game.move({from:match[1].slice(0,2),to:match[1].slice(2,4),promotion:match[1][4]||"q"});
+     selected=null;chessNotice="Stockfish played "+match[1].slice(0,4)+".";
+     persist();draw();terminal();
+    }catch(e){console.error("Stockfish illegal move",e);draw();}
+   }
+  };
+  current.onerror=e=>{e.preventDefault?.();fail(e.message||"Worker script failed");};
+  current.onmessageerror=()=>fail("Worker message error");
+  current.postMessage("uci");
+ }catch(e){console.warn("Stockfish startup failed",e);engineError="Retrying Stockfish…";draw();startEngine(attempt+1);}
+}
 async function init(){const el=root();if(!el)return;const account=String(cloudUser?.id||"");if(!account)return;if(initialized&&loadedAccount===account){draw();return;}loadedAccount=account;initialized=true;engineReady=false;engineError="";chessNotice="";selected=null;choosingSide=false;busy=false;if(worker){worker.terminate();worker=null;}el.textContent="Loading chess rules and Stockfish…";try{if(!ChessClass){const mod=await import(CHESS_URL);ChessClass=mod.Chess;}game=new ChessClass();const d=data();if(d.active&&d.pgn){try{game.loadPgn(d.pgn);}catch(e){d.pgn="";game.reset();}}if(d.active&&game.isGameOver())terminal();draw();startEngine();}catch(e){el.textContent="Chess could not load. Check your internet connection and reopen this tab.";console.error("Chess dependency failed",e);initialized=false;}}
 window.WayfarerTabModules=window.WayfarerTabModules||{};window.WayfarerTabRenderers=window.WayfarerTabRenderers||{};window.WayfarerTabModules.chess=()=>{if(document.querySelector(".tab.active")?.dataset.tab==="chess")init();};window.WayfarerTabRenderers.chess=()=>{if(initialized&&game&&loadedAccount===String(cloudUser?.id||""))draw();else init();};
 })();
