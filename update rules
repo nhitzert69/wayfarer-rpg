@@ -1,5 +1,10 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.28 — Mobile grouped navigation scroll behavior
+- Main group navigation and subtabs must scroll in normal document flow; legacy sticky tab CSS must not pin or overlap the content, particularly on iPhone Safari. Maintain authorization, group switching, visible active state and accessibility.
+- Test long scrolling Chess and other pages at mobile widths, top-to-bottom and reverse scrolling, Safari browser chrome transitions, and switching tabs while scrolled. Verify no overlay or duplicated navigation layers.
+
+
 ## v3.1.27 — Mandatory latest-deployed-version freshness policy (PERMANENT)
 - On every online launch, navigation and return to a backgrounded app, ensure the browser uses the latest **successfully deployed** Wayfarer release, not stale cached HTML, JavaScript, CSS, service worker or release assets. Check release identity against a network-fetched version manifest or equivalent authoritative deployment metadata; do not assume a cache name bump alone refreshes every already-open client.
 - Use network-first or version-addressed loading for application code and release-critical assets, with offline fallback to a complete compatible cached release. Never mix old application logic with new release assets or break offline access. Update the service worker, cache policy, version identifiers and all references with every release; invalidate obsolete caches only after the new release is ready.
