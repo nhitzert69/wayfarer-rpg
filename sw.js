@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-standalone-v3.1.32";
+const CACHE = "wayfarer-standalone-v3.1.33";
 const ASSETS = [
   "./codes/tabs/chess.js",
   "./assets/Chess/board_with_frame.png", "./assets/Chess/new_game.png", "./assets/Chess/resign.png", "./assets/Chess/orthodox_king.png", "./assets/Chess/orthodox_queen.png", "./assets/Chess/orthodox_rook.png", "./assets/Chess/orthodox_bishop.png", "./assets/Chess/orthodox_knight.png", "./assets/Chess/orthodox_pawn.png", "./assets/Chess/catholic_king.png", "./assets/Chess/catholic_queen.png", "./assets/Chess/catholic_rook.png", "./assets/Chess/catholic_bishop.png", "./assets/Chess/catholic_knight.png", "./assets/Chess/catholic_pawn.png",
@@ -49,6 +49,14 @@ self.addEventListener("fetch", event => {
     return;
   }
 
+  // Network-first application code, cached fallback offline.
+  if(request.url.startsWith(self.location.origin) && /\.(js|css)$/.test(new URL(request.url).pathname)){
+    event.respondWith(fetch(request,{cache:"no-store"}).then(response=>{
+      if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));}
+      return response;
+    }).catch(()=>caches.match(request)));
+    return;
+  }
   // Cache-first for supporting assets, with network fallback.
   event.respondWith(
     caches.match(request).then(cached =>
