@@ -1,5 +1,8 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.15 — Guitar theme and artifact
+- Andalusian Serenade uses the Guitar skill and standard 5-level skill-theme progression. The Serenader's Guitar uses the existing 3-level artifact progression and matching-theme synergy. Preserve saved IDs, rewards, Sandbox and all other themes. Never merge a theme commit without the six actual image/audio assets present at registered paths; validate decoding and mobile styling.
+
 ## v3.1.14 — Automatic daily quests, Sandbox-only manual generation
 - Back up the exact main commit before editing. Daily quests regenerate at 04:00 Europe/Amsterdam. Hide manual Generate quests and its planner outside Admin Sandbox; eliminate the four-hour cooldown, reset button and override quest safeguards option while retaining quest completion confirmation. Keep Adventure generation, reward snapshots, account isolation and legacy save compatibility.
 

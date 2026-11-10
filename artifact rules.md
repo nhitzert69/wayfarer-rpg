@@ -15,3 +15,6 @@
 ## v3.1.8
 - Verified artifact image numbers in registry order: 03, 04, 01, 02, 09, 08, 06, 07, 05.
 - Sandbox grants must restore selector settings across refresh and preserve paid Sandbox purchases when disabled.
+
+## v3.1.15 — Guitar artifact
+- Add a tenth artifact: The Serenader's Guitar, linked to Guitar and Andalusian Serenade. It follows the existing artifact unlocks, prices, levels, separate slot and synergy rules; original nine artifacts and mappings remain unchanged. Icon: `assets/images/artifacts/artifact-serenaders-guitar.png`.
