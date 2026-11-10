@@ -1,5 +1,10 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.21 — Sandbox standalone Adventure cycle integrity
+- Standalone Short and Day Adventure generation must never overwrite the Sandbox Time Machine date or reopen completed skill quest rewards for that cycle. Preserve the simulated cycle through Adventure generation, selected-skill toggles, weekly Main/Side classification, completion ledger and refresh.
+- Regression test both Adventure types after advancing the Sandbox date, completing a skill quest and toggling the skill 20 times; exactly one same-cycle reward, new quest only on next cycle. Preserve normal 04:00 Amsterdam rollover and standalone Adventure snapshots.
+- Continue to maintain bugtest rules and changelog every release; keep v3.1.20 Chess and tab visibility unchanged.
+
 ## v3.1.20 — Chess and optional tab visibility
 - Preserve the v3.1.19 backup branch. Public Chess tab is optional, Stockfish-powered, uses legal chess rules, tracks account-scoped Elo, completed games and unfinished PGN; never award RPG XP/gold for chess games.
 - Engine difficulty tracks Elo and rating moves down after losses; prevent duplicate game result claims, stale engine moves and cross-account chess state leaks. Chess dependencies load only on demand and require internet.

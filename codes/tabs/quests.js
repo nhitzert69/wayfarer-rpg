@@ -154,7 +154,8 @@ function generateAdventure(type){
   const quest={id:createQuestId(),title,description,category:"Adventure",skill:"Adventure",...questRewardSnapshot("Adventure"),done:false,source:"adventure",adventureType:type};
   if(!Array.isArray(state.quests))state.quests=[];
   state.quests.push(quest);
-  state.activeDate=today();
+  // Standalone adventures do not advance or rewind the daily quest cycle.
+  // In Sandbox, activeDate is the Time Machine cycle used by completion guards.
   save();
   setAdventureChooserOpen(false);
   toast(`${type==="short"?"Short":"Day"} adventure generated! +${quest.xp} XP and +${5+quest.perkBonusGold} coins when completed.`);

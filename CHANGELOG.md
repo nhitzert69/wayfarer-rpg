@@ -1,3 +1,8 @@
+## v3.1.21 — Preserve Sandbox quest cycle during standalone Adventures (2026-11-10)
+- Fixed WF-319-002: generating a Short or Day Adventure no longer overwrites the Sandbox Time Machine date with the real date. This keeps weekly Main/Side classification and the same-cycle generated-quest completion ledger consistent and prevents reopening a completed skill quest through the reported date-rewind path.
+- Kept the normal 04:00 Amsterdam daily reset, existing Adventure rewards, v3.1.20 Chess, optional tab visibility, and account/Sandbox isolation unchanged.
+- Updated update rules and bugtest rules with Short/Day Adventure cycle and duplicate-reward regression cases. Static source verification only; full browser and cloud regression remain untested.
+
 ## v3.1.20 — Chess and optional tab visibility (2026-11-10)
 - Added a public Chess tab with chess.js legal rules, Stockfish ASM engine loaded on demand, adaptive Elo, match records and account-scoped saved progress. Chess is independent of RPG XP and gold.
 - Added per-account Settings tab visibility for optional tabs including Chess and authorized Admin tools. Core tabs cannot be hidden.

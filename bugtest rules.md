@@ -1,5 +1,5 @@
 # Wayfarer RPG — Bug Test Rules (MANDATORY)
-Version: v3.1.20 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
+Version: v3.1.21 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
 
 ## 0. Purpose, ownership and non-negotiable maintenance
 This is the authoritative repeatable end-to-end and regression test plan for Wayfarer RPG. Read this document before every full QA run, release validation, bug fix and feature update, together with `update rules` and applicable `theme creation rules.md` and `artifact rules.md`. The source of truth is the current live main branch, not a ZIP, cached build, old report or assumptions. If a referenced rules file is absent, record that discrepancy; do not invent its contents. In particular, verify whether `game rules.md` exists before claiming it was read.
@@ -107,7 +107,7 @@ Deliver: executive summary; full test matrix; pass/fail/blocked counts; prioriti
 On EVERY Wayfarer update: [ ] read live main + all applicable rules; [ ] inspect new/removed UI, tabs, data fields and registries; [ ] update this file's version/date; [ ] revise scenarios and expected behavior; [ ] add boundary/negative/regression tests for changed behavior; [ ] confirm privacy/Sandbox/legacy migration coverage; [ ] align release identifiers and top CHANGELOG entry; [ ] run static checks; [ ] run accessible real-browser tests or explicitly report blockers; [ ] verify main commit and deployed build separately. Documentation-only releases must also complete the review and version/changelog/cache steps.
 
 
-## v3.1.20 Chess and navigation regression matrix
+## v3.1.21 Chess and navigation regression matrix
 - Fresh account and returning account: Chess tab visible to all signed-in users, no Admin privilege needed; signed-out users cannot access Chess. Chess starts at 800 Elo.
 - Verify legal moves and illegal-move rejection, castling, en passant, auto-queen promotion, check, checkmate, stalemate, threefold repetition, insufficient material and 50-move draw using controlled positions; validate Stockfish actually responds via UCI.
 - Confirm Stockfish strength settings rise with Elo and fall after losses. Win, loss, draw and resignation change rating exactly once; completed games cannot be reclaimed by refresh or tab switches. Test 20 rapid clicks and interrupted engine turns.
@@ -115,3 +115,11 @@ On EVERY Wayfarer update: [ ] read live main + all applicable rules; [ ] inspect
 - Validate external CDN chess.js and Stockfish ASM availability, slow/offline error states, worker failures, iPhone Safari and 375px/430px board accessibility. No RPG XP/gold should change for chess.
 - Settings optional tab toggles: hide and restore To Do, Groceries, Journal, Chess; Admin and CHATGPT can hide Debug/Reflux; ordinary accounts cannot access privileged tabs by forcing active tab. Quest Board, Character, Store, Skills and Settings must remain visible. Persist preferences per account, including after login and reload.
 - Recheck all previous v3.1.19 Skills and Sandbox date regressions, Store, themes, artifacts, account isolation and service worker update. Mark tests NOT TESTED unless actually executed.
+
+
+## v3.1.21 — WF-319-002 Sandbox Time Machine / Adventure regression
+- In isolated Admin Sandbox, advance the effective quest cycle from 10 November to 22 November (or another later simulated day); select Guitar, complete its generated quest and verify the completion ledger records the simulated date.
+- Deselect and reselect Guitar; verify no same-day replacement. Generate a standalone Short Adventure, then toggle Guitar again: the simulated date and ledger must remain unchanged, no duplicate generated quest and no second XP/gold claim.
+- Repeat with Day Adventure, including two standalone Adventures in sequence, 20 rapid selection toggles, switching tabs and reloading Sandbox. Existing standalone Adventures and custom quests must remain intact and retain their reward snapshots.
+- Advance the Time Machine one further day; a new Guitar quest must be available once, classified Main/Side using that simulated weekday. Verify normal accounts still use the 04:00 Amsterdam cycle and cannot invoke Sandbox Time Machine.
+- Re-run the full v3.1.20 Chess, account isolation, cloud save and optional-tab visibility matrix. Report browser tests separately from static checks.
