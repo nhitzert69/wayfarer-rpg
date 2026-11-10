@@ -1,10 +1,15 @@
 # Wayfarer RPG — Bug Test Rules (MANDATORY)
-Version: v3.1.23 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
+Version: v3.1.24 | Last reviewed: 2026-11-10 | Repository: https://github.com/nhitzert69/wayfarer-rpg | Production: https://nhitzert69.github.io/wayfarer-rpg/
 
 ## 0. Purpose, ownership and non-negotiable maintenance
 This is the authoritative repeatable end-to-end and regression test plan for Wayfarer RPG. Read this document before every full QA run, release validation, bug fix and feature update, together with `update rules` and applicable `theme creation rules.md` and `artifact rules.md`. The source of truth is the current live main branch, not a ZIP, cached build, old report or assumptions. If a referenced rules file is absent, record that discrepancy; do not invent its contents. In particular, verify whether `game rules.md` exists before claiming it was read.
 
 Every update, including documentation-only changes, MUST review and revise this file: compare the current navigation, registries, features, state fields, rules, prices, levels, unlocks, admin permissions, file paths, service-worker cache and release version against actual source. Add new test cases for new behavior and failure modes; revise obsolete tests, remove references to removed UI, and preserve historical regression coverage. Update this header's version and review date and record the QA-plan change in the top CHANGELOG entry. Never silently carry forward an outdated test plan. Do not mark a test PASS merely because it is written here.
+
+## v3.1.24 — Category navigation visual regression checks
+- Verify Core, Personal, Games and authorized Admin group buttons use distinct dark fantasy palettes, ornate borders, clear selected-state gold glow and readable labels; ordinary subtabs retain their existing button styling.
+- Verify narrow 375px and 430px layouts wrap Admin to a second row without horizontal overflow, and desktop groups fit four columns. Check focus-visible keyboard navigation, touch targets, reduced-motion, all equipped theme overrides, and Admin visibility for non-admin accounts.
+- Verify switching groups does not change quest rewards, persistence, account isolation, authorization, chess state or Sandbox. These are required browser tests, not claimed as executed by the stylesheet update.
 
 ## 1. Scope, test evidence and environment
 Test the production GitHub Pages app in a real browser plus the current GitHub main source; where possible test a preview or isolated account before release. Run desktop Chrome and a second browser (Safari/iOS preferred); use mobile viewports 375px and 430px and desktop 1280px+. Include touch, keyboard, screen reader labels where feasible, reduced motion, dark backgrounds, poor network and a hard reload. Verify console errors, unhandled rejections, network 404s, asset decode, PWA/service worker caching, stale script problems, and responsive layout.
