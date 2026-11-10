@@ -1,3 +1,10 @@
+# Wayfarer v3.1.15 — Andalusian Serenade Guitar theme and artifact (staged)
+
+- Register Guitar's Andalusian Serenade theme, 5 standard levels, and The Serenader's Guitar artifact, 3 standard levels, using existing purchase, inventory, equipment, Sandbox, skill reward snapshots, and synergy services.
+- Add burgundy/gold responsive theme palette, portrait/background/icon/audio references and service-worker cache manifest. Source artwork and audio are packaged separately and must be uploaded to these exact paths **before merging this staged branch into main**.
+- Soundtrack: Sonican, Spanish Guitar Solo (Pixabay Content License, Content ID registered). Source: https://pixabay.com/music/acoustic-group-spanish-guitar-solo-216636/.
+- Static JavaScript checks only; live UI, audio, persistence and Supabase testing still required.
+
 # Wayfarer v3.1.14 — Automatic daily quests and Sandbox-only manual generation (2026-11-08)
 
 - Created GitHub source backup branch `backup/v3.1.13-before-daily-quests` before editing main.
