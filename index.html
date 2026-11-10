@@ -349,24 +349,27 @@ const WAYFARER_GROUP_DEFAULTS={core:"quests",personal:"todo",games:"chess",admin
 let wayfarerActiveGroup="core";
 function selectWayfarerGroup(group){
  if(!Object.prototype.hasOwnProperty.call(WAYFARER_GROUP_DEFAULTS,group))group="core";
+ if(!cloudUser)group="core";
  if(group==="admin"&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))group="core";
  wayfarerActiveGroup=group;
  document.querySelectorAll(".groupTab").forEach(btn=>{
   const active=btn.dataset.group===group;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",String(active));
  });
  document.querySelectorAll(".wayfarer-subtabs .tab").forEach(btn=>{
-  const authorized=!!cloudUser&&(btn.dataset.group!=="admin"||(typeof debugIsAdmin==="function"&&debugIsAdmin()));
+  const authorized=(!cloudUser?btn.dataset.tab==="settings":(btn.dataset.group!=="admin"||(typeof debugIsAdmin==="function"&&debugIsAdmin())));
   btn.style.display=authorized&&btn.dataset.group===group?"":"none";
  });
  return group;
 }
 document.querySelectorAll(".groupTab").forEach(btn=>btn.addEventListener("click",()=>{
+ if(!cloudUser){activateWayfarerTab("settings",false);return;}
  const group=selectWayfarerGroup(btn.dataset.group);
  const current=document.querySelector('.wayfarer-subtabs .tab.active');
  if(current?.dataset.group===group)return;
  activateWayfarerTab(WAYFARER_GROUP_DEFAULTS[group],true);
 }));
 function activateWayfarerTab(tabName,remember=true){
+ if(!cloudUser)tabName="settings";
  if(!WAYFARER_TAB_NAMES.includes(tabName))tabName=cloudUser?"quests":"settings";
  if((tabName==="debug"||tabName==="reflux")&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))tabName="quests";
 
@@ -388,6 +391,7 @@ function activateWayfarerTab(tabName,remember=true){
  return true;
 }
 function restorePreferredWayfarerTab(){
+ if(!cloudUser)return activateWayfarerTab("settings",false);
  let preferred="";try{preferred=localStorage.getItem(wayfarerActiveTabKey())||"";}catch(e){}
  if(!WAYFARER_TAB_NAMES.includes(preferred))preferred=cloudUser?"quests":"settings";
  if((preferred==="debug"||preferred==="reflux")&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))preferred="quests";
@@ -395,7 +399,7 @@ function restorePreferredWayfarerTab(){
  return activateWayfarerTab(preferred,false);
 }
 document.querySelectorAll(".wayfarer-subtabs .tab").forEach(button=>button.addEventListener("click",()=>activateWayfarerTab(button.dataset.tab,true)));
-window.addEventListener("load",()=>{if(cloudUser)restorePreferredWayfarerTab();else loadWayfarerTab(document.querySelector(".wayfarer-subtabs .tab.active")?.dataset.tab||"settings");},{once:true});
+window.addEventListener("load",()=>{restorePreferredWayfarerTab();},{once:true});
 
 const KEY="wayfarer-rpg-v1";
 const STATE_UPDATED_KEY=KEY+"-updatedAt";
@@ -549,19 +553,28 @@ async function finishSignIn(username,pin,create,gender=null){
 function enforceAccountGate(){
  const signedIn=!!cloudUser;
  const isAdmin=signedIn&&typeof debugIsAdmin==="function"&&debugIsAdmin();
- const adminGroup=document.querySelector('.groupTab[data-group="admin"]');
- if(adminGroup)adminGroup.style.display=isAdmin?"":"none";
+ document.querySelectorAll(".groupTab").forEach(btn=>{
+  btn.style.display=!signedIn||btn.dataset.group==="admin"&&!isAdmin?"none":"";
+ });
+ if(!signedIn)wayfarerActiveGroup="core";
  document.querySelectorAll(".wayfarer-subtabs .tab").forEach(btn=>{
-  const allowed=(signedIn||btn.dataset.tab==="settings")&&(btn.dataset.group!=="admin"||isAdmin);
+  const allowed=!signedIn?btn.dataset.tab==="settings":btn.dataset.group!=="admin"||isAdmin;
   btn.disabled=!allowed;
-  btn.style.display=allowed&&(btn.dataset.group===wayfarerActiveGroup||(!signedIn&&btn.dataset.tab==="settings"))?"":"none";
+  btn.style.display=allowed&&(!signedIn||btn.dataset.group===wayfarerActiveGroup)?"":"none";
  });
+ // Never assign display:"" to inactive sections: the .section.active CSS
+ // must remain the sole visibility controller, including on first load.
  document.querySelectorAll("main > .section").forEach(sec=>{
-  sec.style.display=(signedIn&&(!["section-debug","section-reflux"].includes(sec.id)||isAdmin))?"":(!signedIn&&sec.id==="section-settings"?"":"none");
+  const allowed=!signedIn?sec.id==="section-settings":!["section-debug","section-reflux"].includes(sec.id)||isAdmin;
+  sec.style.display=allowed?"":"none";
   if(!signedIn)sec.classList.toggle("active",sec.id==="section-settings");
+  else if(!allowed)sec.classList.remove("active");
  });
- if(!signedIn)selectWayfarerGroup("core");
- else if(wayfarerActiveGroup==="admin"&&!isAdmin)activateWayfarerTab("quests",false);
+ if(!signedIn){
+  document.querySelectorAll(".wayfarer-subtabs .tab").forEach(btn=>btn.classList.toggle("active",btn.dataset.tab==="settings"));
+ }else if(wayfarerActiveGroup==="admin"&&!isAdmin){
+  activateWayfarerTab("quests",false);
+ }
  const n=document.getElementById("accountRequiredNotice");if(n)n.style.display=signedIn?"none":"block";
 }
 let accountFlowMode=null;
