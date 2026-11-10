@@ -72,6 +72,7 @@
   <button class="tab" data-tab="todo" type="button">☑ To Do</button>
   <button class="tab" data-tab="groceries" type="button">🛒 Groceries</button>
   <button class="tab" data-tab="journal">📜 Journal</button>
+  <button class="tab" data-tab="chess" type="button">♟ Chess</button>
   <button class="tab" data-tab="settings">⚙ Settings</button>
   <button class="tab" id="refluxTabButton" data-tab="reflux" type="button" style="display:none">🌿 Reflux Guide</button>
   <button class="tab" id="debugTabButton" data-tab="debug" type="button">🛠 Debug</button>
@@ -209,6 +210,7 @@
   <div class="card" style="margin-top:12px"><h3>Chronicle</h3><div id="journalList"></div></div>
 </section>
 
+<section class="section" id="section-chess"><div class="sectionHead"><div><h2>♟ Chess</h2><p>Play Stockfish and develop your own rating.</p></div></div><div id="chessRoot" class="card">Open Chess to load the game.</div></section>
 <section class="section" id="section-settings">
   <div class="sectionHead"><div><h2>Campaign Settings</h2><p>Simple rules, steady progress.</p></div></div>
   <div class="card">
@@ -224,6 +226,7 @@
     </form>
     <p class="sub" style="margin-top:12px">Use a unique PIN, not your phone unlock or banking PIN. Username + PIN has no recovery option if forgotten.</p>
   </div>
+  <div class="card" id="tabVisibilityCard" style="margin-top:12px"><h3>Tab visibility</h3><p class="sub">Choose which optional tabs appear in your navigation. Core tabs are always visible.</p><div id="tabVisibilityOptions" class="formgrid"></div></div>
   <div class="card" style="margin-top:12px" id="musicSettingsCard">
     <h3>Music settings</h3>
     <p class="sub">Choose whether Wayfarer plays background music. The soundtrack follows your equipped theme.</p>
@@ -300,7 +303,7 @@
 window.WayfarerTabModules = window.WayfarerTabModules || {};
 window.WayfarerTabModulePromises = window.WayfarerTabModulePromises || {};
 window.WayfarerTabRegistry = window.WayfarerTabRegistry || {};
-const WAYFARER_TAB_NAMES = ["quests","character","store","skills","todo","groceries","journal","settings","debug","reflux"];
+const WAYFARER_TAB_NAMES = ["quests","character","store","skills","todo","groceries","journal","chess","settings","debug","reflux"];
 function loadWayfarerTab(tabName){
  if(!WAYFARER_TAB_NAMES.includes(tabName)) return Promise.resolve(false);
  if(window.WayfarerTabModules[tabName]) { window.WayfarerTabRegistry[tabName]="loaded"; window.WayfarerTabModules[tabName](); return Promise.resolve(true); }
@@ -340,6 +343,7 @@ function wayfarerActiveTabKey(){
 function activateWayfarerTab(tabName,remember=true){
  if(!WAYFARER_TAB_NAMES.includes(tabName))tabName=cloudUser?"quests":"settings";
  if((tabName==="debug"||tabName==="reflux")&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))tabName="quests";
+ if(cloudUser&&state?.settings?.hiddenTabs?.includes(tabName))tabName="quests";
  const button=document.querySelector('.tab[data-tab="'+tabName+'"]');
  if(!button) return false;
  document.querySelectorAll(".tab").forEach(tab=>tab.classList.toggle("active",tab===button));
@@ -355,6 +359,7 @@ function restorePreferredWayfarerTab(){
  let preferred="";try{preferred=localStorage.getItem(wayfarerActiveTabKey())||"";}catch(e){}
  if(!WAYFARER_TAB_NAMES.includes(preferred))preferred=cloudUser?"quests":"settings";
  if((preferred==="debug"||preferred==="reflux")&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))preferred="quests";
+ if(state?.settings?.hiddenTabs?.includes(preferred))preferred="quests";
  return activateWayfarerTab(preferred,false);
 }
 document.querySelectorAll(".tab").forEach(button=>button.addEventListener("click",()=>activateWayfarerTab(button.dataset.tab,true)));
@@ -509,7 +514,7 @@ async function finishSignIn(username,pin,create,gender=null){
  renderSkillCatalog();
  if(typeof renderDebugPanel === "function") renderDebugPanel();
 }
-function enforceAccountGate(){const signedIn=!!cloudUser;document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=(signedIn||btn.dataset.tab==='settings')&&(!["debug","reflux"].includes(btn.dataset.tab)|| (signedIn&&typeof debugIsAdmin==="function"&&debugIsAdmin()));btn.style.display=allowed?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=(signedIn&&(!['section-debug','section-reflux'].includes(sec.id)||(typeof debugIsAdmin==='function'&&debugIsAdmin())))?'':(!signedIn&&sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
+function enforceAccountGate(){const signedIn=!!cloudUser;const hidden=Array.isArray(state?.settings?.hiddenTabs)?state.settings.hiddenTabs:[];document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=(signedIn||btn.dataset.tab==='settings')&&(!["debug","reflux"].includes(btn.dataset.tab)|| (signedIn&&typeof debugIsAdmin==="function"&&debugIsAdmin()));btn.style.display=allowed&&!hidden.includes(btn.dataset.tab)?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=(signedIn&&(!['section-debug','section-reflux'].includes(sec.id)||(typeof debugIsAdmin==='function'&&debugIsAdmin())))?'':(!signedIn&&sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
 let accountFlowMode=null;
 function showAccountMode(mode){accountFlowMode=mode;document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="block";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display=mode==="create"?"inline-flex":"none";document.getElementById("signInBtn").style.display=mode==="login"?"inline-flex":"none";hideGenderChoice();if(mode==="create"){const field=document.getElementById("accountGenderField");if(field)field.style.display="block";}}
 function resetAccountMode(){accountFlowMode=null;hideGenderChoice();document.getElementById("accountModeChooser").style.display="flex";document.getElementById("accountUsernameField").style.display="none";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="none";}
@@ -613,6 +618,7 @@ function render(){
  updateMusicControls();
  // Skill cards are shared progress UI and must not depend on visiting the Skills tab.
  window.WayfarerTabRenderers?.skills?.renderSkillProgress?.();
+ enforceAccountGate();
  const activeTabName=document.querySelector(".tab.active")?.dataset.tab;
  // Tab-owned UI is rendered only by its own lazy-loaded module. Shared counters above remain core-owned.
  if(activeTabName && window.WayfarerTabRenderers){
@@ -625,6 +631,7 @@ function render(){
    else if(activeTabName==="groceries")renderers.groceries?.();
    else if(activeTabName==="journal")renderers.journal?.();
    else if(activeTabName==="settings")renderers.settings?.();
+   else if(activeTabName==="chess")renderers.chess?.();
    else if(activeTabName==="debug")renderers.debug?.renderDebugPanel?.();
     else if(activeTabName==="reflux")renderers.reflux?.();
  }

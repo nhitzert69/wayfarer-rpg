@@ -1,5 +1,11 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.20 — Chess and optional tab visibility
+- Preserve the v3.1.19 backup branch. Public Chess tab is optional, Stockfish-powered, uses legal chess rules, tracks account-scoped Elo, completed games and unfinished PGN; never award RPG XP/gold for chess games.
+- Engine difficulty tracks Elo and rating moves down after losses; prevent duplicate game result claims, stale engine moves and cross-account chess state leaks. Chess dependencies load only on demand and require internet.
+- Optional tabs can be hidden in Settings, including Chess and authorized Debug/Reflux; Quest Board, Character, Store, Skills and Settings are mandatory. Hidden tabs must not bypass authorization and must remain recoverable.
+- Revise bugtest rules and changelog with each update; verify browser chess worker, legal moves, promotion, checkmate, draw, save/reload, offline failure and mobile navigation before release sign-off.
+
 ## v3.1.19 — Skills catalog, safe save and Sandbox cycle regression fixes
 - Skills catalog must normalize weekday arrays before rendering; no ReferenceError for selected skills. Skill changes must reconcile generated quests before any fallible UI rerender. The Save button must never derive a destructive empty selection from a blank or failed catalog.
 - Resolve one effective quest cycle for Sandbox Time Machine generation, Main/Side rendering, completion ledger and skill synchronization; use the real 04:00 Amsterdam cycle outside Sandbox. Consecutive Time Machine day advances must not reset to real today.

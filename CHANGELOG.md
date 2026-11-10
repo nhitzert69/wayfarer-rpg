@@ -1,3 +1,9 @@
+## v3.1.20 — Chess and optional tab visibility (2026-11-10)
+- Added a public Chess tab with chess.js legal rules, Stockfish ASM engine loaded on demand, adaptive Elo, match records and account-scoped saved progress. Chess is independent of RPG XP and gold.
+- Added per-account Settings tab visibility for optional tabs including Chess and authorized Admin tools. Core tabs cannot be hidden.
+- Revised bugtest rules for chess, engine availability, rating integrity, navigation and account isolation. Backup: backup/v3.1.19-before-chess.
+- Static integration only; browser engine loading, cloud sync, mobile and end-to-end regression remain unverified. CDN chess dependencies require internet.
+
 # Wayfarer v3.1.19 — Skills and Sandbox date regression fixes (2026-11-10)
 
 - Fixed WF-317-001: define and normalize per-skill weekday arrays before rendering Skills; move quest reconciliation ahead of fallible Skills UI rerender so partial deselection removes generated quests immediately.
