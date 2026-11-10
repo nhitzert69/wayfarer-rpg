@@ -1,3 +1,8 @@
+## v3.1.26 — Login navigation and Debug visibility fixes (2026-11-10)
+- Signed-out visitors now see only Settings and its login UI; all main group selectors and other subtabs are hidden, and unauthorized tab activation is redirected to Settings.
+- Fixed inactive Debug/Reflux and other section visibility by removing the inline-display override that bypassed `.section.active` on initial load. Retained Admin authorization and per-account tab restoration.
+- Updated PWA cache, update rules and mandatory regression test plan. Browser and iPhone testing still pending.
+
 ## v3.1.25 — Christendom Chess visual integration (2026-11-10)
 - Integrated the existing `assets/Chess/` artwork: Catholic red White pieces, Orthodox purple Black pieces, marble chessboard and gold frame, New Game and Resign image buttons.
 - Added responsive transparent interactive square overlays, selection and legal-move indicators, accessible labels and keyboard focus. Kept existing chess.js/Stockfish game logic, Elo and account-scoped PGN storage unchanged.
