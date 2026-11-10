@@ -1,3 +1,7 @@
+## v3.1.29 — Chess interaction and New Game feedback (2026-11-10)
+- Removed engine-readiness gate from human chess moves; Stockfish still waits for initialization. Added selection and move feedback, explicit engine loading/failure feedback, and New Game confirmation/selection reset.
+- Updated PWA cache, rules and QA plan. Live browser verification pending; broader cache freshness still outstanding.
+
 ## v3.1.28 — Fix navigation overlay during scrolling (2026-11-10)
 - Removed inherited sticky positioning from grouped navigation and subtabs so both rows scroll with the page rather than float over Chess and other content on iPhone.
 - Bumped service-worker cache version and updated permanent rules and mandatory QA plan. Live iPhone validation remains pending; the separate automatic-update cache policy is not yet implemented.
