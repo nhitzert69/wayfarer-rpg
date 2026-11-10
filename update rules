@@ -1,5 +1,9 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.29 — Chess touch and engine readiness
+- White chess selection and legal moves must work while Stockfish loads; engine readiness only gates computer moves. Show loading/failure state and feedback for selected squares and moves. New Game resets selection and confirms restart. Test mobile tap, worker failure, game restart, PGN and account isolation.
+
+
 ## v3.1.28 — Mobile grouped navigation scroll behavior
 - Main group navigation and subtabs must scroll in normal document flow; legacy sticky tab CSS must not pin or overlap the content, particularly on iPhone Safari. Maintain authorization, group switching, visible active state and accessibility.
 - Test long scrolling Chess and other pages at mobile widths, top-to-bottom and reverse scrolling, Safari browser chrome transitions, and switching tabs while scrolled. Verify no overlay or duplicated navigation layers.
