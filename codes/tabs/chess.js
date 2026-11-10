@@ -2,44 +2,63 @@
 (()=>{
 const CHESS_URL="https://cdn.jsdelivr.net/npm/chess.js@1.4.0/dist/esm/chess.js";
 const ENGINE_URL="https://cdn.jsdelivr.net/npm/stockfish@19.0.1/bin/stockfish-19-asm.js";
-let ChessClass=null, game=null, worker=null, selected=null, busy=false, initialized=false, engineReady=false, requestId=0, loadedAccount="", engineError="", chessNotice="";
+let ChessClass=null, game=null, worker=null, selected=null, busy=false, initialized=false, engineReady=false, requestId=0, loadedAccount="", engineError="", chessNotice="", choosingSide=false;
 const root=()=>document.getElementById("chessRoot");
-const data=()=>{if(!state.chess||typeof state.chess!=="object")state.chess={elo:800,wins:0,losses:0,draws:0,history:[],pgn:"",active:true,color:"w"};return state.chess;};
+const data=()=>{if(!state.chess||typeof state.chess!=="object")state.chess={elo:800,wins:0,losses:0,draws:0,history:[],pgn:"",active:false,color:"w"};return state.chess;};
+const human=()=>data().color==="b"?"b":"w";
+const computer=()=>human()==="w"?"b":"w";
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const persist=()=>{data().pgn=game.pgn();save(true);};
 const target=()=>Math.max(400,Math.min(2400,Math.round(data().elo/100)*100));
 const strength=()=>Math.max(0,Math.min(20,Math.round((target()-400)/100)));
 const opponent=()=>Math.max(400,target());
 function finish(result){const d=data();if(!d.active)return;d.active=false;const score=result==="win"?1:result==="draw"?.5:0;const expected=1/(1+Math.pow(10,(opponent()-d.elo)/400));const delta=Math.round(24*(score-expected));d.elo=Math.max(100,Math.min(3000,d.elo+delta));d[result==="win"?"wins":result==="loss"?"losses":"draws"]++;d.history.unshift({date:new Date().toISOString(),result,delta,elo:d.elo,pgn:game.pgn()});d.history=d.history.slice(0,50);persist();draw();}
-function terminal(){if(!game.isGameOver())return false;finish(game.isDraw()?"draw":game.isCheckmate()?(game.turn()==="w"?"loss":"win"):"draw");return true;}
+function terminal(){if(!game.isGameOver())return false;finish(game.isDraw()?"draw":game.isCheckmate()?(game.turn()===human()?"loss":"win"):"draw");return true;}
 function stop(){requestId++;busy=false;if(worker&&engineReady)worker.postMessage("stop");}
-function newGame(){stop();selected=null;chessNotice="New game started. Select a red piece.";game=new ChessClass();const d=data();d.pgn="";d.active=true;d.color="w";persist();draw();}
-function engineMove(){if(!game||!data().active||game.turn()!=="b"||busy)return;if(!engineReady){chessNotice="Waiting for Stockfish to finish loading.";draw();return;}busy=true;const id=++requestId;worker.postMessage("setoption name UCI_LimitStrength value true");worker.postMessage("setoption name UCI_Elo value "+target());worker.postMessage("setoption name Skill Level value "+strength());worker.postMessage("position fen "+game.fen());worker.postMessage("go movetime 500");worker._moveId=id;draw();}
+function newGame(color){if(data().active)return;stop();selected=null;choosingSide=false;engineError="";game=new ChessClass();const d=data();d.pgn="";d.active=true;d.color=color==="b"?"b":"w";chessNotice="New game started. You play "+(human()==="w"?"White (red Catholic).":"Black (purple Orthodox).");persist();draw();if(game.turn()===computer())engineMove();}
+function engineMove(){if(!game||!data().active||game.turn()!==computer()||busy)return;if(!engineReady){chessNotice="Waiting for Stockfish to finish loading.";draw();return;}busy=true;const id=++requestId;worker.postMessage("setoption name UCI_LimitStrength value true");worker.postMessage("setoption name UCI_Elo value "+target());worker.postMessage("setoption name Skill Level value "+strength());worker.postMessage("position fen "+game.fen());worker.postMessage("go movetime 500");worker._moveId=id;draw();}
 function draw(){
  const el=root();if(!el||!game)return;const d=data();
- const legal=selected?game.moves({square:selected,verbose:true}).map(m=>m.to):[];
+ const legal=d.active&&selected?game.moves({square:selected,verbose:true}).map(m=>m.to):[];
  const names={k:"king",q:"queen",r:"rook",b:"bishop",n:"knight",p:"pawn"};
  const assets="assets/Chess/";
  let html='<div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><strong>Rating: '+d.elo+' Elo</strong><span class="sub">Stockfish target: '+target()+' · '+d.wins+'W / '+d.losses+'L / '+d.draws+'D</span></div>';
- html+='<p class="sub" role="status">'+(d.active?(busy?"Stockfish is thinking…":game.turn()==="w"?"Your move (Western Catholic — red)"+(engineReady?"":" · Stockfish loading"):engineReady?"Eastern Orthodox — purple to move":"Waiting for Stockfish…"):"Game finished — start a new game")+'</p>';
+ html+='<p class="sub" role="status">'+(d.active?(busy?"Stockfish is thinking…":game.turn()===human()?"Your move ("+(human()==="w"?"White · red Catholic":"Black · purple Orthodox")+")":engineReady?"Stockfish to move":"Waiting for Stockfish…"):"No active match — choose New Game to play")+'</p>';
  html+='<p class="sub" role="status" aria-live="polite">'+escape(engineError||chessNotice)+'</p>';
  html+='<div id="wayfarerChessBoard" class="christendom-board" role="group" aria-label="Christendom chessboard, red Catholic pieces versus purple Orthodox pieces"><div class="christendom-squares">';
  for(let row=0;row<8;row++)for(let col=0;col<8;col++){
-  const sq="abcdefgh"[col]+(8-row),p=game.get(sq),selectedSquare=selected===sq,possible=legal.includes(sq);
+  const sq=(human()==="b"?"hgfedcba":"abcdefgh")[col]+(human()==="b"?row+1:8-row),p=game.get(sq),selectedSquare=selected===sq,possible=legal.includes(sq);
   const label=sq+(p?" "+(p.color==="w"?"Catholic ":"Orthodox ")+names[p.type]:" empty");
   const img=p?'<img draggable="false" alt="" src="'+assets+(p.color==="w"?"catholic_":"orthodox_")+names[p.type]+'.png">':"";
   html+='<button type="button" class="christendom-square'+(selectedSquare?' is-selected':'')+(possible?' is-legal':'')+'" data-square="'+sq+'" aria-label="'+label+'" aria-pressed="'+(selectedSquare?'true':'false')+'">'+img+'</button>';
  }
- html+='</div></div><div class="christendom-actions"><button class="christendom-action" id="chessNew" type="button" aria-label="New game"><img alt="" src="'+assets+'new_game.png"></button><button class="christendom-action" id="chessResign" type="button" aria-label="Resign" '+(!d.active?"disabled":"")+'><img alt="" src="'+assets+'resign.png"></button></div><p class="sub">Rating is local to Wayfarer, not an official FIDE or Chess.com rating. Internet is needed to load the chess engine and rules.</p>';
+ html+='</div></div><div class="christendom-actions">';
+ if(!d.active){
+  html+='<button class="christendom-action" id="chessNew" type="button" aria-label="New game"><img alt="" src="'+assets+'new_game.png"></button>';
+ }else{
+  html+='<button class="christendom-action" id="chessResign" type="button" aria-label="Resign"><img alt="" src="'+assets+'resign.png"></button>';
+ }
+ html+='</div>';
+ if(!d.active&&choosingSide)html+='<div class="card" role="group" aria-label="Choose chess side"><strong>Choose your side</strong><div class="row" style="flex-wrap:wrap;gap:10px;margin-top:10px"><button class="btn" id="chessWhite" type="button">White · Catholic (red)</button><button class="btn secondary" id="chessBlack" type="button">Black · Orthodox (purple)</button><button class="btn secondary" id="chessCancel" type="button">Cancel</button></div></div>';
+ html+='<p class="sub">Rating is local to Wayfarer, not an official FIDE or Chess.com rating. Internet is needed to load the chess engine and rules.</p>';
  if(d.history.length)html+='<details><summary>Recent games ('+d.history.length+')</summary><ol>'+d.history.slice(0,12).map(x=>'<li>'+escape(x.result)+' · '+(x.delta>=0?"+":"")+x.delta+' Elo · '+escape(x.elo)+'</li>').join("")+'</ol></details>';
  el.innerHTML=html;
  el.querySelectorAll("[data-square]").forEach(b=>b.addEventListener("click",()=>clickSquare(b.dataset.square)));
- el.querySelector("#chessNew").onclick=()=>{if(d.active&&game.history().length&&!confirm("Abandon the current game? It will count as a loss."))return;if(d.active&&game.history().length)finish("loss");newGame();};
- el.querySelector("#chessResign").onclick=()=>{if(confirm("Resign and record a loss?")){stop();finish("loss");}};
+ const newBtn=el.querySelector("#chessNew");
+ if(newBtn)newBtn.onclick=()=>{choosingSide=true;chessNotice="Choose White or Black to start.";draw();};
+ const whiteBtn=el.querySelector("#chessWhite");
+ if(whiteBtn)whiteBtn.onclick=()=>newGame("w");
+ const blackBtn=el.querySelector("#chessBlack");
+ if(blackBtn)blackBtn.onclick=()=>newGame("b");
+ const cancelBtn=el.querySelector("#chessCancel");
+ if(cancelBtn)cancelBtn.onclick=()=>{choosingSide=false;draw();};
+ const resignBtn=el.querySelector("#chessResign");
+ if(resignBtn)resignBtn.onclick=()=>{if(confirm("Resign and record a loss?")){stop();selected=null;finish("loss");}};
+
 }
 function clickSquare(sq){
  if(!game||!data().active)return;
- if(busy||game.turn()!=="w"){chessNotice="Wait for the Orthodox move.";draw();return;}
+ if(busy||game.turn()!==human()){chessNotice="Wait for Stockfish to move.";draw();return;}
  const p=game.get(sq);
  if(selected===sq){selected=null;chessNotice="Selection cleared.";draw();return;}
  if(selected){
@@ -48,11 +67,11 @@ function clickSquare(sq){
    if(m){selected=null;chessNotice="Played "+m.san+".";persist();draw();if(!terminal())engineMove();return;}
   }catch(e){console.warn("Chess move rejected",e);}
  }
- selected=p?.color==="w"?sq:null;
- chessNotice=selected?"Selected "+selected+". Choose a highlighted destination.":"Select a red Catholic piece.";
+ selected=p?.color===human()?sq:null;
+ chessNotice=selected?"Selected "+selected+". Choose a highlighted destination.":"Select one of your pieces.";
  draw();
 }
-function startEngine(){try{const blob=new Blob(['importScripts('+JSON.stringify(ENGINE_URL)+');'],{type:"text/javascript"});const url=URL.createObjectURL(blob);worker=new Worker(url);URL.revokeObjectURL(url);worker.onmessage=ev=>{const line=String(ev.data);if(line.includes("uciok")){engineReady=true;engineError="";draw();if(game?.turn()==="b")engineMove();}const match=line.match(/bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/);if(match&&busy&&worker._moveId===requestId&&game?.turn()==="b"){busy=false;try{game.move({from:match[1].slice(0,2),to:match[1].slice(2,4),promotion:match[1][4]||"q"});persist();draw();terminal();}catch(e){console.error("Stockfish illegal move",e);draw();}}};worker.onerror=e=>{engineReady=false;busy=false;engineError="Stockfish failed to load. You can move your pieces, but the opponent cannot respond until the engine is available.";draw();const el=root();if(false&&el)el.insertAdjacentHTML("beforeend",'<p role="alert">Stockfish could not load. Check your connection and reopen Chess.</p>');console.error("Stockfish worker error",e);};worker.postMessage("uci");}catch(e){root().textContent="Unable to start Stockfish: "+e.message;}}
-async function init(){const el=root();if(!el)return;const account=String(cloudUser?.id||"");if(!account)return;if(initialized&&loadedAccount===account){draw();return;}loadedAccount=account;initialized=true;engineReady=false;engineError="";chessNotice="";selected=null;busy=false;if(worker){worker.terminate();worker=null;}el.textContent="Loading chess rules and Stockfish…";try{if(!ChessClass){const mod=await import(CHESS_URL);ChessClass=mod.Chess;}game=new ChessClass();const d=data();if(d.active&&d.pgn){try{game.loadPgn(d.pgn);}catch(e){d.pgn="";game.reset();}}draw();startEngine();}catch(e){el.textContent="Chess could not load. Check your internet connection and reopen this tab.";console.error("Chess dependency failed",e);initialized=false;}}
+function startEngine(){try{const blob=new Blob(['importScripts('+JSON.stringify(ENGINE_URL)+');'],{type:"text/javascript"});const url=URL.createObjectURL(blob);worker=new Worker(url);URL.revokeObjectURL(url);worker.onmessage=ev=>{const line=String(ev.data);if(line.includes("uciok")){engineReady=true;engineError="";draw();if(data().active&&game?.turn()===computer())engineMove();}const match=line.match(/bestmove\s+([a-h][1-8][a-h][1-8][qrbn]?)/);if(match&&busy&&worker._moveId===requestId&&game?.turn()===computer()){busy=false;try{game.move({from:match[1].slice(0,2),to:match[1].slice(2,4),promotion:match[1][4]||"q"});persist();draw();terminal();}catch(e){console.error("Stockfish illegal move",e);draw();}}};worker.onerror=e=>{engineReady=false;busy=false;engineError="Stockfish failed to load. You can move your pieces, but the opponent cannot respond until the engine is available.";draw();const el=root();if(false&&el)el.insertAdjacentHTML("beforeend",'<p role="alert">Stockfish could not load. Check your connection and reopen Chess.</p>');console.error("Stockfish worker error",e);};worker.postMessage("uci");}catch(e){root().textContent="Unable to start Stockfish: "+e.message;}}
+async function init(){const el=root();if(!el)return;const account=String(cloudUser?.id||"");if(!account)return;if(initialized&&loadedAccount===account){draw();return;}loadedAccount=account;initialized=true;engineReady=false;engineError="";chessNotice="";selected=null;choosingSide=false;busy=false;if(worker){worker.terminate();worker=null;}el.textContent="Loading chess rules and Stockfish…";try{if(!ChessClass){const mod=await import(CHESS_URL);ChessClass=mod.Chess;}game=new ChessClass();const d=data();if(d.active&&d.pgn){try{game.loadPgn(d.pgn);}catch(e){d.pgn="";game.reset();}}if(d.active&&game.isGameOver())terminal();draw();startEngine();}catch(e){el.textContent="Chess could not load. Check your internet connection and reopen this tab.";console.error("Chess dependency failed",e);initialized=false;}}
 window.WayfarerTabModules=window.WayfarerTabModules||{};window.WayfarerTabRenderers=window.WayfarerTabRenderers||{};window.WayfarerTabModules.chess=()=>{if(document.querySelector(".tab.active")?.dataset.tab==="chess")init();};window.WayfarerTabRenderers.chess=()=>{if(initialized&&game&&loadedAccount===String(cloudUser?.id||""))draw();else init();};
 })();
