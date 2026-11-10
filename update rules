@@ -1,5 +1,12 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.27 — Mandatory latest-deployed-version freshness policy (PERMANENT)
+- On every online launch, navigation and return to a backgrounded app, ensure the browser uses the latest **successfully deployed** Wayfarer release, not stale cached HTML, JavaScript, CSS, service worker or release assets. Check release identity against a network-fetched version manifest or equivalent authoritative deployment metadata; do not assume a cache name bump alone refreshes every already-open client.
+- Use network-first or version-addressed loading for application code and release-critical assets, with offline fallback to a complete compatible cached release. Never mix old application logic with new release assets or break offline access. Update the service worker, cache policy, version identifiers and all references with every release; invalidate obsolete caches only after the new release is ready.
+- When an online update is detected, notify the user and perform a safe reload or update flow that preserves unsaved edits, active account, Supabase data and Sandbox isolation. Avoid infinite reload loops and repeated prompts. A new release cannot be guaranteed before GitHub Pages deploys it or when the device is offline.
+- Release acceptance requires testing an already-open browser tab, a previously installed PWA, cold load, refresh, resume from background, online/offline transition and old-to-new service-worker takeover on desktop Chrome and iOS Safari. Verify actual loaded JS/CSS and release version, not only the visible HTML version. Never claim freshness is fixed without live verification.
+
+
 ## v3.1.26 — Signed-out navigation and Debug section isolation
 - Signed-out accounts must see only the Settings subtab and its login content; hide every group selector and all other subtabs, prevent group switching and redirect any attempted tab activation to Settings. Never persist guest attempts as a signed-in preferred tab.
 - Only the selected `.section.active` may be displayed. Account authorization must hide Debug and Reflux content for unauthorized accounts and must never set inactive sections to inline display values that override the active-section CSS.
