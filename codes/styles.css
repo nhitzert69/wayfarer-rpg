@@ -560,3 +560,11 @@ body.andalusianSerenadeTheme .card h1,body.andalusianSerenadeTheme .card h2,body
 body.andalusianSerenadeTheme input,body.andalusianSerenadeTheme select,body.andalusianSerenadeTheme textarea{background:#241018!important;border-color:#a76b43!important;color:#fff0dc!important}
 body.andalusianSerenadeTheme .progress,body.andalusianSerenadeTheme .xpBar{background:#241018!important;border-color:#a76b43!important}body.andalusianSerenadeTheme .progress>*,body.andalusianSerenadeTheme .xpBar>*{background:linear-gradient(90deg,#a34b60,#eec277)!important}
 @media(max-width:650px){body.andalusianSerenadeTheme{background-attachment:scroll!important;background-position:center top!important;background-repeat:no-repeat!important}}
+
+/* v3.1.23: grouped navigation, retaining existing .tab styling for subtabs */
+.wayfarer-groups{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.wayfarer-groups .groupTab{min-width:0;border:1px solid #8d795e;border-radius:12px;padding:14px 6px;background:linear-gradient(#30383a,#1b2022);color:#eee4d2;font:600 clamp(12px,3.4vw,17px) inherit;cursor:pointer}
+.wayfarer-groups .groupTab.active{background:linear-gradient(#a9502e,#702a1b);border-color:#e7b36a;box-shadow:inset 0 0 0 1px #d39b5a}
+.wayfarer-subtabs{margin-top:0}
+.wayfarer-subtabs .tab[style*="display: none"]{display:none!important}
+@media(max-width:430px){.wayfarer-groups{gap:5px}.wayfarer-groups .groupTab{padding:12px 3px;font-size:13px}}

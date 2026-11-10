@@ -64,18 +64,24 @@
   </div>
 </section>
 
-<nav class="tabs" aria-label="Main navigation">
-  <button class="tab active" data-tab="quests">⚜ Quest Board</button>
-  <button class="tab" data-tab="character" type="button">🧙 Character</button>
-  <button class="tab" data-tab="store" type="button">🏪 Store</button>
-  <button class="tab" data-tab="skills">✧ Skills</button>
-  <button class="tab" data-tab="todo" type="button">☑ To Do</button>
-  <button class="tab" data-tab="groceries" type="button">🛒 Groceries</button>
-  <button class="tab" data-tab="journal">📜 Journal</button>
-  <button class="tab" data-tab="chess" type="button">♟ Chess</button>
-  <button class="tab" data-tab="settings">⚙ Settings</button>
-  <button class="tab" id="refluxTabButton" data-tab="reflux" type="button" style="display:none">🌿 Reflux Guide</button>
-  <button class="tab" id="debugTabButton" data-tab="debug" type="button">🛠 Debug</button>
+<nav class="tabs wayfarer-groups" aria-label="Main navigation groups">
+  <button class="groupTab active" data-group="core" type="button" aria-controls="wayfarerSubtabs" aria-pressed="true">⚜ Core</button>
+  <button class="groupTab" data-group="personal" type="button" aria-controls="wayfarerSubtabs" aria-pressed="false">📜 Personal</button>
+  <button class="groupTab" data-group="games" type="button" aria-controls="wayfarerSubtabs" aria-pressed="false">🎮 Games</button>
+  <button class="groupTab" data-group="admin" type="button" aria-controls="wayfarerSubtabs" aria-pressed="false" style="display:none">🛠 Admin</button>
+</nav>
+<nav class="tabs wayfarer-subtabs" id="wayfarerSubtabs" aria-label="Subtabs">
+  <button class="tab active" data-tab="quests" data-group="core" type="button">⚜ Quest Board</button>
+  <button class="tab" data-tab="character" data-group="core" type="button">🧙 Character</button>
+  <button class="tab" data-tab="store" data-group="core" type="button">🏪 Store</button>
+  <button class="tab" data-tab="skills" data-group="core" type="button">✧ Skills</button>
+  <button class="tab" data-tab="settings" data-group="core" type="button">⚙ Settings</button>
+  <button class="tab" data-tab="todo" data-group="personal" type="button" style="display:none">☑ To Do</button>
+  <button class="tab" data-tab="groceries" data-group="personal" type="button" style="display:none">🛒 Groceries</button>
+  <button class="tab" data-tab="journal" data-group="personal" type="button" style="display:none">📜 Journal</button>
+  <button class="tab" data-tab="chess" data-group="games" type="button" style="display:none">♟ Chess</button>
+  <button class="tab" id="refluxTabButton" data-tab="reflux" data-group="admin" type="button" style="display:none">🌿 Reflux Guide</button>
+  <button class="tab" id="debugTabButton" data-tab="debug" data-group="admin" type="button" style="display:none">🛠 Debug</button>
 </nav>
 
 <main>
@@ -226,7 +232,6 @@
     </form>
     <p class="sub" style="margin-top:12px">Use a unique PIN, not your phone unlock or banking PIN. Username + PIN has no recovery option if forgotten.</p>
   </div>
-  <div class="card" id="tabVisibilityCard" style="margin-top:12px"><h3>Tab visibility</h3><p class="sub">Choose which optional tabs appear in your navigation. Core tabs are always visible.</p><div id="tabVisibilityOptions" class="formgrid"></div></div>
   <div class="card" style="margin-top:12px" id="musicSettingsCard">
     <h3>Music settings</h3>
     <p class="sub">Choose whether Wayfarer plays background music. The soundtrack follows your equipped theme.</p>
@@ -340,13 +345,35 @@ function wayfarerActiveTabKey(){
  const username=String(wayfarerSignedInUsername||"").trim().toLowerCase();
  return WAYFARER_ACTIVE_TAB_PREFIX+(username||"guest");
 }
+const WAYFARER_GROUP_DEFAULTS={core:"quests",personal:"todo",games:"chess",admin:"debug"};
+let wayfarerActiveGroup="core";
+function selectWayfarerGroup(group){
+ if(!Object.prototype.hasOwnProperty.call(WAYFARER_GROUP_DEFAULTS,group))group="core";
+ if(group==="admin"&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))group="core";
+ wayfarerActiveGroup=group;
+ document.querySelectorAll(".groupTab").forEach(btn=>{
+  const active=btn.dataset.group===group;btn.classList.toggle("active",active);btn.setAttribute("aria-pressed",String(active));
+ });
+ document.querySelectorAll(".wayfarer-subtabs .tab").forEach(btn=>{
+  const authorized=!!cloudUser&&(btn.dataset.group!=="admin"||(typeof debugIsAdmin==="function"&&debugIsAdmin()));
+  btn.style.display=authorized&&btn.dataset.group===group?"":"none";
+ });
+ return group;
+}
+document.querySelectorAll(".groupTab").forEach(btn=>btn.addEventListener("click",()=>{
+ const group=selectWayfarerGroup(btn.dataset.group);
+ const current=document.querySelector('.wayfarer-subtabs .tab.active');
+ if(current?.dataset.group===group)return;
+ activateWayfarerTab(WAYFARER_GROUP_DEFAULTS[group],true);
+}));
 function activateWayfarerTab(tabName,remember=true){
  if(!WAYFARER_TAB_NAMES.includes(tabName))tabName=cloudUser?"quests":"settings";
  if((tabName==="debug"||tabName==="reflux")&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))tabName="quests";
- if(cloudUser&&state?.settings?.hiddenTabs?.includes(tabName))tabName="quests";
- const button=document.querySelector('.tab[data-tab="'+tabName+'"]');
+
+ const button=document.querySelector('.wayfarer-subtabs .tab[data-tab="'+tabName+'"]');
  if(!button) return false;
- document.querySelectorAll(".tab").forEach(tab=>tab.classList.toggle("active",tab===button));
+ selectWayfarerGroup(button.dataset.group);
+ document.querySelectorAll(".wayfarer-subtabs .tab").forEach(tab=>tab.classList.toggle("active",tab===button));
  document.querySelectorAll(".section").forEach(section=>section.classList.toggle("active",section.id==="section-"+tabName));
  if(remember){try{localStorage.setItem(wayfarerActiveTabKey(),tabName);}catch(e){}}
  if(tabName==="skills"&&typeof renderSkillCatalog==="function")renderSkillCatalog();
@@ -354,7 +381,7 @@ function activateWayfarerTab(tabName,remember=true){
   if(tabName==="reflux")window.WayfarerTabRenderers?.reflux?.();
  // Re-render after the asynchronous module is ready, not only during the global render.
  loadWayfarerTab(tabName).then(loaded=>{
-  if(loaded&&document.querySelector(".tab.active")?.dataset.tab===tabName){
+  if(loaded&&document.querySelector(".wayfarer-subtabs .tab.active")?.dataset.tab===tabName){
    window.WayfarerTabRenderers?.[tabName]?.();
   }
  });
@@ -364,11 +391,11 @@ function restorePreferredWayfarerTab(){
  let preferred="";try{preferred=localStorage.getItem(wayfarerActiveTabKey())||"";}catch(e){}
  if(!WAYFARER_TAB_NAMES.includes(preferred))preferred=cloudUser?"quests":"settings";
  if((preferred==="debug"||preferred==="reflux")&&(!cloudUser||typeof debugIsAdmin!=="function"||!debugIsAdmin()))preferred="quests";
- if(state?.settings?.hiddenTabs?.includes(preferred))preferred="quests";
+
  return activateWayfarerTab(preferred,false);
 }
-document.querySelectorAll(".tab").forEach(button=>button.addEventListener("click",()=>activateWayfarerTab(button.dataset.tab,true)));
-window.addEventListener("load",()=>{if(cloudUser)restorePreferredWayfarerTab();else loadWayfarerTab(document.querySelector(".tab.active")?.dataset.tab||"settings");},{once:true});
+document.querySelectorAll(".wayfarer-subtabs .tab").forEach(button=>button.addEventListener("click",()=>activateWayfarerTab(button.dataset.tab,true)));
+window.addEventListener("load",()=>{if(cloudUser)restorePreferredWayfarerTab();else loadWayfarerTab(document.querySelector(".wayfarer-subtabs .tab.active")?.dataset.tab||"settings");},{once:true});
 
 const KEY="wayfarer-rpg-v1";
 const STATE_UPDATED_KEY=KEY+"-updatedAt";
@@ -519,7 +546,24 @@ async function finishSignIn(username,pin,create,gender=null){
  renderSkillCatalog();
  if(typeof renderDebugPanel === "function") renderDebugPanel();
 }
-function enforceAccountGate(){const signedIn=!!cloudUser;const hidden=Array.isArray(state?.settings?.hiddenTabs)?state.settings.hiddenTabs:[];document.querySelectorAll('.tabs .tab').forEach(btn=>{const allowed=(signedIn||btn.dataset.tab==='settings')&&(!["debug","reflux"].includes(btn.dataset.tab)|| (signedIn&&typeof debugIsAdmin==="function"&&debugIsAdmin()));btn.style.display=allowed&&!hidden.includes(btn.dataset.tab)?'':'none';btn.disabled=!allowed;});document.querySelectorAll('main > .section').forEach(sec=>{sec.style.display=(signedIn&&(!['section-debug','section-reflux'].includes(sec.id)||(typeof debugIsAdmin==='function'&&debugIsAdmin())))?'':(!signedIn&&sec.id==='section-settings'?'':'none');if(!signedIn)sec.classList.toggle('active',sec.id==='section-settings');});const n=document.getElementById('accountRequiredNotice');if(n)n.style.display=signedIn?'none':'block';}
+function enforceAccountGate(){
+ const signedIn=!!cloudUser;
+ const isAdmin=signedIn&&typeof debugIsAdmin==="function"&&debugIsAdmin();
+ const adminGroup=document.querySelector('.groupTab[data-group="admin"]');
+ if(adminGroup)adminGroup.style.display=isAdmin?"":"none";
+ document.querySelectorAll(".wayfarer-subtabs .tab").forEach(btn=>{
+  const allowed=(signedIn||btn.dataset.tab==="settings")&&(btn.dataset.group!=="admin"||isAdmin);
+  btn.disabled=!allowed;
+  btn.style.display=allowed&&(btn.dataset.group===wayfarerActiveGroup||(!signedIn&&btn.dataset.tab==="settings"))?"":"none";
+ });
+ document.querySelectorAll("main > .section").forEach(sec=>{
+  sec.style.display=(signedIn&&(!["section-debug","section-reflux"].includes(sec.id)||isAdmin))?"":(!signedIn&&sec.id==="section-settings"?"":"none");
+  if(!signedIn)sec.classList.toggle("active",sec.id==="section-settings");
+ });
+ if(!signedIn)selectWayfarerGroup("core");
+ else if(wayfarerActiveGroup==="admin"&&!isAdmin)activateWayfarerTab("quests",false);
+ const n=document.getElementById("accountRequiredNotice");if(n)n.style.display=signedIn?"none":"block";
+}
 let accountFlowMode=null;
 function showAccountMode(mode){accountFlowMode=mode;document.getElementById("accountModeChooser").style.display="none";document.getElementById("accountUsernameField").style.display="block";document.getElementById("accountPinField").style.display="block";document.getElementById("accountActionButtons").style.display="flex";document.getElementById("createAccountBtn").style.display=mode==="create"?"inline-flex":"none";document.getElementById("signInBtn").style.display=mode==="login"?"inline-flex":"none";hideGenderChoice();if(mode==="create"){const field=document.getElementById("accountGenderField");if(field)field.style.display="block";}}
 function resetAccountMode(){accountFlowMode=null;hideGenderChoice();document.getElementById("accountModeChooser").style.display="flex";document.getElementById("accountUsernameField").style.display="none";document.getElementById("accountPinField").style.display="none";document.getElementById("accountActionButtons").style.display="none";}
@@ -624,7 +668,7 @@ function render(){
  // Skill cards are shared progress UI and must not depend on visiting the Skills tab.
  window.WayfarerTabRenderers?.skills?.renderSkillProgress?.();
  enforceAccountGate();
- const activeTabName=document.querySelector(".tab.active")?.dataset.tab;
+ const activeTabName=document.querySelector(".wayfarer-subtabs .tab.active")?.dataset.tab;
  // Tab-owned UI is rendered only by its own lazy-loaded module. Shared counters above remain core-owned.
  if(activeTabName && window.WayfarerTabRenderers){
    const renderers=window.WayfarerTabRenderers;

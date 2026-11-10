@@ -1,3 +1,9 @@
+## v3.1.23 — Grouped navigation (2026-11-10)
+- Reorganized all existing pages into four main navigation groups with subtabs: Core (Quest Board, Character, Store, Skills, Settings), Personal (To Do, Groceries, Journal), Games (Chess), and Admin (Debug, Reflux Guide).
+- Admin group appears only to accounts authorized for Debug, including ChatGPT testing accounts. Existing Admin authorization checks remain in place; no new role is granted.
+- Removed optional-tab visibility settings and their UI; previously hidden pages are accessible again through their groups. Preserved all saved page data, account state, chess games and Sandbox functionality.
+- Updated service-worker release metadata and bug-testing rules. Static JavaScript syntax checked; browser, mobile and Supabase regression testing remain pending.
+
 ## v3.1.22 — Restore Settings tab visibility controls (2026-11-10)
 - Fixed optional-tab checkboxes failing to appear after opening Settings. Navigation now invokes the active tab renderer after lazy module initialization, and the visibility UI is refreshed for signed-in accounts.
 - Preserved mandatory tabs, Admin authorization, per-account hidden tab preferences, chess, and existing save paths.

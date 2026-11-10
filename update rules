@@ -1,5 +1,11 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.23 — Grouped navigation and authorized Admin access
+- Main navigation groups: Core (Quest Board, Character, Store, Skills, Settings), Personal (To Do, Groceries, Journal), Games (Chess and future games), Admin (Debug and Reflux Guide). All existing pages become subtabs.
+- Admin group must remain invisible and inaccessible to non-admin accounts. CHATGPT testing uses existing Admin authorization, not a separate group or expanded privilege.
+- Remove optional-tab visibility controls; do not delete stored user data or affect quests, equipment, chess, Supabase, Sandbox or cloud saves. Old hiddenTabs settings may remain inert for backward compatibility.
+- Test group switching, direct old-tab restoration, login/logout, first lazy load, responsive 375px/430px navigation, authorization, and all existing modules.
+
 ## v3.1.22 — Settings tab visibility rendering
 - The optional-tab checkboxes must populate when Settings opens, including first lazy load, after sign-in, and after refresh. Ensure tab module initialization and active-tab rendering are ordered correctly.
 - Regression-test hide/show of each optional tab, mandatory tabs always visible, Admin-only tab access, account-specific persistence and iPhone layout. Preserve v3.1.21 Sandbox fix and chess functionality.
