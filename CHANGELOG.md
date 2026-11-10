@@ -1,3 +1,9 @@
+## v3.1.25 — Christendom Chess visual integration (2026-11-10)
+- Integrated the existing `assets/Chess/` artwork: Catholic red White pieces, Orthodox purple Black pieces, marble chessboard and gold frame, New Game and Resign image buttons.
+- Added responsive transparent interactive square overlays, selection and legal-move indicators, accessible labels and keyboard focus. Kept existing chess.js/Stockfish game logic, Elo and account-scoped PGN storage unchanged.
+- Retired obsolete `game rules.md` requirement from update rules as requested; updated mandatory QA plan and PWA cache with all 15 chess assets.
+- Static integration only; browser/mobile visual alignment, PNG transparency and end-to-end chess testing remain pending.
+
 ## v3.1.24 — Ornate navigation group styling (2026-11-10)
 - Replaced plain white category buttons with distinct fantasy-styled Core (royal purple), Personal (forest green), Games (steel blue), and Admin (burgundy) group selectors, using gold/metallic borders and a prominent selected-state glow.
 - Preserved original subtabs, tab selection logic, authorization, game state and saved data; added keyboard focus and reduced-motion styling and responsive 3-column mobile/4-column desktop layout.
