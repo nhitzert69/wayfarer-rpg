@@ -1,4 +1,4 @@
-const CACHE = "wayfarer-standalone-v3.1.33";
+const CACHE = "wayfarer-standalone-v3.1.34";
 const ASSETS = [
   "./codes/tabs/chess.js",
   "./assets/Chess/board_with_frame.png", "./assets/Chess/new_game.png", "./assets/Chess/resign.png", "./assets/Chess/orthodox_king.png", "./assets/Chess/orthodox_queen.png", "./assets/Chess/orthodox_rook.png", "./assets/Chess/orthodox_bishop.png", "./assets/Chess/orthodox_knight.png", "./assets/Chess/orthodox_pawn.png", "./assets/Chess/catholic_king.png", "./assets/Chess/catholic_queen.png", "./assets/Chess/catholic_rook.png", "./assets/Chess/catholic_bishop.png", "./assets/Chess/catholic_knight.png", "./assets/Chess/catholic_pawn.png",
@@ -53,6 +53,18 @@ self.addEventListener("fetch", event => {
   if(request.url.startsWith(self.location.origin) && /\.(js|css)$/.test(new URL(request.url).pathname)){
     event.respondWith(fetch(request,{cache:"no-store"}).then(response=>{
       if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));}
+      return response;
+    }).catch(()=>caches.match(request)));
+    return;
+  }
+  // Fetch updated theme recordings online, retaining offline fallback.
+  const audioPath=new URL(request.url).pathname.toLowerCase();
+  if(request.url.startsWith(self.location.origin) && [".mp3",".ogg",".m4a",".wav"].some(ext=>audioPath.endsWith(ext))){
+    event.respondWith(fetch(request,{cache:"no-store"}).then(response=>{
+      if(response.ok && response.status===200 && !request.headers.has("range")){
+        const copy=response.clone();
+        event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));
+      }
       return response;
     }).catch(()=>caches.match(request)));
     return;
