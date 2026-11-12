@@ -1,3 +1,7 @@
+## v3.1.34 — Online theme music refresh (2026-11-12)
+- Updated same-origin theme audio service-worker handling to fetch current recordings online with offline cache fallback; avoid caching partial range responses. Faith theme continues to reference `assets/sound/orthodox-theme.mp3`.
+- Updated rules, QA suite and PWA cache namespace. Did not modify MP3 content; live playback testing pending.
+
 ## v3.1.33 — Audit remediation first pass (2026-11-10)
 - Removed failing jsDelivr engine endpoint; added Retry Engine, stalled-move watchdog and worker restart preserving PGN.
 - Removed Debug renderer override of grouped navigation visibility. Added network-first online JS/CSS service-worker fetch with offline fallback.
