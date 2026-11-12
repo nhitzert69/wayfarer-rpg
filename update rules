@@ -1,5 +1,9 @@
 # Wayfarer Update Rules — V3.0.0 Master Standard (MANDATORY)
 
+## v3.1.34 — Theme audio freshness
+- Online theme soundtrack requests must fetch the latest deployed MP3/OGG/M4A/WAV, with offline cached fallback. Never cache partial range responses as complete audio. Bump PWA cache on audio updates; verify actual registry path and playback after reload/restart. Already-playing audio is not automatically replaced mid-track.
+
+
 ## v3.1.33 — Audit remediation
 - Chess engine failure and stalled searches require explicit retry with saved game preserved; never use a known failing CDN. Self-hosted engine remains outstanding.
 - Only navigation controller may change subtab visibility, not feature renderers.
